@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<term>
+    <status>Approved</status>
+    <index>disp_taxonomy</index>
+    <name>
+        <value>Livestock markets</value>
+    </name>
+    <id>
+        <value>OMITERMO6908</value>
+    </id>
+    <displayName>
+        <value>Livestock markets</value>
+        <matchOnNPT>false</matchOnNPT>
+    </displayName>
+    <frequency>
+        <value>0</value>
+    </frequency>
+    <pathList>
+        <abbreviation>NT</abbreviation>
+        <fields>
+            <value>Business and industry</value>
+            <frequency>0</frequency>
+            <id>OMITERMO692</id>
+            <name>term</name>
+            <facetIds>OMITERMO692</facetIds>
+            <facets>Business and industry</facets>
+        </fields>
+        <fields>
+            <value>Business sectors</value>
+            <frequency>0</frequency>
+            <id>OMITERMO685</id>
+            <name>term</name>
+            <facetIds>OMITERMO692</facetIds>
+            <facets>Business and industry</facets>
+        </fields>
+        <fields>
+            <value>Distribution and service industries</value>
+            <frequency>0</frequency>
+            <id>OMITERMO705</id>
+            <name>term</name>
+            <facetIds>OMITERMO692</facetIds>
+            <facets>Business and industry</facets>
+        </fields>
+        <fields>
+            <value>Retail trade</value>
+            <frequency>0</frequency>
+            <id>OMITERMO811</id>
+            <name>term</name>
+            <facetIds>OMITERMO692</facetIds>
+            <facets>Business and industry</facets>
+        </fields>
+        <fields>
+            <value>Markets</value>
+            <frequency>0</frequency>
+            <id>OMITERMO42</id>
+            <name>term</name>
+            <facetIds>OMITERMO692</facetIds>
+            <facets>Business and industry</facets>
+        </fields>
+        <fields>
+            <value>Livestock markets</value>
+            <frequency>0</frequency>
+            <id>OMITERMO6908</id>
+            <name>term</name>
+            <facetIds>OMITERMO692</facetIds>
+            <facets>Business and industry</facets>
+        </fields>
+        <type>Narrower Term</type>
+    </pathList>
+    <hierarchyList>
+        <abbreviation>BT</abbreviation>
+        <alphabeticalFields>
+            <value>Markets</value>
+            <frequency>0</frequency>
+            <id>OMITERMO42</id>
+            <name>term</name>
+            <facetIds>OMITERMO692</facetIds>
+            <facets>Business and industry</facets>
+        </alphabeticalFields>
+        <count>1</count>
+        <fields>
+            <entry>
+                <key>OMITERMO42</key>
+                <value>
+                    <value>Markets</value>
+                    <frequency>0</frequency>
+                    <id>OMITERMO42</id>
+                    <name>term</name>
+                    <facetIds>OMITERMO692</facetIds>
+                    <facets>Business and industry</facets>
+                </value>
+            </entry>
+        </fields>
+        <frequencyFields>
+            <value>Markets</value>
+            <frequency>0</frequency>
+            <id>OMITERMO42</id>
+            <name>term</name>
+            <facetIds>OMITERMO692</facetIds>
+            <facets>Business and industry</facets>
+        </frequencyFields>
+        <type>Broader Term</type>
+    </hierarchyList>
+    <associatedList>
+        <abbreviation>RT</abbreviation>
+        <alphabeticalFields>
+            <value>Cattle</value>
+            <frequency>0</frequency>
+            <id>OMITERMO2530</id>
+            <name>term</name>
+            <facetIds>OMITERMO499</facetIds>
+            <facets>Environment</facets>
+        </alphabeticalFields>
+        <count>0</count>
+        <fields>
+            <entry>
+                <key>OMITERMO2530</key>
+                <value>
+                    <value>Cattle</value>
+                    <frequency>0</frequency>
+                    <id>OMITERMO2530</id>
+                    <name>term</name>
+                    <facetIds>OMITERMO499</facetIds>
+                    <facets>Environment</facets>
+                </value>
+            </entry>
+        </fields>
+        <frequencyFields>
+            <value>Cattle</value>
+            <frequency>0</frequency>
+            <id>OMITERMO2530</id>
+            <name>term</name>
+            <facetIds>OMITERMO499</facetIds>
+            <facets>Environment</facets>
+        </frequencyFields>
+        <type>Related To</type>
+    </associatedList>
+    <facets>
+        <facetList>
+            <name>Business and industry</name>
+            <id>OMITERMO692</id>
+        </facetList>
+    </facets>
+    <attribute>
+        <alphabeticalFields>
+            <value>1</value>
+            <frequency>0</frequency>
+            <name>Use for classifying content</name>
+        </alphabeticalFields>
+        <count>0</count>
+        <fields>
+            <entry>
+                <key>Use for concept mapping</key>
+                <value>
+                    <value>1</value>
+                    <frequency>0</frequency>
+                    <name>Use for concept mapping</name>
+                </value>
+            </entry>
+            <entry>
+                <key>Use for classifying content</key>
+                <value>
+                    <value>1</value>
+                    <frequency>0</frequency>
+                    <name>Use for classifying content</name>
+                </value>
+            </entry>
+        </fields>
+        <frequencyFields>
+            <value>1</value>
+            <frequency>0</frequency>
+            <name>Use for classifying content</name>
+        </frequencyFields>
+    </attribute>
+    <metadata>
+        <alphabeticalFields>
+            <value>1.00</value>
+            <frequency>0</frequency>
+            <name>Added In Version</name>
+        </alphabeticalFields>
+        <alphabeticalFields>
+            <value>2.00</value>
+            <frequency>0</frequency>
+            <name>Last Updated In Version</name>
+        </alphabeticalFields>
+        <count>0</count>
+        <fields>
+            <entry>
+                <key>Added In Version</key>
+                <value>
+                    <value>1.00</value>
+                    <frequency>0</frequency>
+                    <name>Added In Version</name>
+                </value>
+            </entry>
+            <entry>
+                <key>Last Updated In Version</key>
+                <value>
+                    <value>2.00</value>
+                    <frequency>0</frequency>
+                    <name>Last Updated In Version</name>
+                </value>
+            </entry>
+        </fields>
+        <frequencyFields>
+            <value>1.00</value>
+            <frequency>0</frequency>
+            <name>Added In Version</name>
+        </frequencyFields>
+        <frequencyFields>
+            <value>2.00</value>
+            <frequency>0</frequency>
+            <name>Last Updated In Version</name>
+        </frequencyFields>
+    </metadata>
+    <synonymsList>
+        <synonymList>
+            <value>animal markets</value>
+            <id>OMITERMO82</id>
+        </synonymList>
+        <synonymList>
+            <value>Cattle Markets</value>
+            <id>OMITERMO81</id>
+        </synonymList>
+        <type>Use For</type>
+        <abbreviation>UF</abbreviation>
+    </synonymsList>
+    <synonyms>
+        <synonymList>
+            <value>animal markets</value>
+            <id>OMITERMO82</id>
+        </synonymList>
+        <synonymList>
+            <value>Cattle Markets</value>
+            <id>OMITERMO81</id>
+        </synonymList>
+        <type>Use For</type>
+        <abbreviation>UF</abbreviation>
+    </synonyms>
+    <percentage>43.0</percentage>
+    <rank>0</rank>
+    <src>1</src>
+    <weight>8.11389</weight>
+</term>

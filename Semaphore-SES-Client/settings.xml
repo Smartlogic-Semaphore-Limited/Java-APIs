@@ -1,0 +1,9 @@
+<settings>
+	<servers>
+		<server>
+			<id>twigkit.third-party</id>
+			<username>smartlogic</username>
+			<password>password123</password>
+		</server>
+	</servers>
+</settings>

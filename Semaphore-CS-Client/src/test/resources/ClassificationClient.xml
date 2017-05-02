@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!--
+  - Application context definition for "reuters" Data Retrieval.
+  -->
+
+
+<beans>
+	<bean id="ClassificationClient" class="com.smartlogic.classificationserver.client.ClassificationClient" lazy-init="true" >
+		<property name="classificationConfiguration" ref="ClassificationConfiguration" />
+		<property name="proxyHost" value="localhost" />
+		<property name="proxyPort" value="8888" />
+	</bean> 
+	
+	<bean id="ClassificationConfiguration" class="com.smartlogic.classificationserver.client.ClassificationConfiguration" lazy-init="true" >
+		<property name="protocol" value ="http" />
+		<property name="hostName" value ="127.0.0.1" />
+		<property name="hostPort" value ="5058" />
+		<property name="hostPath" value ="/index.html" />
+		<property name="singleArticle" value ="false" />
+		<property name="multiArticle" value ="true" />
+		<property name="additionalParameters" >
+			<map>
+				<entry key="threshold" value="1" />
+				<entry key="language" value="en1" />
+			</map>
+		</property>
+	</bean> 
+</beans>        
