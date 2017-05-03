@@ -1,14 +1,5 @@
 .project
 target
-/**/.settings
-/**/.classpath
-/**/*.orig
-/**/test-output
-/**/target
-/**/logs
-data
-deps
-solr-6*
-spring.properties
-Rulebases
-Indexes
+.settings
+.classpath
+config.properties
