@@ -14,6 +14,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +37,8 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -1020,11 +1023,14 @@ public class SESClient {
 			}
 			RequestConfig requestConfig = requestConfigBuilder.build();
 
+			SSLContextBuilder builder = new SSLContextBuilder();
+		    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
 			CloseableHttpClient httpClient =
 				      HttpClients.custom()
 				      			.setDefaultRequestConfig(requestConfig)
-				                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
-				                 .build();
+				      			.setSSLSocketFactory(sslsf)
+				                .build();
 
 			if (logger.isDebugEnabled())
 				logger.debug("About to make HTTP request: " + url.toExternalForm());
@@ -1074,6 +1080,10 @@ public class SESClient {
 			throw new SESException("IOException: " + e.getMessage());
 		} catch (SAXException e) {
 			throw new SESException("SAXException: " + e.getMessage());
+		} catch (KeyManagementException e) {
+			throw new SESException("KeyManagementException: " + e.getMessage());
+		} catch (NoSuchAlgorithmException e) {
+			throw new SESException("NoSuchAlgorithmException: " + e.getMessage());
 		} finally {
 			if (logger.isDebugEnabled())
 				logger.debug("getSemaphore - about to abort the connection " + url.toExternalForm());

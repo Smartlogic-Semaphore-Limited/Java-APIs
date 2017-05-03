@@ -6,6 +6,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,10 +30,10 @@ import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
-import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.ContentBody;
@@ -243,7 +245,7 @@ public class ClassificationClient {
 		logger.debug("getVersion");
 		if (version == null) {
 			Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
-			parts.add(FormBodyPartBuilder.create("body",  getStringBody("squirmish")).build());
+			parts.add(new FormBodyPart("body",  getStringBody("squirmish")));
 			getClassificationServerResponse(parts);
 		}
 		return version;
@@ -258,7 +260,7 @@ public class ClassificationClient {
 		logger.debug("getInfo");
 
 		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
-		parts.add(FormBodyPartBuilder.create("operation", getStringBody("info")).build());
+		parts.add(new FormBodyPart("operation", getStringBody("info")));
 		CSInfo csInfo = new CSInfo(getClassificationServerResponse(parts));
 
 		return csInfo;
@@ -543,7 +545,7 @@ public class ClassificationClient {
 		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
 		addTitle(parts, title);
 		addMetadata(parts, metadata);
-		parts.add(FormBodyPartBuilder.create("path", getStringBody(url.toExternalForm())).build());
+		parts.add(new FormBodyPart("path", getStringBody(url.toExternalForm())));
 		return getClassifications(parts);
 	}
 
@@ -560,7 +562,7 @@ public class ClassificationClient {
 			logger.debug("status - entry");
 
 		ArrayList<FormBodyPart> partsList = new ArrayList<FormBodyPart>();
-		partsList.add(FormBodyPartBuilder.create("XML_INPUT", getStringBody(statusRequestXML)).build());
+		partsList.add(new FormBodyPart("XML_INPUT", getStringBody(statusRequestXML)));
 
 		ClassificationServerStatus status = new ClassificationServerStatus(
 				getClassificationServerResponse(partsList));
@@ -584,9 +586,9 @@ public class ClassificationClient {
 				"yyyy-MM-dd HH:mm:ssZ");
 
 		ArrayList<FormBodyPart> partsList = new ArrayList<FormBodyPart>();
-		partsList.add(FormBodyPartBuilder.create("start_time", getStringBody(simpleDateFormat.format(startTime))).build());
-		partsList.add(FormBodyPartBuilder.create("finish_time", getStringBody(simpleDateFormat.format(endTime))).build());
-		partsList.add(FormBodyPartBuilder.create("operation", getStringBody("getclassificationhistory")).build());
+		partsList.add(new FormBodyPart("start_time", getStringBody(simpleDateFormat.format(startTime))));
+		partsList.add(new FormBodyPart("finish_time", getStringBody(simpleDateFormat.format(endTime))));
+		partsList.add(new FormBodyPart("operation", getStringBody("getclassificationhistory")));
 
 		ClassificationHistory classificationHistory = new ClassificationHistory(getClassificationServerResponse(partsList));
 		return classificationHistory.getClassificationRecords();
@@ -604,7 +606,7 @@ public class ClassificationClient {
 		logger.debug("getRulebaseClasses - entry");
 
 		ArrayList<FormBodyPart> partsList = new ArrayList<FormBodyPart>();
-		partsList.add(FormBodyPartBuilder.create("operation", getStringBody("listrulenetclasses")).build());
+		partsList.add(new FormBodyPart("operation", getStringBody("listrulenetclasses")));
 
 		RulebaseClassSet rulebaseClassSet = new RulebaseClassSet(
 				getClassificationServerResponse(partsList));
@@ -620,7 +622,7 @@ public class ClassificationClient {
 	public Collection<Language> getLanguages() throws ClassificationException {
 		logger.debug("getLanguages - entry");
 		ArrayList<FormBodyPart> partsList = new ArrayList<FormBodyPart>();
-		partsList.add(FormBodyPartBuilder.create("operation", getStringBody( "listlanguages")).build());
+		partsList.add(new FormBodyPart("operation", getStringBody( "listlanguages")));
 
 		LanguageSet langSet = new LanguageSet(getClassificationServerResponse(partsList));
 		return langSet.getLanguages();
@@ -636,7 +638,7 @@ public class ClassificationClient {
 	public Map<String, Parameter> getDefaults() throws ClassificationException {
 		logger.debug("getDefaults - entry");
 		ArrayList<FormBodyPart> partsList = new ArrayList<FormBodyPart>();
-		partsList.add(FormBodyPartBuilder.create("operation", getStringBody("getparameterdefaults")).build());
+		partsList.add(new FormBodyPart("operation", getStringBody("getparameterdefaults")));
 		Defaults defaults = new Defaults(
 				getClassificationServerResponse(partsList));
 		return defaults.getDefaults();
@@ -722,24 +724,24 @@ public class ClassificationClient {
 	private void addTitle(Collection<FormBodyPart> parts, Title title) {
 		if ((title != null) && (title.getValue() != null)
 				&& (title.getValue().length() > 0)) {
-			parts.add(FormBodyPartBuilder.create("title", getStringBody(title.getValue())).build());
+			parts.add(new FormBodyPart("title", getStringBody(title.getValue())));
 		}
 	}
 
 	private void addByteArray(Collection<FormBodyPart> parts, Body body) {
-		parts.add(FormBodyPartBuilder.create("body", getStringBody(body.getValue())).build());
+		parts.add(new FormBodyPart("body", getStringBody(body.getValue())));
 	}
 
 	private void addByteArray(Collection<FormBodyPart> parts, Body body, FileName filename) {
 		if (filename == null) {
-			parts.add(FormBodyPartBuilder.create("body", getStringBody(body.getValue())).build());
+			parts.add(new FormBodyPart("body", getStringBody(body.getValue())));
 		} else {
 			addByteArray(parts, body.getValue().getBytes(Charset.forName("UTF-8")), filename.getValue());
 		}
 	}
 
 	private void addByteArray(Collection<FormBodyPart> parts, byte[] data, String fileName) {
-		FormBodyPart filePart = FormBodyPartBuilder.create("UploadFile", new ByteArrayBody(data, fileName)).build();
+		FormBodyPart filePart = new FormBodyPart("UploadFile", new ByteArrayBody(data, fileName));
 		parts.add(filePart);
 	}
 
@@ -752,9 +754,9 @@ public class ClassificationClient {
 		}
 
 		if (fileType != null) {
-			parts.add(FormBodyPartBuilder.create("UploadFile", new FileBody(inputFile)).build()); // TODO Can we access the content type?
+			parts.add(new FormBodyPart("UploadFile", new FileBody(inputFile))); // TODO Can we access the content type?
 		} else {
-			parts.add(FormBodyPartBuilder.create("UploadFile", new FileBody(inputFile)).build());
+			parts.add(new FormBodyPart("UploadFile", new FileBody(inputFile)));
 		}
 	}
 
@@ -767,8 +769,8 @@ public class ClassificationClient {
 				if (values != null) {
 					int m = 0;
 					for (String value : values) {
-						if (m == 0) parts.add(FormBodyPartBuilder.create("meta_" + name,  getStringBody(value)).build());
-						else parts.add(FormBodyPartBuilder.create("meta_" + name + "__" + m,  getStringBody(value)).build());
+						if (m == 0) parts.add(new FormBodyPart("meta_" + name,  getStringBody(value)));
+						else parts.add(new FormBodyPart("meta_" + name + "__" + m,  getStringBody(value)));
 						m++;
 					}
 				}
@@ -782,21 +784,21 @@ public class ClassificationClient {
 		for (String parameterName : classificationConfiguration.getAdditionalParameters().keySet()) {
 			String value = classificationConfiguration.getAdditionalParameters().get(parameterName);
 			if ((value != null) && (value.length() > 0)) {
-				partsList.add(FormBodyPartBuilder.create(parameterName, getStringBody(value)).build());
+				partsList.add(new FormBodyPart(parameterName, getStringBody(value)));
 			}
 		}
 		if (classificationConfiguration.isSingleArticle())
-			partsList.add(FormBodyPartBuilder.create("singlearticle", getStringBody("on")).build());
+			partsList.add(new FormBodyPart("singlearticle", getStringBody("on")));
 		if (classificationConfiguration.isMultiArticle())
-			partsList.add(FormBodyPartBuilder.create("multiarticle", getStringBody("on")).build());
+			partsList.add(new FormBodyPart("multiarticle", getStringBody("on")));
 		if (classificationConfiguration.isFeedback())
-			partsList.add(FormBodyPartBuilder.create("feedback", getStringBody("on")).build());
+			partsList.add(new FormBodyPart("feedback", getStringBody("on")));
 		if (classificationConfiguration.isStylesheet())
-			partsList.add(FormBodyPartBuilder.create("stylesheet", getStringBody("on")).build());
+			partsList.add(new FormBodyPart("stylesheet", getStringBody("on")));
 		if (classificationConfiguration.isUseGeneratedKeys())
-			partsList.add(FormBodyPartBuilder.create("use_generated_keys", getStringBody("on")).build());
+			partsList.add(new FormBodyPart("use_generated_keys", getStringBody("on")));
 		if (classificationConfiguration.isReturnHashCode())
-			partsList.add(FormBodyPartBuilder.create("return_hash", getStringBody("on")).build());
+			partsList.add(new FormBodyPart("return_hash", getStringBody("on")));
 		return partsList;
 	}
 
@@ -814,9 +816,9 @@ public class ClassificationClient {
 
 		try {
 			parts.addAll(getParts(classificationConfiguration));
-			parts.add(FormBodyPartBuilder.create("return_hash", getStringBody("on")).build());
+			parts.add(new FormBodyPart("return_hash", getStringBody("on")));
 			if (this.getAuditUUID() != null) {
-				parts.add(FormBodyPartBuilder.create("audit_tag", getStringBody(this.getAuditUUID().toString())).build());
+				parts.add(new FormBodyPart("audit_tag", getStringBody(this.getAuditUUID().toString())));
 			}
 			if (classificationConfiguration.getUrl() != null) {
 				url = new URL(classificationConfiguration.getUrl());
@@ -841,7 +843,7 @@ public class ClassificationClient {
 				baseRequest = new HttpPost(url.toExternalForm());
 				MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
 
-				for (FormBodyPart part: parts) multipartEntityBuilder.addPart(part);
+				for (FormBodyPart part: parts) multipartEntityBuilder.addPart(part.getName(), part.getBody());
 				((HttpPost)baseRequest).setEntity(multipartEntityBuilder.build());
 			}
 			if (classificationConfiguration.getApiToken() != null) {
@@ -858,11 +860,14 @@ public class ClassificationClient {
 			}
 			RequestConfig requestConfig = requestConfigBuilder.build();
 
+			SSLContextBuilder builder = new SSLContextBuilder();
+		    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
 			CloseableHttpClient httpClient =
 				      HttpClients.custom()
 				      			.setDefaultRequestConfig(requestConfig)
-				                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
-				                 .build();
+				      			.setSSLSocketFactory(sslsf)
+				                .build();
 
 			logger.debug("Sending request");
 			HttpResponse response = httpClient.execute(baseRequest);
@@ -909,6 +914,10 @@ public class ClassificationClient {
 			throw new ClassificationException("MalformedURLException: " + e.getMessage());
 		} catch (IOException e) {
 			throw new ClassificationException("IOException: " + e.getMessage() + " (" + url.toExternalForm() + ")\n" + this.toString());
+		} catch (KeyManagementException e) {
+			throw new ClassificationException("KeyManagementException: " + e.getMessage() + " (" + url.toExternalForm() + ")\n" + this.toString());
+		} catch (NoSuchAlgorithmException e) {
+			throw new ClassificationException("NoSuchAlgorithmException: " + e.getMessage() + " (" + url.toExternalForm() + ")\n" + this.toString());
 		} finally {
 			if (baseRequest != null) {
 				baseRequest.abort();

@@ -13,7 +13,8 @@ import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -56,18 +57,21 @@ public class TokenFetcher {
 		logger.info("getAccessToken: '" + tokenUrl + "'");
 		try {
 			CloseableHttpClient httpClient;
+			SSLContextBuilder builder = new SSLContextBuilder();
+		    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+		    
 			if ((proxyPort != 0) && (proxyHost != null)) {
-				HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+				HttpHost proxy = new HttpHost(proxyHost, proxyPort);	
 				httpClient =
 						HttpClients.custom()
-			                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
+			                 .setSSLSocketFactory(sslsf)
 			                 .setProxy(proxy)
 			                 .build();
 
 			} else {
 				httpClient =
 						HttpClients.custom()
-			                 .setSSLHostnameVerifier(new NoopHostnameVerifier())
+			                 .setSSLSocketFactory(sslsf)
 			                 .build();
 			}
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
