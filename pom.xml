@@ -10,7 +10,7 @@
 		<xmlunit.version>1.3</xmlunit.version>
 	</properties>
 
-	<version>Semaphore-4.0-SNAPSHOT</version>
+	<version>Semaphore-4.0-44</version>
 	<groupId>com.smartlogic</groupId>
 	<artifactId>Semaphore-Java-APIs</artifactId>
 	<packaging>pom</packaging>
