@@ -45,7 +45,7 @@ public class CloudClassification {
 //		classificationClient.setProxyPort(8888);
 		
 		// Classify a document stored as a file
-		Result result = classificationClient.getClassifiedDocument(new File("./data/Brazil GP.docx"), null);
+		Result result = classificationClient.getClassifiedDocument(new File("./data/SampleData.txt"), null);
 		for (Entry<String, Collection<ClassificationScore>> entry: result.getAllClassifications().entrySet()) {
 			System.out.println(entry.getKey() + ":");
 			for (ClassificationScore classificationScore: entry.getValue()) {

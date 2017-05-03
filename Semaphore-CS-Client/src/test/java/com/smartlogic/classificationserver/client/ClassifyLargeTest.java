@@ -12,7 +12,7 @@ public class ClassifyLargeTest extends ClassificationTestCase {
 
 		URL log4jXmlUrl = ClassLoader.getSystemResource("log4j.xml");
 		if (log4jXmlUrl != null) System.out.println(log4jXmlUrl.toExternalForm());
-		File file = new File("src/test/resources/data/uea00009.pdf");
+		File file = new File("src/test/resources/data/SampleData.txt");
 		FileInputStream fileInputStream = new FileInputStream(file);
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		int available;
@@ -29,7 +29,7 @@ public class ClassifyLargeTest extends ClassificationTestCase {
 
 		try {
 			Date startDate = new Date();
-			classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "uea00009.pdf");
+			classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt");
 			Date endDate = new Date();
 			assertTrue("Classification took too long: " + (endDate.getTime() - startDate.getTime()) + "ms", (endDate.getTime() - startDate.getTime()) < 100000);
 		} catch (Exception e) {

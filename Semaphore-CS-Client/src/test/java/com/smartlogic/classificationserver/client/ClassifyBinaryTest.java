@@ -18,7 +18,7 @@ public class ClassifyBinaryTest extends ClassificationTestCase {
 
 
 	public void testBinary() throws IOException, ClassificationException {
-		File file = new File("src/test/resources/data/44157109.pdf");
+		File file = new File("src/test/resources/data/SampleData.txt");
 		FileInputStream fileInputStream = new FileInputStream(file);
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		int available;
@@ -30,10 +30,10 @@ public class ClassifyBinaryTest extends ClassificationTestCase {
 		fileInputStream.close();
 		byteArrayOutputStream.close();
 
-		Map<String, Collection<ClassificationScore>> binaryScores1 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "44157109.pdf").getAllClassifications();
-		assertEquals("run 1 - IPSV", 25, binaryScores1.get("IPSV").size());
-		assertEquals("run 1 - IPSV_ID", 25, binaryScores1.get("IPSV_ID").size());
-		assertEquals("run 1 - IPSV_RAW", 21, binaryScores1.get("IPSV_RAW").size());
+		Map<String, Collection<ClassificationScore>> binaryScores1 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt").getAllClassifications();
+		assertEquals("run 1 - IPSV", 7, binaryScores1.get("IPSV").size());
+		assertEquals("run 1 - IPSV_ID", 7, binaryScores1.get("IPSV_ID").size());
+		assertEquals("run 1 - IPSV_RAW", 6, binaryScores1.get("IPSV_RAW").size());
 
 		Map<String, Collection<String>> metadata = new HashMap<String, Collection<String>>();
 		Collection<String> cheeses = new Vector<String>();
@@ -42,10 +42,10 @@ public class ClassifyBinaryTest extends ClassificationTestCase {
 		cheeses.add("Cheddar");
 		metadata.put("cheeses", cheeses);
 
-		Map<String, Collection<ClassificationScore>> binaryScores2 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "44157109.pdf", new Title("title"), metadata).getAllClassifications();
-		assertEquals("run 2 - Generic", 25, binaryScores2.get("IPSV").size());
-		assertEquals("run 2 - IPSV_ID", 25, binaryScores2.get("IPSV_ID").size());
-		assertEquals("run 2 - IPSV_RAW", 21, binaryScores2.get("IPSV_RAW").size());
+		Map<String, Collection<ClassificationScore>> binaryScores2 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt", new Title("title"), metadata).getAllClassifications();
+		assertEquals("run 2 - Generic", 7, binaryScores2.get("IPSV").size());
+		assertEquals("run 2 - IPSV_ID", 7, binaryScores2.get("IPSV_ID").size());
+		assertEquals("run 2 - IPSV_RAW", 6, binaryScores2.get("IPSV_RAW").size());
 
 	}
 

@@ -38,7 +38,7 @@ public class ClassifyBinaryArticlesTest extends ClassificationTestCase {
 
 
 	public void testBinary() throws IOException, ClassificationException {
-		File file = new File("src/test/resources/data/44157109.pdf");
+		File file = new File("src/test/resources/data/SampleData.txt");
 		FileInputStream fileInputStream = new FileInputStream(file);
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		int available;
@@ -50,7 +50,7 @@ public class ClassifyBinaryArticlesTest extends ClassificationTestCase {
 		fileInputStream.close();
 		byteArrayOutputStream.close();
 
-		Result result = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "44157109.pdf");
+		Result result = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt");
 		assertEquals("Article count", 1, result.getArticles().size());
 
 	}

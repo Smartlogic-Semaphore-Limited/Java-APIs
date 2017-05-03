@@ -18,7 +18,7 @@ public class ClassifyLarge extends ClassificationTestCase {
 
 		URL log4jXmlUrl = ClassLoader.getSystemResource("log4j.xml");
 		if (log4jXmlUrl != null) System.out.println(log4jXmlUrl.toExternalForm());
-		File file = new File("src/test/resources/data/uea00009.pdf");
+		File file = new File("src/test/resources/data/SampleData.txt");
 		FileInputStream fileInputStream = new FileInputStream(file);
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		int available;
@@ -35,7 +35,7 @@ public class ClassifyLarge extends ClassificationTestCase {
 
 		try {
 			System.out.println("Starting  classification: " + new Date());
-			classificationClient.classifyBinary(byteArrayOutputStream.toByteArray(), "uea00009.pdf");
+			classificationClient.classifyBinary(byteArrayOutputStream.toByteArray(), "SampleData.txt");
 			System.out.println("Finished  classification: " + new Date());
 		} catch (Exception e) {
 			System.out.println("Exception classification: " + new Date());
