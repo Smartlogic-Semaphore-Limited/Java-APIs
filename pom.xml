@@ -62,14 +62,14 @@
 
 	<distributionManagement>
 		<repository>
-			<id>nexus</id>
-			<name>Smartlogic Nexus Release Repository</name>
-			<url>dav:http://cart:8081/repository/maven-releases</url>
+			<id>MavenCentral</id>
+			<name>Maven Central</name>
+			<url>dav:https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 		<snapshotRepository>
-			<id>nexus</id>
-			<name>Smartlogic Nexus Snapshot Repository</name>
-			<url>dav:http://cart:8081/repository/maven-snapshots/</url>
+			<id>MavenCentral</id>
+			<name>Maven Central</name>
+			<url>dav:https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 
