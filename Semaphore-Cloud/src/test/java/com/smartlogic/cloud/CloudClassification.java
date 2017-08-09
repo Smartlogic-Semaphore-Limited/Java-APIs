@@ -32,6 +32,8 @@ public class CloudClassification {
 
 		// Create the Cloud Access API Token from the supplied key
 		TokenFetcher tokenFetcher = new TokenFetcher(CloudConfiguration.get("tokenRequestURL"), CloudConfiguration.get("apiKey"));
+//		tokenFetcher.setProxyHost("localhost");
+//		tokenFetcher.setProxyPort(8888);
 		Token token = tokenFetcher.getAccessToken();
 
 		// Create the Classification Server client 

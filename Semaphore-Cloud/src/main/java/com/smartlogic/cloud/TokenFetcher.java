@@ -11,12 +11,18 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,33 +53,76 @@ public class TokenFetcher {
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
+	
+	private String proxyProtocol = "http";
+	public String getProxyProtocol() {
+		return proxyProtocol;
+	}
+	public void setProxyProtocol(String proxyProtocol) {
+		this.proxyProtocol = proxyProtocol;
+	}
+
+	private int socketTimeoutMS = 10000;
+	public int getSocketTimeoutMS() {
+		return socketTimeoutMS;
+	}
+	public void setSocketTimeoutMS(int socketTimeoutMS) {
+		this.socketTimeoutMS = socketTimeoutMS;
+	}
+
+	private int connectionTimeoutMS = 10000;
+	public int getConnectionTimeoutMS() {
+		return connectionTimeoutMS;
+	}
+	public void setConnectionTimeoutMS(int connectionTimeoutMS) {
+		this.connectionTimeoutMS = connectionTimeoutMS;
+	}
+
+	private int connectionRequestTimeoutMS = 10000;
+	public int getConnectionRequestTimeoutMS() {
+		return connectionRequestTimeoutMS;
+	}
+	public void setConnectionRequestTimeoutMS(int connectionRequestTimeoutMS) {
+		this.connectionRequestTimeoutMS = connectionRequestTimeoutMS;
+	}
 
 	/**
-	 * Get the access token requu
+	 * Get the access token
 	 * @return
 	 * @throws CloudException
 	 */
 	public Token getAccessToken() throws CloudException {
 		logger.info("getAccessToken: '" + tokenUrl + "'");
 		try {
-			CloseableHttpClient httpClient;
+			
 			SSLContextBuilder builder = new SSLContextBuilder();
 		    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 		    
-			if ((proxyPort != 0) && (proxyHost != null)) {
-				HttpHost proxy = new HttpHost(proxyHost, proxyPort);	
-				httpClient =
-						HttpClients.custom()
-			                 .setSSLSocketFactory(sslsf)
-			                 .setProxy(proxy)
-			                 .build();
+		    Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder
+		            .<ConnectionSocketFactory> create().register("https", sslsf)
+		            .build();
+		    
+			PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			connectionManager.setMaxTotal(200);
+			connectionManager.setDefaultMaxPerRoute(100);
 
-			} else {
-				httpClient =
-						HttpClients.custom()
-			                 .setSSLSocketFactory(sslsf)
-			                 .build();
+			Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
+					.setSocketTimeout(getSocketTimeoutMS())
+					.setConnectTimeout(getConnectionTimeoutMS())
+					.setConnectionRequestTimeout(getConnectionRequestTimeoutMS());
+			if ((getProxyHost() != null) && (getProxyHost().length() > 0) && (getProxyPort() > 0)) {
+				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort(), getProxyProtocol());
+				requestConfigBuilder.setProxy(proxy);
 			}
+			RequestConfig requestConfig = requestConfigBuilder.build();
+
+			HttpClient httpClient =
+				      HttpClients.custom()
+				      			.setConnectionManager(connectionManager)
+				      			.setDefaultRequestConfig(requestConfig)
+				      			.setSSLSocketFactory(sslsf)
+				                .build();
+
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
 			postParams.add(new BasicNameValuePair("grant_type", "apikey"));
 			postParams.add(new BasicNameValuePair("key", key));
