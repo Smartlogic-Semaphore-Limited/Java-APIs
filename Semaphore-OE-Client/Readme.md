@@ -14,10 +14,12 @@ Examples of how to use all these methods are present in the src/test/java. Notic
 This requires the presence of the file "config.properties" (not supplied) that contains the properties given with example values below. If a proxy is not used, then the proxy address is not required.
 
 
-proxy.address=http://localhost:8888
-base.url=http://localhost:8080/workbench-webapp-4.1.2.rc1
+**proxy.address**=*http://localhost:8888*
 
-model.uri=model:Playpen2
-token=WyJBZG1pbmlzdHJhdG9yIiwxNTAyNDU3Njc5LCJNQ0VDRGkyelpXRjZ6MTdVbmIxcjk5L0RBZzhBMGROOWhjUm5uQWMvMk40RjFSST0iXQ==
+**base.url**=*http://localhost:8080/workbench-webapp-4.1.2.rc1*
+
+**model.uri**=*model:Playpen2*
+
+**token**=*WyJBZG1pbmlzdHJhdG9yIiwxNTAyNDU3Njc5LCJNQ0VDRGkyelpXRjZ6MTdVbmIxcjk5L0RBZzhBMGROOWhjUm5uQWMvMk40RjFSST0iXQ\=\=*
 
  
