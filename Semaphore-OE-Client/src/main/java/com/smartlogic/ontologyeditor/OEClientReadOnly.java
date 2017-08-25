@@ -36,6 +36,7 @@ import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptClass;
 import com.smartlogic.ontologyeditor.beans.Identifier;
 import com.smartlogic.ontologyeditor.beans.RelationshipType;
+import com.smartlogic.ontologyeditor.beans.Task;
 
 public class OEClientReadOnly {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -99,7 +100,8 @@ public class OEClientReadOnly {
 		WebTarget webTarget = client.target(url);
 		if (queryParameters != null) {
 			for (Map.Entry<String, String> queryParameter: queryParameters.entrySet())
-				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue().replace("_", "_1").replace("%",  "_0"));
+//				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue().replace("_", "_1").replace("%",  "_0"));
+				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue());
 		}
 
 		return webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json");
@@ -118,6 +120,77 @@ public class OEClientReadOnly {
 			modelURL = stringBuilder.toString();
 		}
 		return modelURL;
+	}
+	private String modelSysURL = null;
+	protected String getModelSysURL() {
+		if (modelSysURL == null) {
+			StringBuilder stringBuilder = new StringBuilder(baseURL);
+			if (!baseURL.endsWith("/")) stringBuilder.append("/");
+			stringBuilder.append("api/");
+			stringBuilder.append("t/");
+			stringBuilder.append(token);
+			stringBuilder.append("/sys/");
+			stringBuilder.append(modelUri);
+			modelSysURL = stringBuilder.toString();
+		}
+		return modelSysURL;
+	}
+
+	protected String getTaskSysURL(Task task) {
+		StringBuilder stringBuilder = new StringBuilder(baseURL);
+		if (!baseURL.endsWith("/")) stringBuilder.append("/");
+		stringBuilder.append("api/");
+		stringBuilder.append("t/");
+		stringBuilder.append(token);
+		stringBuilder.append("/sys/");
+		stringBuilder.append(task.getGraphUri());
+		return stringBuilder.toString();
+	}
+
+	/**
+	 * getAllTasks
+	 * @return all the tasks present for this model
+	 * @throws OEClientException 
+	 */
+	public Collection<Task> getAllTasks() throws OEClientException {
+		logger.info("getAllTasks entry");
+
+		String url = getModelSysURL();
+		logger.info("getAllTasks URL: {}", url);
+
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("properties", "meta:hasTask/(meta:graphUri|meta:displayName)");
+		queryParameters.put("filters", "subject_hasTask(notExists rdf:type sem:ORTTask)");
+
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
+
+		Date startDate = new Date();
+		logger.info("getAllTasks making call  : {}", startDate.getTime());
+		Response response = invocationBuilder.get();
+		logger.info("getAllTasks call complete: {}", startDate.getTime());
+
+		logger.info("getAllTasks - status: {}", response.getStatus());
+
+		if (response.getStatus() == 200) {
+			String stringResponse = response.readEntity(String.class);
+			if (logger.isInfoEnabled()) logger.info("getChangesSince: jsonResponse {}", stringResponse);
+			JsonObject jsonResponse = JSON.parse(stringResponse);
+			JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+			Collection<Task> tasks = new ArrayList<Task>();
+			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+			while (jsonValueIterator.hasNext()) {
+				JsonObject modelData = jsonValueIterator.next().getAsObject();
+				JsonArray taskArray = modelData.get("meta:hasTask").getAsArray();
+				Iterator<JsonValue> jsonTaskIterator = taskArray.iterator();
+				while (jsonTaskIterator.hasNext()) {
+					tasks.add(new Task(jsonTaskIterator.next().getAsObject()));
+				}
+			}
+			return tasks;
+		} else {
+			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		}
+		
 	}
 
 	public Collection<ChangeRecord> getChangesSince(Date date) throws OEClientException {

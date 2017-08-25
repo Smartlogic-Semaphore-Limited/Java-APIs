@@ -8,9 +8,9 @@ import com.smartlogic.ontologyeditor.beans.Concept;
 public class GetConceptByGuid extends ModelManipulation {
 
 	public static void main(String args[]) throws URISyntaxException, OEClientException, IOException {
-		OEClientReadWrite oeClient = getOEClient(false);
+		OEClientReadWrite oeClient = getOEClient(true);
 
-		Concept concept = oeClient.getConceptByGuid("6843a802-4759-43f6-a1e5-d703f0394e14");
+		Concept concept = oeClient.getConceptByGuid("56441ea5-f0ac-44e9-a015-4627f05ae5af");
 		System.out.println("Before Change");
 		System.out.println(concept.toString());
 	}
