@@ -77,7 +77,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		Date startDate = new Date();
 		logger.info("commitTask making call  : {}", startDate.getTime());
-		Response response = invocationBuilder.post(Entity.json(null));
+		Response response = invocationBuilder.post(null);
 		logger.info("commitTask call complete: {}", startDate.getTime());
 
 		/*
