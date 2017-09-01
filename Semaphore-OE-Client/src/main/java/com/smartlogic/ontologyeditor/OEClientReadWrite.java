@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
 import org.apache.jena.atlas.json.JsonArray;
