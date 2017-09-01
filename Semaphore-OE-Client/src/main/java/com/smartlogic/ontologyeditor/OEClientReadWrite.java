@@ -28,6 +28,56 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param task 
 	 *          - the task to be created
 	 */
+	public void addListener(String listenerUri, String listenerUrl) {
+		logger.info("addListener entry: {} {}", listenerUri, listenerUrl);
+
+		String url = getModelSysURL();
+		logger.info("addListener URL: {}", url);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
+		
+		JsonArray requestArray = new JsonArray();
+		
+		JsonObject requestObject = new JsonObject();
+		requestObject.put("op", "add");
+		requestObject.put("path", "@graph/0/semlisteners:hasListener/-");
+
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@id", listenerUri);
+		valueObject.put("@type", "semlisteners:Listener");
+		
+		JsonArray listenerURLArray = new JsonArray();
+		listenerURLArray.add(listenerUrl);
+		valueObject.put("semlisteners:listenerUrl", listenerURLArray);
+		
+		requestObject.put("value",  valueObject);
+		requestArray.add(requestObject);
+		
+		String payload = requestArray.toString();
+
+		Invocation invocation = invocationBuilder.build("PATCH",
+				Entity.entity(payload, "application/json-patch+json"));
+		
+		Date startDate = new Date();
+		logger.info("addListener making call  : {} {}", payload, startDate.getTime());
+		Response response = invocation.invoke();
+		logger.info("addListener call complete: {}", startDate.getTime());
+
+		/*
+		 * Possible response codes are: - 201 in case of success - 409 in case
+		 * of constraint violation (if e. g. concept scheme already exists)
+		 */
+		logger.info("addListener status: {}", response.getStatus());
+		if (logger.isDebugEnabled()) {
+			logger.debug("addListener response: {}", response.readEntity(String.class));
+		}
+		
+	}
+		
+	/**
+	 * createTask - create a task within the current model
+	 * @param task 
+	 *          - the task to be created
+	 */
 	public void createTask(Task task) {
 		logger.info("createTask entry: {}", task.getLabel());
 
