@@ -13,9 +13,9 @@ public class AddConceptScheme extends ModelManipulation {
 		OEClientReadWrite oeClient = getOEClient(false);
 
 		List<Label> labels = new ArrayList<Label>();
-		labels.add(new Label("en", "My concept scheme"));
+		labels.add(new Label("en", "My concept scheme 2"));
 
-		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#myConceptScheme", labels);
+		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#myConceptScheme2", labels);
 
 		oeClient.createConceptScheme(conceptScheme);
 	}

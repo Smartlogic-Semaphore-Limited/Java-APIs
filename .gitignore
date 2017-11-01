@@ -3,5 +3,6 @@ target
 .settings
 .classpath
 config.properties
+cloud.properties
 .idea/
 *.iml

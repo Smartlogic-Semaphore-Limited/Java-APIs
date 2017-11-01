@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.sparql.util.FmtUtils;
+import com.smartlogic.cloud.Token;
 import com.smartlogic.ontologyeditor.beans.ChangeRecord;
 import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptClass;
@@ -67,6 +68,19 @@ public class OEClientReadOnly {
 		this.token = token;
 	}
 
+	private Token cloudToken;
+	public Token getCloudToken() {
+		return cloudToken;
+	}
+	public void setCloudToken(Token cloudToken) {
+		this.cloudToken = cloudToken;
+	}
+	private String getCloudTokenValue() {
+		if (cloudToken == null) return "";
+		
+		return cloudToken.getAccess_token();
+	}
+
 	private String proxyAddress;
 	public String getProxyAddress() {
 		return proxyAddress;
@@ -98,13 +112,15 @@ public class OEClientReadOnly {
 		Client client = ClientBuilder.newClient(clientConfig);
 		client.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
 		WebTarget webTarget = client.target(url);
+
 		if (queryParameters != null) {
 			for (Map.Entry<String, String> queryParameter: queryParameters.entrySet())
 //				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue().replace("_", "_1").replace("%",  "_0"));
 				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue());
 		}
 
-		return webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json");
+		
+		return webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json").header("Authorization", getCloudTokenValue());
 	}
 
 	private String modelURL = null;
