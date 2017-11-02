@@ -6,3 +6,6 @@ config.properties
 cloud.properties
 .idea/
 *.iml
+/**/test-output
+/**/target
+
