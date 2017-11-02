@@ -18,6 +18,7 @@ import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Identifier;
 import com.smartlogic.ontologyeditor.beans.Label;
+import com.smartlogic.ontologyeditor.beans.Model;
 import com.smartlogic.ontologyeditor.beans.Task;
 
 public class OEClientReadWrite extends OEClientReadOnly {
@@ -72,6 +73,87 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 	}
 		
+	/**
+	 * createTask - create a task within the current model
+	 * @param task 
+	 *          - the task to be created
+	 * @throws OEClientException 
+	 */
+	public void createModel(Model model) throws OEClientException {
+		logger.info("createModel entry: {}", model.getLabel());
+
+		String url = getApiURL() + "/sys/sys:Model/rdf:instance";
+		logger.info("createModel URL: {}", url);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
+
+		JsonObject modelObject = new JsonObject();
+
+		JsonArray modelTypeList = new JsonArray();
+		modelTypeList.add("sys:Model");
+		modelObject.put("@type", modelTypeList);
+
+		JsonObject labelObject = new JsonObject();
+		labelObject.put("@value", model.getLabel().getValue());
+		labelObject.put("@language", model.getLabel().getLanguageCode());
+		modelObject.put("rdfs:label", labelObject);
+		
+		JsonArray defaultNamespaceList = new JsonArray();
+		defaultNamespaceList.add(model.getDefaultNamespace());
+		modelObject.put("swa:defaultNamespace", defaultNamespaceList);
+
+		modelObject.put("rdfs:comment", model.getComment());
+		String modelPayload = modelObject.toString();
+
+		Date startDate = new Date();
+		logger.info("createModel making call  : {} {}", modelPayload, startDate.getTime());
+		Response response = invocationBuilder.post(Entity.entity(modelPayload, "application/ld+json"));
+		logger.info("createModel call complete: {}", startDate.getTime());
+
+		/*
+		 * Possible response codes are: - 201 in case of success - 409 in case
+		 * of constraint violation (if e. g. concept scheme already exists)
+		 */
+		int status = response.getStatus();
+		logger.info("createModel response status: {}", status);
+
+		if (status != 201) {
+			throw new OEClientException("Status: %d return creating model at URL: %s. \n%s", status, url, response.readEntity(String.class));
+		}
+		
+		String modelUri = response.getHeaderString("X-Location-Uri");
+		logger.info("model URI: {}", modelUri);
+		model.setUri(modelUri);
+				
+		if (logger.isDebugEnabled()) {
+			logger.debug("createModel response: {}", status);
+		}
+		
+	}
+
+	/**
+	 * Delete model
+	 * @param model
+	 * @throws OEClientException 
+	 */
+	public void deleteModel(Model model) throws OEClientException {
+		logger.info("deleteModel entry: {}", model.getLabel());
+
+		String url = getApiURL() + "/sys/" + model.getUri();
+		logger.info("deleteModel URL: {}", url);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
+		
+		logger.info("deleteModel - about to call");
+		Response response = invocationBuilder.delete();
+		logger.info("deleteModel - call returned");
+
+		int status = response.getStatus();
+		logger.info("deleteModel response status: {}", status);
+
+		if (status != 200) {
+			throw new OEClientException("Status: %d return deleting model at URL: %s. \n%s", status, url, response.readEntity(String.class));
+		}
+	}
+
 	/**
 	 * createTask - create a task within the current model
 	 * @param task 
@@ -612,6 +694,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		throw new OEClientException(
 				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
 	}
+
+
 
 
 
