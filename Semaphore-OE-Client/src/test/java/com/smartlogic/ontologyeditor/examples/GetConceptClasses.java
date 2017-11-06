@@ -1,9 +1,11 @@
-package com.smartlogic.ontologyeditor;
+package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 
+import com.smartlogic.ontologyeditor.OEClientException;
+import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.ConceptClass;
 
 public class GetConceptClasses extends ModelManipulation {

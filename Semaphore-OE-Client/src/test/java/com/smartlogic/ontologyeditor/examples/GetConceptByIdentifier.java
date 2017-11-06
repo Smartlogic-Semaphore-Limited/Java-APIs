@@ -1,8 +1,10 @@
-package com.smartlogic.ontologyeditor;
+package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import com.smartlogic.ontologyeditor.OEClientException;
+import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.Identifier;
 

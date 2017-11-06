@@ -1,10 +1,12 @@
-package com.smartlogic.ontologyeditor;
+package com.smartlogic.ontologyeditor.tests;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public abstract class ModelManipulation {
+import com.smartlogic.ontologyeditor.OEClientReadWrite;
+
+public abstract class AbstractTest {
 
 	private static Properties properties = null;
 	public static synchronized String get(String name) throws IOException {
@@ -29,4 +31,3 @@ public abstract class ModelManipulation {
 		return oeClient;
 	}
 }
-

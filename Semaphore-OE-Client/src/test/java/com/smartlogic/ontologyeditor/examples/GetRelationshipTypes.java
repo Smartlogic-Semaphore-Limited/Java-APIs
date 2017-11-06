@@ -1,4 +1,4 @@
-package com.smartlogic.ontologyeditor;
+package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -7,6 +7,8 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.smartlogic.ontologyeditor.OEClientException;
+import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.ConceptClass;
 import com.smartlogic.ontologyeditor.beans.RelationshipType;
 

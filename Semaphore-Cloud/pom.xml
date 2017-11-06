@@ -15,10 +15,12 @@
 		<dependency>
 			<groupId>com.smartlogic.csclient</groupId>
 			<artifactId>Semaphore-CS-Client</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.smartlogic.sesclient</groupId>
 			<artifactId>Semaphore-SES-Client</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>

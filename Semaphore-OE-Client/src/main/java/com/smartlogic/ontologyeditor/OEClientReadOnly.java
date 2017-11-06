@@ -31,11 +31,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.sparql.util.FmtUtils;
+import com.smartlogic.cloud.Token;
 import com.smartlogic.ontologyeditor.beans.ChangeRecord;
 import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptClass;
 import com.smartlogic.ontologyeditor.beans.Identifier;
+import com.smartlogic.ontologyeditor.beans.Model;
 import com.smartlogic.ontologyeditor.beans.RelationshipType;
+import com.smartlogic.ontologyeditor.beans.Task;
 
 public class OEClientReadOnly {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -64,6 +67,19 @@ public class OEClientReadOnly {
 	}
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	private Token cloudToken;
+	public Token getCloudToken() {
+		return cloudToken;
+	}
+	public void setCloudToken(Token cloudToken) {
+		this.cloudToken = cloudToken;
+	}
+	private String getCloudTokenValue() {
+		if (cloudToken == null) return "";
+		
+		return cloudToken.getAccess_token();
 	}
 
 	private String proxyAddress;
@@ -97,12 +113,15 @@ public class OEClientReadOnly {
 		Client client = ClientBuilder.newClient(clientConfig);
 		client.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
 		WebTarget webTarget = client.target(url);
+
 		if (queryParameters != null) {
 			for (Map.Entry<String, String> queryParameter: queryParameters.entrySet())
-				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue().replace("_", "_1").replace("%",  "_0"));
+//				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue().replace("_", "_1").replace("%",  "_0"));
+				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue());
 		}
 
-		return webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json");
+		
+		return webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json").header("Authorization", getCloudTokenValue());
 	}
 
 	private String modelURL = null;
@@ -118,6 +137,125 @@ public class OEClientReadOnly {
 			modelURL = stringBuilder.toString();
 		}
 		return modelURL;
+	}
+	private String apiURL = null;
+	protected String getApiURL() {
+		if (apiURL == null) {
+			StringBuilder stringBuilder = new StringBuilder(baseURL);
+			if (!baseURL.endsWith("/")) stringBuilder.append("/");
+			stringBuilder.append("api/");
+			stringBuilder.append("t/");
+			stringBuilder.append(token);
+			stringBuilder.append("/");
+			apiURL = stringBuilder.toString();
+		}
+		return apiURL;
+	}
+
+	private String modelSysURL = null;
+	protected String getModelSysURL() {
+		if (modelSysURL == null) {
+			StringBuilder stringBuilder = new StringBuilder(baseURL);
+			if (!baseURL.endsWith("/")) stringBuilder.append("/");
+			stringBuilder.append("api/");
+			stringBuilder.append("t/");
+			stringBuilder.append(token);
+			stringBuilder.append("/sys/");
+			stringBuilder.append(modelUri);
+			modelSysURL = stringBuilder.toString();
+		}
+		return modelSysURL;
+	}
+
+	protected String getTaskSysURL(Task task) {
+		StringBuilder stringBuilder = new StringBuilder(baseURL);
+		if (!baseURL.endsWith("/")) stringBuilder.append("/");
+		stringBuilder.append("api/");
+		stringBuilder.append("t/");
+		stringBuilder.append(token);
+		stringBuilder.append("/sys/");
+		stringBuilder.append(task.getGraphUri());
+		return stringBuilder.toString();
+	}
+
+	public Collection<Model> getAllModels() throws OEClientException {
+		logger.info("getAllModels entry");
+		
+		String url = getApiURL() + "/sys/sys:Model/rdf:instance";
+		logger.info("getAllModels URL: {}", url);
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("properties", "meta:displayName,meta:graphUri");
+
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
+
+		Date startDate = new Date();
+		logger.info("getAllModels making call  : {}", startDate.getTime());
+		Response response = invocationBuilder.get();
+		logger.info("getAllModels call complete: {}", startDate.getTime());
+
+		logger.info("getAllModels - status: {}", response.getStatus());
+
+		if (response.getStatus() == 200) {
+			String stringResponse = response.readEntity(String.class);
+			if (logger.isInfoEnabled()) logger.info("getAllModels: jsonResponse {}", stringResponse);
+			JsonObject jsonResponse = JSON.parse(stringResponse);
+			JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+			Collection<Model> models = new ArrayList<Model>();
+			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+			while (jsonValueIterator.hasNext()) {
+				JsonObject modelObject = jsonValueIterator.next().getAsObject();
+				models.add(new Model(modelObject));
+			}
+			return models;
+		} else {
+			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		}
+	}
+
+	/**
+	 * getAllTasks
+	 * @return all the tasks present for this model
+	 * @throws OEClientException 
+	 */
+	public Collection<Task> getAllTasks() throws OEClientException {
+		logger.info("getAllTasks entry");
+
+		String url = getModelSysURL();
+		logger.info("getAllTasks URL: {}", url);
+
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("properties", "meta:hasTask/(meta:graphUri|meta:displayName)");
+		queryParameters.put("filters", "subject_hasTask(notExists rdf:type sem:ORTTask)");
+
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
+
+		Date startDate = new Date();
+		logger.info("getAllTasks making call  : {}", startDate.getTime());
+		Response response = invocationBuilder.get();
+		logger.info("getAllTasks call complete: {}", startDate.getTime());
+
+		logger.info("getAllTasks - status: {}", response.getStatus());
+
+		if (response.getStatus() == 200) {
+			String stringResponse = response.readEntity(String.class);
+			if (logger.isInfoEnabled()) logger.info("getAllTasks: jsonResponse {}", stringResponse);
+			JsonObject jsonResponse = JSON.parse(stringResponse);
+			JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+			Collection<Task> tasks = new ArrayList<Task>();
+			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+			while (jsonValueIterator.hasNext()) {
+				JsonObject modelData = jsonValueIterator.next().getAsObject();
+				JsonArray taskArray = modelData.get("meta:hasTask").getAsArray();
+				Iterator<JsonValue> jsonTaskIterator = taskArray.iterator();
+				while (jsonTaskIterator.hasNext()) {
+					tasks.add(new Task(jsonTaskIterator.next().getAsObject()));
+				}
+			}
+			return tasks;
+		} else {
+			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		}
+		
 	}
 
 	public Collection<ChangeRecord> getChangesSince(Date date) throws OEClientException {
@@ -261,7 +399,8 @@ public class OEClientReadOnly {
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("properties", basicProperties);
-		Invocation.Builder invocationBuilder = getInvocationBuilder(getResourceURL(conceptUri), queryParameters);
+		queryParameters.put("path", getPathParameter(conceptUri));
+		Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
 		Date startDate = new Date();
 		logger.info("getConcept making call  : {}", startDate.getTime());
@@ -416,12 +555,25 @@ public class OEClientReadOnly {
 	// Concept uri needs to be encoded to be used in path
 	protected String getResourceURL(String resourceUri) {
 		logger.info("getResourceURL - entry: {}", resourceUri);
+		String resourceURL = getModelURL() + "/" + getPath(resourceUri);
+		logger.info("getResourceURL - exit: {}", resourceURL);
+		return resourceURL;
+	}
+
+	private String getPath(String resourceUri) {
+		logger.info("getPath - entry: {}", resourceUri);
 		String processedUri = FmtUtils.stringForURI(resourceUri);
 		String escapedUri = getEscapedUri(processedUri);
 
-		String resourceURL = getModelURL() + "/" + escapedUri;
-		logger.info("getResourceURL - exit: {}", resourceURL);
-		return resourceURL;
+		logger.info("getPath - exit: {}", escapedUri);
+		return escapedUri;
+	}
+
+	protected String getPathParameter(String conceptUri) {
+		logger.info("getPath - entry: {}", conceptUri);
+		String pathParameter = (modelUri + "/" + getPath(conceptUri)).replaceAll("%", "%25");
+		logger.info("getPath - exit: {}", pathParameter);
+		return pathParameter;
 	}
 
 	/**

@@ -7,4 +7,8 @@ public class OEClientException extends Exception {
 		super(message);
 	}
 
+	public OEClientException(String format, Object... arguments) {
+		super(String.format(format, arguments));
+	}
+
 }

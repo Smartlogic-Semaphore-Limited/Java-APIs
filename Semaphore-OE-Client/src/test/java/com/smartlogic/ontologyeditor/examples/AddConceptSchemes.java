@@ -1,4 +1,4 @@
-package com.smartlogic.ontologyeditor;
+package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Label;
 

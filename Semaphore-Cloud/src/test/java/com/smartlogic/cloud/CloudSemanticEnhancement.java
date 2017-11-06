@@ -35,14 +35,14 @@ public class CloudSemanticEnhancement {
 		SESClient sesClient = new SESClient();
 		sesClient.setUrl(CloudConfiguration.get("sesUrl"));
 		sesClient.setApiToken(token.getAccess_token());
-		sesClient.setOntology("disp_taxonomy");
+		sesClient.setOntology("ProductSupport");
 
 //		sesClient.setProxyHost("localhost");
 //		sesClient.setProxyPort(8888);
 
 
 		// Fetch term details for particular term
-		Term term = sesClient.getTermDetails("daaf5a2a-da79-469a-9521-f8a11cffbf16", DetailLevel.FULL);
+		Term term = sesClient.getTermDetails("39581488874379468426238", DetailLevel.FULL);
 		System.out.println(term);
 
 		Metadata metadata = term.getMetadata();
