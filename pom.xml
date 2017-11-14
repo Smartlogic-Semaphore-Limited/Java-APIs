@@ -10,7 +10,7 @@
 		<xmlunit.version>1.3</xmlunit.version>
 	</properties>
 
-	<version>Semaphore-4.0.46</version>
+	<version>Semaphore-4.1.0</version>
 	<groupId>com.smartlogic</groupId>
 	<artifactId>Semaphore-Java-APIs</artifactId>
 	<description>Java connectors to the Smartlogic Semaphore Services</description>
@@ -52,9 +52,10 @@
 	</developers>
   
 	<modules>
-		<module>Semaphore-CS-Client</module>
-		<module>Semaphore-SES-Client</module>
 		<module>Semaphore-Cloud</module>
+		<module>Semaphore-CS-Client</module>
+		<module>Semaphore-Model-Manipulation</module>
+		<module>Semaphore-SES-Client</module>
 	</modules>
 
 	<dependencies>
@@ -90,6 +91,11 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.25</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+			<version>3.3.0</version>
 		</dependency>
 	</dependencies>
 
@@ -155,12 +161,12 @@
 			<dependency>
 				<groupId>com.smartlogic.csclient</groupId>
 				<artifactId>Semaphore-CS-Client</artifactId>
-				<version>Semaphore-4.0.46-SNAPSHOT</version>
+				<version>Semaphore-4.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.smartlogic.sesclient</groupId>
 				<artifactId>Semaphore-SES-Client</artifactId>
-				<version>Semaphore-4.0.46-SNAPSHOT</version>
+				<version>Semaphore-4.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
@@ -176,6 +182,16 @@
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
 				<version>2.5.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.testng</groupId>
+				<artifactId>testng</artifactId>
+				<version>6.11</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>1.2.3</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

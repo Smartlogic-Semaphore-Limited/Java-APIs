@@ -77,7 +77,13 @@
 		<dependency>
 			<groupId>com.smartlogic.cloud</groupId>
 			<artifactId>Semaphore-Cloud-Client</artifactId>
-			<version>Semaphore-4.0.46</version>
+			<version>Semaphore-4.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>6.11</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

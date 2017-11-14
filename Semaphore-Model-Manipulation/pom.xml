@@ -1,59 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.smartlogic</groupId>
-	<artifactId>modelmanipulation</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>Semaphore SKOX-XL Model Manipulation</name>
+	<groupId>com.smartlogic.modelmanipulation</groupId>
+	<artifactId>Semaphore-Model-Manipulation</artifactId>
+	<name>SKOX-XL Model Manipulation</name>
 	<description>Methods for the offline manipulation of SKOSXL models</description>
 
-	<licenses>
-		<license>
-			<name>Apache License, Version 2.0</name>
-			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-			<comments>A business-friendly OSS license</comments>
-		</license>
-	</licenses>	
-	
 	<packaging>jar</packaging>
 
-	<url>http://www.smartlogic.com</url>
-
-	<scm>
-		<url>https://github.com/Smartlogic-Semaphore-Limited/Java-APIs</url>
-		<connection>https://github.com/Smartlogic-Semaphore-Limited/Java-APIs.git</connection>
-		<developerConnection>https://github.com/Smartlogic-Semaphore-Limited/Java-APIs.git</developerConnection>
-	</scm>
-
-	<developers>
-    <developer>
-      <id>keith.atkins@smartlogic.com</id>
-      <name>Keith Atkins</name>
-      <email>keith.atkins@smartlogic.com</email>
-      <url>http://www.smartlogic.com</url>
-      <organization>Smartlogic Semaphore PLC</organization>
-      <organizationUrl>http://www.smartlogic.com</organizationUrl>
-      <roles>
-        <role>architect</role>
-        <role>developer</role>
-      </roles>
-			<timezone>United Kingdom/London</timezone>
-		</developer>
-	</developers>
-	
-	<distributionManagement>
-		<repository>
-			<id>MavenCentral</id>
-			<name>Maven Central</name>
-			<url>dav:https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-		</repository>
-		<snapshotRepository>
-			<id>MavenCentral</id>
-			<name>Maven Central</name>
-			<url>dav:https://oss.sonatype.org/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
+	<parent>
+		<groupId>com.smartlogic</groupId>
+		<artifactId>Semaphore-Java-APIs</artifactId>
+		<version>Semaphore-4.1.0</version>
+	</parent>
 
 	<dependencies>
 		<dependency>
@@ -65,72 +24,12 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
-			<version>6.11</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.7</version>
-				<configuration>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
- 		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-webdav</artifactId>
-				<version>1.0-beta-2</version>
-			</extension>
-		</extensions>
-	</build>
-	
-	<repositories>
-		<repository>
-			<id>nexus</id>
-			<url>http://cart:8081/repository/maven-public/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
-	
 </project>
