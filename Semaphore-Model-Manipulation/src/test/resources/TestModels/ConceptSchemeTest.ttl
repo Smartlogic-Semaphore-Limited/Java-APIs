@@ -1,0 +1,13 @@
+<urn:x-evn-master:ConceptSchemeTest>
+        a       <http://topbraid.org/teamwork#Vocabulary> , <http://www.w3.org/2002/07/owl#Ontology> ;
+        <http://spinrdf.org/spin#imports>
+                <http://www.smartlogic.com/2015/12/unique-concept-label-constraint> , <http://www.smartlogic.com/2015/12/unique-concept-label-in-class-constraint> , <http://www.smartlogic.com/2015/02/semaphore-spin-constraints> ;
+        <http://www.w3.org/2002/07/owl#imports>
+                <http://www.smartlogic.com/2014/08/semaphore-core> .
+
+<http://example.com/ConceptSchemeTest#ConceptScheme/MyFirstConceptScheme>
+        a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "My first concept scheme"@en ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "a72a37e5-0873-404e-ae05-017e12950f2b" .
