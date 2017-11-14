@@ -6,6 +6,8 @@
 	<name>Cloud Client</name>
 	<description>Client for the Smartlogic Semaphore Cloud Environment</description>
 
+	<packaging>jar</packaging>
+
 	<parent>
 		<groupId>com.smartlogic</groupId>
 		<artifactId>Semaphore-Java-APIs</artifactId>

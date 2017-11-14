@@ -24,12 +24,19 @@ public abstract class ObjectWithURI {
 	
 	/**
 	 * Make this protected - users of the library shouldn't use this. 
-	 * @return
+	 * @return The resource containing the URI for this object
 	 */
 	protected Resource getResource() {
 		return resource;
 	}
 	
+
+	/**
+	 * Return the label for this object in the selected language
+	 * @param language - the language for which the label is requested
+	 * @return - the label in the requested language.
+	 * @throws ModelException - thrown if there are multiple labels present for this object in this language
+	 */
 	public Label getLabel(Language language) throws ModelException {
 		String sparql = "SELECT ?label WHERE { ?objectURI rdfs:label ?label . FILTER(LANG(?label) = STR(?labelLanguage)) }";
 		ParameterizedSparqlString parameterizedSparql = new ParameterizedSparqlString(model);
@@ -56,8 +63,8 @@ public abstract class ObjectWithURI {
 	/**
 	 * addLabel
 	 * Adds the label - if there is already a label of this language an exception is thrown.
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label to be added to the object
+	 * @throws ModelException - thrown if some model constraint would be broken by this action 
 	 */
 	public void addLabel(Label label) throws ModelException {
 		checkLabelDoesntExistInLanguage(label);
@@ -69,8 +76,8 @@ public abstract class ObjectWithURI {
 	 * setLabel
 	 * After this operation, the object will have this label and no other in this language.
 	 * It does not matter whether there already was a label of this language present.
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label to be added to the object
+	 * @throws ModelException - thrown if some model constraint would be broken by this action 
 	 */
 	public void setLabel(Label label) throws ModelException {
 		deleteLabelForLanguagePostCheck(label);
@@ -81,8 +88,8 @@ public abstract class ObjectWithURI {
 	 * updateLabel
 	 * Delete the current label in this language and replace it with the supplied one
 	 * If there was no label in this language, then throw an exception
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label to be updated for the object
+	 * @throws ModelException - thrown if some model constraint would be broken by this action 
 	 */
 	public void updateLabel(Label label) throws ModelException {
 		checkLabelExistsInLanguage(label);
@@ -94,8 +101,8 @@ public abstract class ObjectWithURI {
 	/**
 	 * Delete the supplied label from this object.
 	 * If the label is not present on the object then an exception will be thrown.
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label to be deleted from the object
+	 * @throws ModelException - thrown if some model constraint would be broken by this action 
 	 */
 	public void deleteLabel(Label label) throws ModelException {
 		checkLabelExists(label);
@@ -106,8 +113,8 @@ public abstract class ObjectWithURI {
 	/**
 	 * Delete the supplied label from this object.
 	 * This doesn't care whether the label originally existed
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label to be removed from the object
+	 * @throws ModelException - thrown if some model constraint would be broken by this action 
 	 */
 	public void removeLabel(Label label) throws ModelException {
 		

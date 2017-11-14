@@ -1,4 +1,4 @@
-package modelmanipulation;
+package com.smartlogic.semaphoremodel;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
@@ -46,7 +46,7 @@ public class TestGuidManipulation {
 			conceptScheme.addGuid(uuid1);
 			fail("This GUID addition should be rejected");
 		} catch (ModelException e) {
-			assertEquals(e.getMessage(), "Concept http://example.com/ConceptSchemeTest#ConceptScheme/MyFirstConceptScheme already has a GUID present");
+			assertEquals(e.getMessage(), "Concept http://example.com/ConceptSchemeTest#ConceptScheme/MyFirstConceptScheme already has an identifier present");
 		}
 		
 		UUID uuid2 = Utils.generateUuid("This is another seed string");

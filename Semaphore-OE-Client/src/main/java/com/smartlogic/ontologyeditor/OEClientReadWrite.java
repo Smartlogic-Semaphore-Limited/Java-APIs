@@ -10,10 +10,10 @@ import javax.ws.rs.core.Response;
 
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
+import org.apache.jena.sparql.util.FmtUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.hp.hpl.jena.sparql.util.FmtUtils;
 import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Identifier;

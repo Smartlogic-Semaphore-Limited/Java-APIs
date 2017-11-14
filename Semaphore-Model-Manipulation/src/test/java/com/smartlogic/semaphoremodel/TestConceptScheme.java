@@ -1,4 +1,4 @@
-package modelmanipulation;
+package com.smartlogic.semaphoremodel;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;

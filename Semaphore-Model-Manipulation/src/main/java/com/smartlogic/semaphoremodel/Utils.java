@@ -77,12 +77,12 @@ public class Utils {
 	
 	/**
 	 * Takes an altLabel URI and returns a map with the Alt Label Text as the key and the Concept Resource object as the value.  
-	 * @param model
+	 * @param model - the underlying model containing the Semaphore model
 	 * @param altTermRelationship - The altTermRelationship property.  If Null, this will default to SKOSXL.altLabel.
 	 * @param language - The label language to use.  All other language labels will be discarded.  A language of null or empty string is considered language neutral.
 	 * @param throwOnDuplicate - If true and there is a duplicate label / key, we will throw an exception.  Otherwise, a warning will be logged.
 	 * @return A Map of AltLabel string literals (one for each language) as the key and the value of is the Concept Resource object.
-	 * @throws ModelException
+	 * @throws ModelException - if throwOnDuplicate is set and a duplicate is encountered
 	 */
 	public static Map<String, Resource> getAltTermMap(Model model, Property altTermRelationship, String language, boolean throwOnDuplicate) throws ModelException {
 		if(altTermRelationship == null){

@@ -1,4 +1,4 @@
-package modelmanipulation;
+package com.smartlogic.semaphoremodel;
 
 import java.io.File;
 import java.io.FileNotFoundException;

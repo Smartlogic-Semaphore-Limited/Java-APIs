@@ -77,8 +77,8 @@ public class Concept extends ConceptObject {
 	/**
 	 * addLabel
 	 * Adds the label - if there is already a label of this language an exception is thrown.
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label in the requested language.
+	 * @throws ModelException - thrown if there is already a label of this language for the object
 	 */
 	public void addLabel(Label label) throws ModelException {
 		checkLabelDoesntExistInLanguage(label);
@@ -90,10 +90,9 @@ public class Concept extends ConceptObject {
 	 * setLabel
 	 * After this operation, the Concept Scheme will have this label and no other in this language.
 	 * It does not matter whether there already was a label of this language present.
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label to be set on this object.
 	 */
-	public void setLabel(Label label) throws ModelException {
+	public void setLabel(Label label) {
 		deleteLabelForLanguagePostCheck(label);
 		addLabelPostCheck(label);
 	}
@@ -102,8 +101,8 @@ public class Concept extends ConceptObject {
 	 * updateLabel
 	 * Delete the current label in this language and replace it with the supplied one
 	 * If there was no label in this language, then throw an exception
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label to be updated on this object.
+	 * @throws ModelException - thrown if there is no label in the supplied language to update
 	 */
 	public void updateLabel(Label label) throws ModelException {
 		checkLabelExistsInLanguage(label);
@@ -115,8 +114,8 @@ public class Concept extends ConceptObject {
 	/**
 	 * Delete the supplied label from this concept scheme.
 	 * If the label is not present on the concept scheme then an exception will be thrown.
-	 * @param label
-	 * @throws ModelException
+	 * @param label - the label to be deleted from this object.
+	 * @throws ModelException - thrown if the label doesn't exist on this object
 	 */
 	public void deleteLabel(Label label) throws ModelException {
 		checkLabelExists(label);

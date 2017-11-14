@@ -16,7 +16,7 @@ public abstract class ConceptObject extends ObjectWithURI {
 
 	/**
 	 * Return the guid of this concept object
-	 * @return
+	 * @return - the guid of the object
 	 */
 	public String getGuid() {
 		return getIdentifier(SEM.guid);
@@ -31,25 +31,32 @@ public abstract class ConceptObject extends ObjectWithURI {
 	/**
 	 * Add this guid to the concept object.
 	 * If a guid is already present then a ModelException is thrown
-	 * @throws ModelException
+	 * @param uuid - the UUID that is to be added to the model
+	 * @throws ModelException - if there is already a guid present
 	 */
 	public void addGuid(UUID uuid) throws ModelException {
 		addIdentifier(SEM.guid, createLiteral(uuid));
 	}
 
 	public void addIdentifier(Property identifierProperty, Literal literal) throws ModelException {
-		if (resource.hasProperty(identifierProperty)) throw new ModelException("Concept %s already has a GUID present", resource.getURI());
+		if (resource.hasProperty(identifierProperty)) throw new ModelException("Concept %s already has an identifier present", resource.getURI());
 		resource.addProperty(identifierProperty, literal);
 	}
 
 	/**
 	 * Set the guid of the concept object to this value.
 	 * We don't care what the previous value was
+	 * @param uuid - the UUID to be set on the model
 	 */
 	public void setGuid(UUID uuid) {
 		setIdentifier(SEM.guid, createLiteral(uuid));
 	}
 
+	/**
+	 * set the identifier to the supplied value
+	 * @param identifierProperty - the identifier property to use
+	 * @param literal - the new value for this identifier
+	 */
 	public void setIdentifier(Property identifierProperty, Literal literal) {
 		resource.removeAll(identifierProperty);
 		resource.addProperty(identifierProperty, literal);
@@ -58,8 +65,8 @@ public abstract class ConceptObject extends ObjectWithURI {
 	/**
 	 * Update the guid to the supplied value.
 	 * If there was not a value already present an exception is thrown
-	 * @param uuid
-	 * @throws ModelException
+	 * @param uuid - the new value for the UUID
+	 * @throws ModelException - thrown if there is not already a UUID present
 	 */
 	public void updateGuid(UUID uuid) throws ModelException {
 		updateIdentifier(SEM.guid, createLiteral(uuid));
@@ -73,8 +80,7 @@ public abstract class ConceptObject extends ObjectWithURI {
 	/**
 	 * Remove the supplied guid fom the concept object.
 	 * We don't care what the state of the guid was before this operation 
-	 * @param uuid
-	 * @throws ModelException 
+	 * @param uuid - the UUID to be removed
 	 */
 	public void removeGuid(UUID uuid) {
 		clearIdentifier(SEM.guid);
@@ -83,8 +89,8 @@ public abstract class ConceptObject extends ObjectWithURI {
 	/**
 	 * Remote the supplied guid from the concept object.
 	 * If the guid was not previously present, then an exception is thrown
-	 * @param uuid
-	 * @throws ModelException 
+	 * @param uuid - the UUID to be removed
+	 * @throws ModelException if the UUID isn't present to be deleted
 	 */
 	public void deleteGuid(UUID uuid) throws ModelException {
 		deleteIdentifier(SEM.guid, createLiteral(uuid));
