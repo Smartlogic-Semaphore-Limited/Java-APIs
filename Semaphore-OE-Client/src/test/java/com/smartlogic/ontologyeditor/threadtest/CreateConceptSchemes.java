@@ -21,8 +21,8 @@ public class CreateConceptSchemes {
 		labelList.add(new Label("en", "Fluffy Dice"));
 
 		labelList.add(new Label("es", "Dados esponjosos"));
-		labelList.add(new Label("de", "Flauschige Würfel"));
-		labelList.add(new Label("fr", "Dés duveteux"));
+		labelList.add(new Label("de", "Flauschige WÃ¼rfel"));
+		labelList.add(new Label("fr", "DÃ©s duveteux"));
 		ConceptScheme conceptScheme = new ConceptScheme(oeClient, conceptSchemeUri, labelList);
 
 		oeClient.createConceptScheme(conceptScheme);
