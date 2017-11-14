@@ -24,9 +24,9 @@ import com.smartlogic.ontologyeditor.beans.Task;
 public class OEClientReadWrite extends OEClientReadOnly {
 
 	/**
-	 * createTask - create a task within the current model
-	 * @param task 
-	 *          - the task to be created
+	 * addListener - create a task within the current model
+	 * @param listenerUri - the identifier (within the model) for the listener being added
+	 * @param listenerUrl - where the listener is to be found 
 	 */
 	public void addListener(String listenerUri, String listenerUrl) {
 		logger.info("addListener entry: {} {}", listenerUri, listenerUrl);
@@ -74,10 +74,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 		
 	/**
-	 * createTask - create a task within the current model
-	 * @param task 
-	 *          - the task to be created
-	 * @throws OEClientException 
+	 * createModel - create a task within the current model
+	 * @param model - the model to be created
+	 * @throws OEClientException  - an error has occurred contacting the server
 	 */
 	public void createModel(Model model) throws OEClientException {
 		logger.info("createModel entry: {}", model.getLabel());
@@ -132,8 +131,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	/**
 	 * Delete model
-	 * @param model
-	 * @throws OEClientException 
+	 * @param model - the model to be deleted
+	 * @throws OEClientException  - an error has occurred contacting the server
 	 */
 	public void deleteModel(Model model) throws OEClientException {
 		logger.info("deleteModel entry: {}", model.getLabel());
@@ -346,7 +345,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *            - the new language for the label
 	 * @param newLabelValue
 	 *            - the new value for the label
-	 * @throws OEClientException
+	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	@SuppressWarnings({ "unchecked" })
 	public void updateLabel(Label label, String newLabelLanguage, String newLabelValue) throws OEClientException {

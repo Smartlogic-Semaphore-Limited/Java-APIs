@@ -215,7 +215,7 @@ public class OEClientReadOnly {
 	/**
 	 * getAllTasks
 	 * @return all the tasks present for this model
-	 * @throws OEClientException 
+	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public Collection<Task> getAllTasks() throws OEClientException {
 		logger.info("getAllTasks entry");
@@ -337,8 +337,8 @@ public class OEClientReadOnly {
 
 	/**
 	 * Return all hierarchical relationships classes
-	 * @return
-	 * @throws OEClientException
+	 * @return - a collection of all hierarchical relationship types
+	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public Collection<RelationshipType> getHierarchicalRelationshipTypes() throws OEClientException {
 		return getRelationshipTypes("skos:broader");
@@ -346,8 +346,8 @@ public class OEClientReadOnly {
 
 	/**
 	 * Return all associative relationships classes
-	 * @return
-	 * @throws OEClientException
+	 * @return - a collection of all associative relationship types
+	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public Collection<RelationshipType> getAssociativeRelationshipTypes() throws OEClientException {
 		return getRelationshipTypes("skos:related");
@@ -355,8 +355,8 @@ public class OEClientReadOnly {
 
 	/**
 	 * Return all concept classes
-	 * @return
-	 * @throws OEClientException
+	 * @return - a collection containing all concept classes
+	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public Collection<ConceptClass> getConceptClasses(int limit) throws OEClientException {
 		logger.info("getConceptClasses entry");
@@ -390,9 +390,9 @@ public class OEClientReadOnly {
 
 	/**
 	 * Return the concept with the supplied URI with pref label, uri and type fields populated
-	 * @param conceptUri
-	 * @return
-	 * @throws OEClientException
+	 * @param conceptUri - the concept to be returned
+	 * @return - the requested concept 
+	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public Concept getConcept(String conceptUri) throws OEClientException {
 		logger.info("getConcept entry: {}", conceptUri);
@@ -420,9 +420,9 @@ public class OEClientReadOnly {
 
 	/**
 	 * Return the concept with the supplied GUID
-	 * @param guid
-	 * @return
-	 * @throws OEClientException
+	 * @param guid - the GUID of the concept to be retrieved
+	 * @return - the requested concept
+	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public Concept getConceptByGuid(String guid) throws OEClientException {
 		return getConceptByIdentifier(new Identifier("sem:guid", guid));
@@ -430,10 +430,9 @@ public class OEClientReadOnly {
 
 	/**
 	 * Return the concept with the supplied identifier
-	 * @param identifierUri
-	 * @param identifier
-	 * @return
-	 * @throws OEClientException
+	 * @param identifier - the unique identifier for the concept (not the URI)
+	 * @return - the requested concept
+	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public Concept getConceptByIdentifier(Identifier identifier) throws OEClientException {
 		logger.info("getConceptByIdentifier entry: {}", identifier);
@@ -578,8 +577,8 @@ public class OEClientReadOnly {
 
 	/**
 	 * Return the string representation of a URI when it is to be used when generating the URL for a request.
-	 * @param uriToEscape
-	 * @return
+	 * @param uriToEscape - the URI that is to be escaped
+	 * @return - the URI supplied encoded so that it can be used as part of a URL
 	 */
 	protected String getEscapedUri(String uriToEscape) {
 		return UriComponent.encode(uriToEscape, UriComponent.Type.PATH_SEGMENT);
@@ -587,8 +586,8 @@ public class OEClientReadOnly {
 
 	/**
 	 * See https://tools.ietf.org/html/rfc6901 section 3 as to why we have to do this
-	 * @param wrappedUri
-	 * @return
+	 * @param wrappedUri - the URI that is to be tildered
+	 * @return - the wrapped Uri encoded for sysetms that don't allow slashes
 	 */
 	protected String getTildered(String wrappedUri) {
 		return wrappedUri.replaceAll("~", "~0").replaceAll("/", "~1");
