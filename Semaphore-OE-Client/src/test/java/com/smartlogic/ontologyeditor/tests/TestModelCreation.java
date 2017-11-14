@@ -7,10 +7,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
-
 import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Label;
@@ -19,16 +15,13 @@ import com.smartlogic.ontologyeditor.beans.Model;
 public class TestModelCreation extends AbstractTest {
 	private OEClientReadWrite oeClient;
 
-	@BeforeTest
 	public void beforeTest() throws IOException {
 		oeClient = getOEClient(false);
 	}
 
-	@AfterTest
 	public void afterTest() {
 	}
 
-	@Test
 	public void cycleModel() throws OEClientException {
 		String modelName = "API Test: " + (new Date()).toString();
 		Model model = new Model(null, new Label("", modelName), "A model created for the purposes of testing the Java API");

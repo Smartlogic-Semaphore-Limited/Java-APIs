@@ -14,7 +14,7 @@
 	<groupId>com.smartlogic</groupId>
 	<artifactId>Semaphore-Java-APIs</artifactId>
 	<description>Java connectors to the Smartlogic Semaphore Services</description>
-	
+
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
@@ -22,8 +22,8 @@
 			<distribution>repo</distribution>
 			<comments>A business-friendly OSS license</comments>
 		</license>
-	</licenses>	
-	
+	</licenses>
+
 	<packaging>pom</packaging>
 
 	<name>Semaphore Java APIs</name>
@@ -36,25 +36,27 @@
 	</scm>
 
 	<developers>
-    <developer>
-      <id>keith.atkins@smartlogic.com</id>
-      <name>Keith Atkins</name>
-      <email>keith.atkins@smartlogic.com</email>
-      <url>http://www.smartlogic.com</url>
-      <organization>Smartlogic Semaphore PLC</organization>
-      <organizationUrl>http://www.smartlogic.com</organizationUrl>
-      <roles>
-        <role>architect</role>
-        <role>developer</role>
-      </roles>
+		<developer>
+			<id>keith.atkins@smartlogic.com</id>
+			<name>Keith Atkins</name>
+			<email>keith.atkins@smartlogic.com</email>
+			<url>http://www.smartlogic.com</url>
+			<organization>Smartlogic Semaphore PLC</organization>
+			<organizationUrl>http://www.smartlogic.com</organizationUrl>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
 			<timezone>United Kingdom/London</timezone>
 		</developer>
 	</developers>
-  
+
 	<modules>
 		<module>Semaphore-Cloud</module>
 		<module>Semaphore-CS-Client</module>
 		<module>Semaphore-Model-Manipulation</module>
+		<module>Semaphore-OE-Client</module>
+		<module>Semaphore-OE-Batch-Tools</module>
 		<module>Semaphore-SES-Client</module>
 	</modules>
 
@@ -91,11 +93,6 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.25</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-core</artifactId>
-			<version>3.3.0</version>
 		</dependency>
 	</dependencies>
 
@@ -147,7 +144,7 @@
 				</executions>
 			</plugin>
 		</plugins>
- 		<extensions>
+		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-webdav</artifactId>
@@ -192,6 +189,12 @@
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
 				<version>1.2.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>apache-jena-libs</artifactId>
+				<version>3.3.0</version>
+				<type>pom</type>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

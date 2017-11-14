@@ -1,0 +1,445 @@
+<urn:x-evn-master:Playpen2>
+        a       <http://topbraid.org/teamwork#Vocabulary> , <http://www.w3.org/2002/07/owl#Ontology> ;
+        <http://spinrdf.org/spin#imports>
+                <http://www.smartlogic.com/2015/12/unique-concept-label-constraint> , <http://www.smartlogic.com/2015/12/unique-concept-label-in-class-constraint> , <http://www.smartlogic.com/2015/02/semaphore-spin-constraints> ;
+        <http://www.w3.org/2002/07/owl#imports>
+                <http://www.smartlogic.com/2014/08/semaphore-core> .
+
+<http://example.com/Playpen2#wobble>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "50ebad0a-e817-406f-85bd-7545f08f8132" ;
+        <http://www.w3.org/2008/05/skos-xl#altLabel>
+                <http://example.com/Playpen2#wobble/WobbleBaby_en> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#wobble/wobble_en> .
+
+<http://www.w3.org/2004/02/skos/core#Concept>
+        <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+                [ a       <http://www.w3.org/2002/07/owl#Restriction> ;
+                  <http://www.w3.org/2002/07/owl#maxCardinality>
+                          1 ;
+                  <http://www.w3.org/2002/07/owl#onProperty>
+                          <http://example.com/Playpen2#IsThisACoolThing->
+                ] .
+
+<http://example.com/Playpen2#wobble/wobble_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "wobble"@en .
+
+<file:///C:/Program%20Files/Apache%20Software%20Foundation/Tomcat%208.5/>
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a> .
+
+<http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://example.com/Playpen2#TestNameForStuart>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a/Birmingham_en> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "66b55dfd-c98f-45e2-887a-f2818fe8e04a" ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a/Grapefruit_en> .
+
+<http://example.com/Playpen2#PinkGrapefruit_56441ea5-f0ac-44e9-a015-4627f05ae5af>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "56441ea5-f0ac-44e9-a015-4627f05ae5af" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a> ;
+        <http://www.w3.org/2008/05/skos-xl#altLabel>
+                <http://example.com/Playpen2#PinkGrapefruit_56441ea5-f0ac-44e9-a015-4627f05ae5af/grapefruit_en> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#PinkGrapefruit_56441ea5-f0ac-44e9-a015-4627f05ae5af/PinkGrapefruit_en> .
+
+<http://example.com/Playpen2#PinkGrapefruit_56441ea5-f0ac-44e9-a015-4627f05ae5af/PinkGrapefruit_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Pink Grapefruit"@en .
+
+<http://example.com/Playpen2#MustardColouredGrapefruit_7dc149ec-682c-4b26-b14b-d6a48b95b7a9/MustardColouredGrapefruit_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Mustard {Coloured} Grapefruit"@en .
+
+<http://example.com/Playpen2#StripeyGrapefruit_8ef711e3-0c2d-4fac-8937-97e59feec19e/StripeyGrapefruit_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Stripey Grapefruit"@en .
+
+<http://example.com/Playpen2#PolkadotGrapefruit_b187af1f-fe19-4c14-a7b8-a48a75ff3bc3>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://example.com/Playpen2#customBroader>
+                <http://example.com/Playpen2#PinkGrapefruit_56441ea5-f0ac-44e9-a015-4627f05ae5af> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "b187af1f-fe19-4c14-a7b8-a48a75ff3bc3" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a> ;
+        <http://www.w3.org/2004/02/skos/core#scopeNote>
+                "hello"@en ;
+        <http://www.w3.org/2008/05/skos-xl#altLabel>
+                <http://example.com/Playpen2#PolkadotGrapefruit_b187af1f-fe19-4c14-a7b8-a48a75ff3bc3/grapefruit_en> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#PolkadotGrapefruit_b187af1f-fe19-4c14-a7b8-a48a75ff3bc3/PolkadotGrapefruit_en> .
+
+<http://example.com/Playpen2#PolkadotGrapefruit_b187af1f-fe19-4c14-a7b8-a48a75ff3bc3/PolkadotGrapefruit_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Polkadot Grapefruit"@en .
+
+<http://example.com/Playpen2#OfTheHouse_113c098f-0d64-4ab4-a0bd-bf091c71bad7>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "113c098f-0d64-4ab4-a0bd-bf091c71bad7" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#newConcept> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#OfTheHouse_113c098f-0d64-4ab4-a0bd-bf091c71bad7/ofTheHouse_en> .
+
+<http://example.com/Playpen2#newConcept>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "3e1227ab-19a9-4dc8-ab1b-83d8c021ed16" ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#newConcept/newConcept_en> .
+
+<http://example.com/Playpen2#OfTheHouse_113c098f-0d64-4ab4-a0bd-bf091c71bad7/ofTheHouse_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "of the house"@en .
+
+<http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a/Grapefruit_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Grapefruit"@en .
+
+<http://example.com/Playpen2#YellowGrapefruit_62764358-5a97-439b-80e5-f7d90167ce63>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "62764358-5a97-439b-80e5-f7d90167ce63" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a> ;
+        <http://www.w3.org/2004/02/skos/core#note>
+                "Hello everybody"@en ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#YellowGrapefruit_62764358-5a97-439b-80e5-f7d90167ce63/YellowGrapefruit_en> .
+
+<http://example.com/Playpen2#YellowGrapefruit_62764358-5a97-439b-80e5-f7d90167ce63/YellowGrapefruit_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Yellow Grapefruit"@en .
+
+<http://example.com/Playpen2#2a5e5c1c-5d63-40ea-a1dd-0611cdf4c036/wibble_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "wibble"@en .
+
+<http://example.com/Playpen2#hairy-64433dde-d13e-44fb-be85-f3f2369ba526/syntheticOil_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "synthetic oil"@en .
+
+<http://example.com/Playpen2#newConcept/newConcept_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "new concept"@en .
+
+<http://example.com/Playpen2#misspelling>
+        a       <http://www.w3.org/2002/07/owl#ObjectProperty> ;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "misspelling"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2000/01/rdf-schema#subPropertyOf>
+                <http://www.w3.org/2008/05/skos-xl#altLabel> .
+
+<http://example.com/Playpen2#Text/html_f9c05f92-4e07-408f-96fc-b2314ff0cae0/text-html_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "text/html"@en .
+
+<http://example.com/Playpen2#hairy-d049aa23-0784-446d-ac45-018806833f9e>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://example.com/Playpen2#FavouriteSandwichFilling>
+                "Cheese and Pickle" ;
+        <http://example.com/Playpen2#misspelling>
+                <http://example.com/Playpen2#hairy-d049aa23-0784-446d-ac45-018806833f9e/vegetableSpaghetti_en> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "d049aa23-0784-446d-ac45-018806833f9e" ;
+        <http://www.w3.org/2008/05/skos-xl#altLabel>
+                <http://example.com/Playpen2#hairy-d049aa23-0784-446d-ac45-018806833f9e/kumquat_en> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#hairy-d049aa23-0784-446d-ac45-018806833f9e/kimquat_en> .
+
+<http://example.com/Playpen2#FavouriteSandwichFilling>
+        a       <http://www.w3.org/2002/07/owl#DatatypeProperty> ;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Favourite Sandwich Filling"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                <http://www.w3.org/2001/XMLSchema#string> .
+
+<http://example.com/Playpen2#hairy-d049aa23-0784-446d-ac45-018806833f9e/vegetableSpaghetti_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#rulebaseBehaviour>
+                <http://www.smartlogic.com/2014/08/semaphore-core#RulebaseBehaviourExactPhrase> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#rulebaseInfluence>
+                <http://www.smartlogic.com/2014/08/semaphore-core#RulebaseInfluenceLow> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "vegetable spaghetti"@en .
+
+<http://example.com/Playpen2#hairy-d049aa23-0784-446d-ac45-018806833f9e/kimquat_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#caseSensitivity>
+                <http://www.smartlogic.com/2014/08/semaphore-core#CaseSensitive> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#stemming>
+                <http://www.smartlogic.com/2014/08/semaphore-core#StemmingOn> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "kimquat"@en .
+
+<http://example.com/Playpen2#StripeyGrapefruit_8ef711e3-0c2d-4fac-8937-97e59feec19e>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "8ef711e3-0c2d-4fac-8937-97e59feec19e" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#StripeyGrapefruit_8ef711e3-0c2d-4fac-8937-97e59feec19e/StripeyGrapefruit_en> .
+
+<http://example.com/Playpen2#Conflab_7b058498-bf53-4981-8a99-5364ba95cafd/Conflab_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Conflab"@en .
+
+<http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4/HungryCaterpillar-CheeseWotsits-OnionRings_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Hungry Caterpillar"@en .
+
+<http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://example.com/Playpen2#HowManyDoYouGot->
+                42 ;
+        <http://example.com/Playpen2#IsThisACoolThing->
+                true ;
+        <http://example.com/Playpen2#WhenDidThisHappen->
+                "2017-09-13"^^<http://www.w3.org/2001/XMLSchema#date> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "81fe695b-4384-4c9d-88de-5a25f4b45ec4" ;
+        <http://www.w3.org/2008/05/skos-xl#altLabel>
+                <http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4/HungryCaterpillar-CheeseWotsits-OnionRings_en> , <http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4/CheeseWotsits_en> , <http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4/OnionRings_en> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4/Calipers_en> .
+
+<http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4/Calipers_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Calipers"@en .
+
+<http://example.com/Playpen2#MustardColouredGrapefruit_7dc149ec-682c-4b26-b14b-d6a48b95b7a9>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "7dc149ec-682c-4b26-b14b-d6a48b95b7a9" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#YellowGrapefruit_62764358-5a97-439b-80e5-f7d90167ce63> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#MustardColouredGrapefruit_7dc149ec-682c-4b26-b14b-d6a48b95b7a9/MustardColouredGrapefruit_en> .
+
+<http://example.com/Playpen2#TestNameForStuart>
+        a       <http://www.w3.org/2002/07/owl#ObjectProperty> ;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Test name for Stuart"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2000/01/rdf-schema#subPropertyOf>
+                <http://www.w3.org/2008/05/skos-xl#altLabel> .
+
+<http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a/Birmingham_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Birmingham"@en .
+
+<http://www.smartlogic.com/2015/11/publish-1497263609180Administrator>
+        <http://www.smartlogic.com/2015/11/publish-started>
+                "Mon Jun 12 11:33:30 BST 2017"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+        <http://www.smartlogic.com/2015/11/publish-status>
+                "Success" .
+
+<http://example.com/Playpen2#ConceptScheme/ConceptScheme>
+        a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Concept Scheme"@en ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "55c700c1-8ad2-4669-bb30-8fe2411e6166" ;
+        <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                <http://example.com/Playpen2#wobble> , <http://example.com/Playpen2#newConcept> , <http://example.com/Playpen2#hairy-d049aa23-0784-446d-ac45-018806833f9e> , <http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4> , <http://example.com/Playpen2#hairy-64433dde-d13e-44fb-be85-f3f2369ba526> , <http://example.com/Playpen2#2a5e5c1c-5d63-40ea-a1dd-0611cdf4c036> .
+
+<http://example.com/Playpen2#hairy-64433dde-d13e-44fb-be85-f3f2369ba526>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "64433dde-d13e-44fb-be85-f3f2369ba526" ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#hairy-64433dde-d13e-44fb-be85-f3f2369ba526/syntheticOil_en> .
+
+<http://example.com/Playpen2#2a5e5c1c-5d63-40ea-a1dd-0611cdf4c036>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "2a5e5c1c-5d63-40ea-a1dd-0611cdf4c036" ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#2a5e5c1c-5d63-40ea-a1dd-0611cdf4c036/wibble_en> .
+
+<http://www.w3.org/2004/02/skos/core#description>
+        a       <http://www.smartlogic.com/2014/08/semaphore-core#DefaultProperty> .
+
+<http://example.com/Playpen2#Conflab_7b058498-bf53-4981-8a99-5364ba95cafd>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "7b058498-bf53-4981-8a99-5364ba95cafd" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#newConcept> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#Conflab_7b058498-bf53-4981-8a99-5364ba95cafd/Conflab_en> .
+
+<http://example.com/Playpen2#Text/html_f9c05f92-4e07-408f-96fc-b2314ff0cae0>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "f9c05f92-4e07-408f-96fc-b2314ff0cae0" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#Text/html_f9c05f92-4e07-408f-96fc-b2314ff0cae0/text-html_en> .
+
+<http://example.com/APITest#myConceptScheme>
+        a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "My concept scheme"@en ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "a19026ce-5776-4a24-ad20-83cd5646a53d" .
+
+<http://purl.org/dc/terms/description>
+        a       <http://www.smartlogic.com/2014/08/semaphore-core#DefaultProperty> .
+
+<http://example.com/Playpen2#ConceptScheme/GibletCrushingTechniques>
+        a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Giblet crushing techniques"@en ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "5a448a48-5c70-48f6-b020-c1546f781062" ;
+        <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                <http://example.com/Playpen2#Grapefruit_66b55dfd-c98f-45e2-887a-f2818fe8e04a> .
+
+<http://example.com/Playpen2#hairy-d049aa23-0784-446d-ac45-018806833f9e/kumquat_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "kumquat"@en .
+
+<http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4/CheeseWotsits_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Cheese Wotsits"@en .
+
+<http://example.com/Playpen2#Calipers_81fe695b-4384-4c9d-88de-5a25f4b45ec4/OnionRings_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Onion Rings"@en .
+
+<http://example.com/Playpen2#wobble/WobbleBaby_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "Wobble baby"@en .
+
+<http://example.com/Playpen2#PinkGrapefruit_56441ea5-f0ac-44e9-a015-4627f05ae5af/grapefruit_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "grapefruit"@en .
+
+<http://example.com/Playpen2#PolkadotGrapefruit_b187af1f-fe19-4c14-a7b8-a48a75ff3bc3/grapefruit_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "grapefruit"@en .
+
+<http://example.com/Playpen2#customBroader>
+        a       <http://www.w3.org/2002/07/owl#ObjectProperty> ;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "customBroader"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#subPropertyOf>
+                <http://www.w3.org/2004/02/skos/core#broader> ;
+        <http://www.w3.org/2002/07/owl#inverseOf>
+                <http://example.com/Playpen2#customNarrower> .
+
+<http://example.com/Playpen2#customNarrower>
+        a       <http://www.w3.org/2002/07/owl#ObjectProperty> ;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "customNarrower"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#subPropertyOf>
+                <http://www.w3.org/2004/02/skos/core#narrower> ;
+        <http://www.w3.org/2002/07/owl#inverseOf>
+                <http://example.com/Playpen2#customBroader> .
+
+<http://example.com/Playpen2#test/test_en>
+        a       <http://www.w3.org/2008/05/skos-xl#Label> ;
+        <http://www.w3.org/2008/05/skos-xl#literalForm>
+                "test"@en .
+
+<http://example.com/Playpen2#test>
+        a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.smartlogic.com/2014/08/semaphore-core#guid>
+                "91f7a72f-9ec5-42ea-bfbb-5618c71cbab1" ;
+        <http://www.w3.org/2004/02/skos/core#broader>
+                <http://example.com/Playpen2#PolkadotGrapefruit_b187af1f-fe19-4c14-a7b8-a48a75ff3bc3> ;
+        <http://www.w3.org/2008/05/skos-xl#prefLabel>
+                <http://example.com/Playpen2#test/test_en> .
+
+<http://example.com/Playpen2#IsThisACoolThing->
+        a       <http://www.w3.org/2002/07/owl#DatatypeProperty> ;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Is this a cool thing?"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                <http://www.w3.org/2001/XMLSchema#boolean> .
+
+<http://example.com/Playpen2#WhenDidThisHappen->
+        a       <http://www.w3.org/2002/07/owl#DatatypeProperty> ;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "When did this happen?"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                <http://www.w3.org/2001/XMLSchema#date> .
+
+<http://example.com/Playpen2#HowManyDoYouGot->
+        a       <http://www.w3.org/2002/07/owl#DatatypeProperty> ;
+        <http://www.w3.org/2000/01/rdf-schema#domain>
+                <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "How many do you got?"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#range>
+                <http://www.w3.org/2001/XMLSchema#integer> .
+
+<http://example.com/Playpen2#Fruit>
+        a       <http://www.w3.org/2002/07/owl#Class> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Fruit"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+                <http://www.w3.org/2004/02/skos/core#Concept> .
+
+<http://example.com/Playpen2#Citrus>
+        a       <http://www.w3.org/2002/07/owl#Class> ;
+        <http://www.w3.org/2000/01/rdf-schema#label>
+                "Citrus"@en ;
+        <http://www.w3.org/2000/01/rdf-schema#subClassOf>
+                <http://example.com/Playpen2#Fruit> .
