@@ -863,52 +863,52 @@ public class ClassificationClient {
 			SSLContextBuilder builder = new SSLContextBuilder();
 		    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
-			CloseableHttpClient httpClient =
+			try ( CloseableHttpClient httpClient =
 				      HttpClients.custom()
 				      			.setDefaultRequestConfig(requestConfig)
 				      			.setSSLSocketFactory(sslsf)
-				                .build();
+				                .build()) {
 
-			logger.debug("Sending request");
-			HttpResponse response = httpClient.execute(baseRequest);
-			if (response == null) throw new ClassificationException("Null response from http client: " + url.toExternalForm());
-			if (response.getStatusLine() == null) throw new ClassificationException("Null status line from http client: "+  url.toExternalForm());
+				logger.debug("Sending request");
+				HttpResponse response = httpClient.execute(baseRequest);
+				if (response == null) throw new ClassificationException("Null response from http client: " + url.toExternalForm());
+				if (response.getStatusLine() == null) throw new ClassificationException("Null status line from http client: "+  url.toExternalForm());
 
 
-			int statusCode = response.getStatusLine().getStatusCode();
+				int statusCode = response.getStatusLine().getStatusCode();
 
-			HttpEntity entity = response.getEntity();
+				HttpEntity entity = response.getEntity();
 
-			logger.debug("Status: " + statusCode);
-			if (entity != null) {
-				returnedData = IOUtils.toByteArray(entity.getContent());
-				if (logger.isTraceEnabled()) {
-					Header[] headers = response.getHeaders("Server");
-					for (Header header: headers) {
-						logger.trace("{}:{}", header.getName(), header.getValue());
-					}
-					try {
-						logger.trace(new String(returnedData, "UTF-8"));
-					} catch (UnsupportedEncodingException e) {
-						logger.error("UnsupportedEncodingException whilst logging CS response");
+				logger.debug("Status: " + statusCode);
+				if (entity != null) {
+					returnedData = IOUtils.toByteArray(entity.getContent());
+					if (logger.isTraceEnabled()) {
+						Header[] headers = response.getHeaders("Server");
+						for (Header header: headers) {
+							logger.trace("{}:{}", header.getName(), header.getValue());
+						}
+						try {
+							logger.trace(new String(returnedData, "UTF-8"));
+						} catch (UnsupportedEncodingException e) {
+							logger.error("UnsupportedEncodingException whilst logging CS response");
+						}
 					}
 				}
-			}
 
-			if (statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-				logger.warn("Internal classification server error: " + entity.toString());
-				return null;
-			} else if (statusCode != HttpStatus.SC_OK) {
-				throw new ClassificationException("HttpStatus: " + statusCode + " received from classification server (" + url.toExternalForm() + ")" + entity.toString());
-			} else {
-				Header[] headers = response.getHeaders("Server");
-				if (headers.length > 0)
-					version = headers[0].getValue();
+				if (statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+					logger.warn("Internal classification server error: " + entity.toString());
+					return null;
+				} else if (statusCode != HttpStatus.SC_OK) {
+					throw new ClassificationException("HttpStatus: " + statusCode + " received from classification server (" + url.toExternalForm() + ")" + entity.toString());
+				} else {
+					Header[] headers = response.getHeaders("Server");
+					if (headers.length > 0)
+						version = headers[0].getValue();
+				}
+				if (entity == null) {
+					throw new ClassificationException("Null response from Classification Server");
+				}
 			}
-			if (entity == null) {
-				throw new ClassificationException("Null response from Classification Server");
-			}
-
 
 		} catch (MalformedURLException e) {
 			throw new ClassificationException("MalformedURLException: " + e.getMessage());
