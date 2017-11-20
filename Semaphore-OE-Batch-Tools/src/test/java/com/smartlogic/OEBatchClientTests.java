@@ -34,7 +34,7 @@ public class OEBatchClientTests {
     model = ModelFactory.createDefaultModel();
     model.read("Playpen2.ttl", "TTL");
     OEModelEndpoint endpoint = new OEModelEndpoint();
-    endpoint.modelIRI = IRIResolver.parseIRI("urn:test:model-x");
+    endpoint.modelIri = IRIResolver.parseIRI("urn:test:model-x").toString();
     client = new OEBatchClient(endpoint);
 
   }

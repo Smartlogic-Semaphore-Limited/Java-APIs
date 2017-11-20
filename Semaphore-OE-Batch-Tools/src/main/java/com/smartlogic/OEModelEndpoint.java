@@ -1,5 +1,8 @@
 package com.smartlogic;
 
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.cloud.Token;
+import com.smartlogic.cloud.TokenFetcher;
 import org.apache.http.Header;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -27,10 +30,11 @@ public class OEModelEndpoint {
 
   static Logger logger = LoggerFactory.getLogger(OEModelEndpoint.class);
 
-  public String baseURL;
-  public String accessToken;
-  public String cloudAPIKey;
-  public IRI modelIRI;
+  protected String baseUrl;
+  protected String accessToken;
+  protected String cloudTokenFetchUrl;
+  protected String cloudAPIKey;
+  protected String modelIri;
 
   /**
    * Build the api URI for Ontology Editor. All RESTful commands extend this URI.
@@ -38,14 +42,17 @@ public class OEModelEndpoint {
    * @return
    */
   public StringBuffer buildApiUrl() {
-    return new StringBuffer()
-        .append(baseURL)
-        .append("api/t/")
-        .append(accessToken);
+    StringBuffer buf = new StringBuffer()
+        .append(baseUrl)
+        .append("api");
+    if (!Strings.isNullOrEmpty(accessToken)) {
+      buf.append("/t/").append(accessToken);
+    }
+    return buf;
   }
 
   public StringBuffer buildSPARQLUrl() {
-    return buildApiUrl().append("/").append(modelIRI.toString()).append("/sparql");
+    return buildApiUrl().append("/").append(modelIri).append("/sparql");
   }
 
   /**
@@ -63,11 +70,7 @@ public class OEModelEndpoint {
     ResultSet results = null;
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
 
-    String cloudToken = getCloudToken();
-    if (!Strings.isNullOrEmpty(cloudToken)) {
-      Header header = new BasicHeader("Authorization", cloudToken);
-      clientBuilder.setDefaultHeaders(ImmutableSet.of(header));
-    }
+    setCloudAuthHeaderIfConfigured(clientBuilder);
 
     try (CloseableHttpClient client = clientBuilder.build();
          QueryExecution qe = QueryExecutionFactory.sparqlService(buildSPARQLUrl().toString(), query, client)) {
@@ -88,11 +91,9 @@ public class OEModelEndpoint {
       logger.debug("run SPARQL update: {}", sparql);
 
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    String cloudToken = getCloudToken();
-    if (!Strings.isNullOrEmpty(cloudToken)) {
-      Header header = new BasicHeader("Authorization", cloudToken);
-      clientBuilder.setDefaultHeaders(ImmutableSet.of(header));
-    }
+
+    setCloudAuthHeaderIfConfigured(clientBuilder);
+
     try (CloseableHttpClient client = clientBuilder.build()) {
       UpdateRequest update = UpdateFactory.create(sparql, Syntax.syntaxARQ);
       UpdateProcessor processor = UpdateExecutionFactory.createRemoteForm(update, buildSPARQLUrl().toString(), client);
@@ -107,17 +108,121 @@ public class OEModelEndpoint {
    * Given a Cloud API key, fetch a token (TODO)
    * @return
    */
-  public String getCloudToken() {
-    return null;
+  public Token getCloudToken() {
+    Token token = null;
+    try {
+      TokenFetcher tokenFetcher = new TokenFetcher(cloudTokenFetchUrl, cloudAPIKey);
+      token = tokenFetcher.getAccessToken();
+    } catch (CloudException e) {
+      throw new RuntimeException("Failed to fetch cloud token.", e);
+    }
+    return token;
   }
 
   @Override
   public String toString() {
     StringBuilder bldr = new StringBuilder();
-    bldr.append("Base URL    : ").append(baseURL).append("\n");
-    bldr.append("Model IRI   : ").append(modelIRI.toString()).append("\n");
-    bldr.append("Access Token: ").append(accessToken).append("\n");
-    bldr.append("Cloud Key   : ").append(cloudAPIKey).append("\n");
+    bldr.append("Base URL             : ").append(baseUrl).append("\n");
+    bldr.append("Model IRI            : ").append(modelIri).append("\n");
+    bldr.append("Access Token         : ").append(accessToken).append("\n");
+    bldr.append("Cloud Key            : ").append(cloudAPIKey).append("\n");
+    bldr.append("Cloud Token Fetch Url: ").append(cloudTokenFetchUrl).append("\n");
     return bldr.toString();
+  }
+
+  /**
+   * Gets the OE base URL (e.g. http://server-name:8080/swoe/)
+   * @return
+   */
+  public String getBaseUrl() {
+    return baseUrl;
+  }
+
+  /**
+   * Sets the OE base URL (e.g. http://server-name:8080/swoe/)
+   * @param baseUrl
+   */
+  public void setBaseUrl(String baseUrl) {
+    if (!Strings.isNullOrEmpty(baseUrl) && !baseUrl.endsWith("/")) {
+      baseUrl += "/";
+    }
+
+    this.baseUrl = baseUrl;
+  }
+
+  /**
+   * Gets the OE access token
+   * @return
+   */
+  public String getAccessToken() {
+    return accessToken;
+  }
+
+  /**
+   * Sets the OE access token
+   * @param accessToken
+   */
+  public void setAccessToken(String accessToken) {
+    this.accessToken = accessToken;
+  }
+
+  /**
+   * Gets the cloud API key for cloud.smartlogic.com.
+   * @return
+   */
+  public String getCloudAPIKey() {
+    return cloudAPIKey;
+  }
+
+  /**
+   * Sets the cloud API key for cloud.smartlogic.com
+   * @param cloudAPIKey
+   */
+  public void setCloudAPIKey(String cloudAPIKey) {
+    this.cloudAPIKey = cloudAPIKey;
+  }
+
+  /**
+   * Gets the cloud token fetch URL
+   * @return
+   */
+  public String getCloudTokenFetchUrl() {
+    return cloudTokenFetchUrl;
+  }
+
+  /**
+   * Sets the cloud token fetch URL
+   * @param cloudTokenFetchUrl
+   */
+  public void setCloudTokenFetchUrl(String cloudTokenFetchUrl) {
+    this.cloudTokenFetchUrl = cloudTokenFetchUrl;
+  }
+
+  /**
+   * Gets the model IRI (e.g. model:myExample)
+   * @return
+   */
+  public String getModelIri() {
+    return modelIri;
+  }
+
+  /**
+   * Sets the model IRI (e.g. model:myExample)
+   * @param modelIri
+   */
+  public void setModelIRI(String modelIri) {
+    this.modelIri = modelIri;
+  }
+
+  protected void setCloudAuthHeaderIfConfigured(HttpClientBuilder clientBuilder) {
+    if (!Strings.isNullOrEmpty(cloudTokenFetchUrl) && !Strings.isNullOrEmpty(cloudAPIKey)) {
+      Token cloudToken = getCloudToken();
+      String cloudTokenString = cloudToken.getAccess_token();
+      if (!Strings.isNullOrEmpty(cloudTokenString)) {
+        Header header = new BasicHeader("Authorization", cloudTokenString);
+        clientBuilder.setDefaultHeaders(ImmutableSet.of(header));
+      }
+    }
+
   }
 }

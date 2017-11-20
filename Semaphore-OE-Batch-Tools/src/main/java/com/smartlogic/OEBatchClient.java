@@ -34,6 +34,22 @@ public class OEBatchClient implements Closeable {
     this.endpoint = endpoint;
   }
 
+  /**
+   * Gets the current OE endpoint.
+   * @return
+   */
+  public OEModelEndpoint getEndpoint() {
+    return endpoint;
+  }
+
+  /**
+   * Sets the current OE endpoint
+   * @param endpoint
+   */
+  public void setEndpoint(OEModelEndpoint endpoint) {
+    this.endpoint = endpoint;
+  }
+
   public void setBatchMode(BatchMode mode) {
     this.batchMode = mode;
   }
@@ -135,10 +151,15 @@ public class OEBatchClient implements Closeable {
   }
 
   public void close() throws IOException {
-    if (this.currentModel != null)
+    if (this.currentModel != null) {
       this.currentModel.close();
-    if (this.pendingModel != null)
+      this.currentModel = null;
+    }
+    if (this.pendingModel != null) {
       this.pendingModel.close();
+      this.pendingModel = null;
+    }
+    this.endpoint = null;
   }
 
   /**

@@ -44,7 +44,7 @@ public class ModelLoader {
     }
 
     Dataset dataset = TDBFactory.createDataset(tDbDirectoryPath);
-    Model model = dataset.getNamedModel(endpoint.modelIRI.toString());
+    Model model = dataset.getNamedModel(endpoint.modelIri);
     TDBLoader.loadModel(model, rdfUri );
     return model;
   }
@@ -150,13 +150,12 @@ public class ModelLoader {
    */
   public static String buildOEExportApiUrl(OEModelEndpoint endpoint) {
     Preconditions.checkNotNull(endpoint);
-    Preconditions.checkNotNull(endpoint.accessToken);
-    Preconditions.checkNotNull(endpoint.baseURL);
-    Preconditions.checkNotNull(endpoint.modelIRI);
+    Preconditions.checkNotNull(endpoint.baseUrl);
+    Preconditions.checkNotNull(endpoint.modelIri);
 
     String exportUrl = endpoint.buildApiUrl()
         .append("?path=backup%2F")
-        .append(endpoint.modelIRI)
+        .append(endpoint.modelIri)
         .append("%2Fexport&serialization=http:%2F%2Ftopbraid.org%2Fsparqlmotionlib%23Turtle")
         .toString();
 
