@@ -34,13 +34,13 @@ public class OEModelEndpointTests {
   @Test
   public void testUrlEndpoints() throws Exception {
     OEModelEndpoint ep = new OEModelEndpoint();
-    ep.modelIRI = IRIResolver.parseIRI("urn:x-evn-master:ModelID");
-    ep.accessToken = "ACCESSTOKEN";
-    ep.baseURL = "http://localhost:8080/swoe/";
+    ep.setModelIRI(IRIResolver.parseIRI("model:ModelID").toString());
+    ep.setAccessToken("ACCESSTOKEN");
+    ep.setBaseUrl("http://localhost:8080/swoe/");
 
     assertEquals(ep.buildApiUrl().toString(), "http://localhost:8080/swoe/api/t/ACCESSTOKEN");
     assertEquals(ep.buildSPARQLUrl().toString(),
-        "http://localhost:8080/swoe/api/t/ACCESSTOKEN/urn:x-evn-master:ModelID/sparql");
+        "http://localhost:8080/swoe/api/t/ACCESSTOKEN/model:ModelID/sparql");
   }
 
   @Test
@@ -55,5 +55,18 @@ public class OEModelEndpointTests {
       UpdateAction.parseExecute(sparql, ModelFactory.createDefaultModel());
       Assert.fail("Failed to detect bad SPARQL update");
     } catch (Exception e) {}
+  }
+
+  @Test
+  public void testCloudSparql() {
+    OEModelEndpoint ep = new OEModelEndpoint();
+    ep.setModelIRI(IRIResolver.parseIRI("model:ModelID").toString());
+    ep.setCloudTokenFetchUrl("https://cloud.smartlogic.com/token");
+    ep.setCloudAPIKey("my-api-key");
+    ep.setBaseUrl("http://localhost:8080/swoe/");
+
+    assertEquals(ep.getCloudAPIKey(), "my-api-key");
+    assertEquals(ep.getCloudTokenFetchUrl(), "https://cloud.smartlogic.com/token");
+
   }
 }
