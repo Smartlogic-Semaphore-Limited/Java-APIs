@@ -1,16 +1,26 @@
 package com.smartlogic;
 
-import com.smartlogic.cloud.CloudException;
-import com.smartlogic.cloud.Token;
-import com.smartlogic.cloud.TokenFetcher;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
-import org.apache.jena.iri.IRI;
-import org.apache.jena.query.*;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.query.ResultSetFactory;
+import org.apache.jena.query.Syntax;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateProcessor;
@@ -18,7 +28,9 @@ import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.cloud.Token;
+import com.smartlogic.cloud.TokenFetcher;
 
 /**
  * Created by stevenbiondi on 6/21/17.
@@ -224,5 +236,57 @@ public class OEModelEndpoint {
       }
     }
 
+  }
+
+  /**
+   * Builds an export URI for a given model.
+   * @param endpoint
+   * @return
+   */
+  private String buildOEExportApiUrl() {
+    Preconditions.checkNotNull(baseUrl);
+    Preconditions.checkNotNull(modelIri);
+
+    String exportUrl = buildApiUrl()
+        .append("?path=backup%2F")
+        .append(modelIri)
+        .append("%2Fexport&serialization=http:%2F%2Ftopbraid.org%2Fsparqlmotionlib%23Turtle")
+        .toString();
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("OE Export URL: {}", exportUrl);
+    }
+
+    return exportUrl;
+  }
+
+  public String fetchData() throws IOException, OEConnectionException {
+	String fetchUri = buildOEExportApiUrl();
+
+    HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+    setCloudAuthHeaderIfConfigured(clientBuilder);
+    try (CloseableHttpClient httpClient = clientBuilder.build()) {
+    	HttpGet httpGet = new HttpGet(fetchUri);
+    	
+    	HttpResponse response = httpClient.execute(httpGet);
+		if (response == null) throw new OEConnectionException("Null response from http client: " + fetchUri);
+		if (response.getStatusLine() == null) throw new OEConnectionException("Null status line from http client: " +  fetchUri);
+
+
+		int statusCode = response.getStatusLine().getStatusCode();
+
+		if (logger.isDebugEnabled())
+			logger.debug("HTTP request complete: " + statusCode + " " + fetchUri);
+
+		if (statusCode != HttpStatus.SC_OK) {
+			throw new OEConnectionException("Status code " + statusCode + " received from URL: " + fetchUri);
+		}
+
+		HttpEntity entity = response.getEntity();
+
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		entity.writeTo(byteArrayOutputStream);
+		return new String(byteArrayOutputStream.toByteArray(), "UTF-8");
+    }
   }
 }

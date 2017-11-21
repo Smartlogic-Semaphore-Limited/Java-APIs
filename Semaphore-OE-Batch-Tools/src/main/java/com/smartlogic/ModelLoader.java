@@ -1,10 +1,14 @@
 package com.smartlogic;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb.TDBLoader;
@@ -27,8 +31,10 @@ public class ModelLoader {
    * @param endpoint
    * @param tDbDirectoryPath
    * @return
+ * @throws OEConnectionException 
+ * @throws IOException 
    */
-  public static Model loadOEModelToTdb(OEModelEndpoint endpoint, String tDbDirectoryPath) {
+  public static Model loadOEModelToTdb(OEModelEndpoint endpoint, String tDbDirectoryPath) throws IOException, OEConnectionException {
     Preconditions.checkNotNull(endpoint);
     Preconditions.checkArgument(!Strings.isNullOrEmpty(tDbDirectoryPath));
 
@@ -37,15 +43,11 @@ public class ModelLoader {
       logger.debug("TDB Dir path   : {}", tDbDirectoryPath);
     }
 
-    String rdfUri = buildOEExportApiUrl(endpoint);
-
-    if (logger.isInfoEnabled()) {
-      logger.info(" OE export URL: {}", rdfUri);
-    }
+    String modelAsTTL = endpoint.fetchData();
 
     Dataset dataset = TDBFactory.createDataset(tDbDirectoryPath);
     Model model = dataset.getNamedModel(endpoint.modelIri);
-    TDBLoader.loadModel(model, rdfUri );
+    model.read(new ByteArrayInputStream(modelAsTTL.getBytes()), "TTL");
     return model;
   }
 
@@ -54,22 +56,21 @@ public class ModelLoader {
    *
    * @param endpoint
    * @return
+ * @throws OEConnectionException 
+ * @throws IOException 
    */
-  public static Model loadOEModelToMem(OEModelEndpoint endpoint) {
-
+  public static Model loadOEModelToMem(OEModelEndpoint endpoint) throws IOException, OEConnectionException {
     Preconditions.checkNotNull(endpoint);
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("OEModelEndpoint base URL: {}", endpoint.toString());
-    }
+    logger.debug("OEModelEndpoint base URL: {}", endpoint.toString());
 
-    String loadUri = buildOEExportApiUrl(endpoint);
-
-    if (logger.isInfoEnabled()) {
-      logger.info(" OE export URL: {}", loadUri);
-    }
-
-    return RDFDataMgr.loadModel(loadUri);
+    String modelAsTTL = endpoint.fetchData();
+    
+    logger.debug("Downloaded model: {}", modelAsTTL);
+    
+    Model model = ModelFactory.createDefaultModel();
+    model.read(new ByteArrayInputStream(modelAsTTL.getBytes()), null, "TTL");
+    return model;
   }
 
   /**
@@ -143,26 +144,5 @@ public class ModelLoader {
     return RDFDataMgr.loadModel(rdfUri);
   }
 
-  /**
-   * Builds an export URI for a given model.
-   * @param endpoint
-   * @return
-   */
-  public static String buildOEExportApiUrl(OEModelEndpoint endpoint) {
-    Preconditions.checkNotNull(endpoint);
-    Preconditions.checkNotNull(endpoint.baseUrl);
-    Preconditions.checkNotNull(endpoint.modelIri);
 
-    String exportUrl = endpoint.buildApiUrl()
-        .append("?path=backup%2F")
-        .append(endpoint.modelIri)
-        .append("%2Fexport&serialization=http:%2F%2Ftopbraid.org%2Fsparqlmotionlib%23Turtle")
-        .toString();
-
-    if (logger.isDebugEnabled()) {
-      logger.debug("OE Export URL: {}", exportUrl);
-    }
-
-    return exportUrl;
-  }
 }
