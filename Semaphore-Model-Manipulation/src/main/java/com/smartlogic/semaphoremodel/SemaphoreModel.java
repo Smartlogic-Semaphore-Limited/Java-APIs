@@ -207,7 +207,7 @@ public class SemaphoreModel {
 
 	public Concept getConcept(URI uri) {
 		Resource conceptResource = resourceFromURI(model, uri);
-		String sparql = "ASK WHERE { ?conceptURI a ?classURI . ?classURI skos:subPropertyOf* skos:Concept . }";
+		String sparql = "ASK WHERE { ?conceptURI a ?classURI . ?classURI rdfs:subClassOf* skos:Concept . }";
 		ParameterizedSparqlString findConceptSparql = new ParameterizedSparqlString(model);
 		findConceptSparql.setCommandText(sparql);
 		findConceptSparql.setParam("conceptURI", conceptResource);
