@@ -14,14 +14,13 @@
 	<parent>
 		<groupId>com.smartlogic</groupId>
 		<artifactId>Semaphore-Java-APIs</artifactId>
-		<version>Semaphore-4.1.0</version>
+		<version>Semaphore-4.1.1</version>
 	</parent>
 
     <dependencies>
         <dependency>
             <groupId>com.smartlogic.cloud</groupId>
             <artifactId>Semaphore-Cloud-Client</artifactId>
-            <version>Semaphore-4.1.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

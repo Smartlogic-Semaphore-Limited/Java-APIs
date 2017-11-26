@@ -58,8 +58,9 @@ public class OEBatchClient implements Closeable {
    * Load the current model from OE and prepares to track changes.
    * This method resets the baseline for the batch changes collected.
    * Use with caution, any changes will be lost.
+ * @throws OEConnectionException 
    */
-  public void loadCurrentModelFromOE() throws IOException {
+  public void loadCurrentModelFromOE() throws IOException, OEConnectionException {
     this.currentModel = ModelLoader.loadOEModelToMem(endpoint);
     this.pendingModel = ModelLoader.loadModelToMem(currentModel);
 

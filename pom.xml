@@ -12,7 +12,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
-	<version>Semaphore-4.1.0</version>
+	<version>Semaphore-4.1.1</version>
 	<groupId>com.smartlogic</groupId>
 	<artifactId>Semaphore-Java-APIs</artifactId>
 	<description>Java connectors to the Smartlogic Semaphore Services</description>
@@ -180,17 +180,17 @@
 			<dependency>
 				<groupId>com.smartlogic.csclient</groupId>
 				<artifactId>Semaphore-CS-Client</artifactId>
-				<version>Semaphore-4.1.0</version>
+				<version>Semaphore-4.1.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.smartlogic.sesclient</groupId>
 				<artifactId>Semaphore-SES-Client</artifactId>
-				<version>Semaphore-4.1.0</version>
+				<version>Semaphore-4.1.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.smartlogic.cloud</groupId>
 				<artifactId>Semaphore-Cloud-Client</artifactId>
-				<version>Semaphore-4.1.0</version>
+				<version>Semaphore-4.1.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
