@@ -1,12 +1,9 @@
 package com.smartlogic;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.cloud.Token;
+import com.smartlogic.cloud.TokenFetcher;
+import org.apache.http.*;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -14,13 +11,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.query.ResultSetFactory;
-import org.apache.jena.query.Syntax;
+import org.apache.jena.query.*;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateProcessor;
@@ -28,15 +19,13 @@ import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.smartlogic.cloud.CloudException;
-import com.smartlogic.cloud.Token;
-import com.smartlogic.cloud.TokenFetcher;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * Created by stevenbiondi on 6/21/17.
  * Semaphore Workbench Ontology Editor endpoint client.
  * (For now, used to execute SPARQL insert and update calls)
- *
  */
 public class OEModelEndpoint {
 
@@ -47,6 +36,8 @@ public class OEModelEndpoint {
   protected String cloudTokenFetchUrl;
   protected String cloudAPIKey;
   protected String modelIri;
+  protected String proxyHost;
+  protected Integer proxyPort;
 
   /**
    * Build the api URI for Ontology Editor. All RESTful commands extend this URI.
@@ -70,6 +61,7 @@ public class OEModelEndpoint {
   /**
    * Runs the SPARQL query and returns a detached ResultSet.
    * If you have a large query, use the same technique inline to stream results and save memory.
+   *
    * @param sparql
    * @return
    */
@@ -83,6 +75,11 @@ public class OEModelEndpoint {
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
 
     setCloudAuthHeaderIfConfigured(clientBuilder);
+
+    if (proxyHost != null && proxyPort != null) {
+      HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+      clientBuilder.setProxy(proxy);
+    }
 
     try (CloseableHttpClient client = clientBuilder.build();
          QueryExecution qe = QueryExecutionFactory.sparqlService(buildSPARQLUrl().toString(), query, client)) {
@@ -106,6 +103,11 @@ public class OEModelEndpoint {
 
     setCloudAuthHeaderIfConfigured(clientBuilder);
 
+    if (proxyHost != null && proxyPort != null) {
+      HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+      clientBuilder.setProxy(proxy);
+    }
+
     try (CloseableHttpClient client = clientBuilder.build()) {
       UpdateRequest update = UpdateFactory.create(sparql, Syntax.syntaxARQ);
       UpdateProcessor processor = UpdateExecutionFactory.createRemoteForm(update, buildSPARQLUrl().toString(), client);
@@ -118,6 +120,7 @@ public class OEModelEndpoint {
 
   /**
    * Given a Cloud API key, fetch a token (TODO)
+   *
    * @return
    */
   public Token getCloudToken() {
@@ -144,6 +147,7 @@ public class OEModelEndpoint {
 
   /**
    * Gets the OE base URL (e.g. http://server-name:8080/swoe/)
+   *
    * @return
    */
   public String getBaseUrl() {
@@ -152,6 +156,7 @@ public class OEModelEndpoint {
 
   /**
    * Sets the OE base URL (e.g. http://server-name:8080/swoe/)
+   *
    * @param baseUrl
    */
   public void setBaseUrl(String baseUrl) {
@@ -164,6 +169,7 @@ public class OEModelEndpoint {
 
   /**
    * Gets the OE access token
+   *
    * @return
    */
   public String getAccessToken() {
@@ -172,6 +178,7 @@ public class OEModelEndpoint {
 
   /**
    * Sets the OE access token
+   *
    * @param accessToken
    */
   public void setAccessToken(String accessToken) {
@@ -180,6 +187,7 @@ public class OEModelEndpoint {
 
   /**
    * Gets the cloud API key for cloud.smartlogic.com.
+   *
    * @return
    */
   public String getCloudAPIKey() {
@@ -188,6 +196,7 @@ public class OEModelEndpoint {
 
   /**
    * Sets the cloud API key for cloud.smartlogic.com
+   *
    * @param cloudAPIKey
    */
   public void setCloudAPIKey(String cloudAPIKey) {
@@ -196,6 +205,7 @@ public class OEModelEndpoint {
 
   /**
    * Gets the cloud token fetch URL
+   *
    * @return
    */
   public String getCloudTokenFetchUrl() {
@@ -204,6 +214,7 @@ public class OEModelEndpoint {
 
   /**
    * Sets the cloud token fetch URL
+   *
    * @param cloudTokenFetchUrl
    */
   public void setCloudTokenFetchUrl(String cloudTokenFetchUrl) {
@@ -212,6 +223,7 @@ public class OEModelEndpoint {
 
   /**
    * Gets the model IRI (e.g. model:myExample)
+   *
    * @return
    */
   public String getModelIri() {
@@ -220,10 +232,27 @@ public class OEModelEndpoint {
 
   /**
    * Sets the model IRI (e.g. model:myExample)
+   *
    * @param modelIri
    */
   public void setModelIRI(String modelIri) {
     this.modelIri = modelIri;
+  }
+
+  public String getProxyHost() {
+    return proxyHost;
+  }
+
+  public void setProxyHost(String proxyHost) {
+    this.proxyHost = proxyHost;
+  }
+
+  public Integer getProxyPort() {
+    return proxyPort;
+  }
+
+  public void setProxyPort(Integer proxyPort) {
+    this.proxyPort = proxyPort;
   }
 
   protected void setCloudAuthHeaderIfConfigured(HttpClientBuilder clientBuilder) {
@@ -240,7 +269,7 @@ public class OEModelEndpoint {
 
   /**
    * Builds an export URI for a given model.
-   * @param endpoint
+   *
    * @return
    */
   private String buildOEExportApiUrl() {
@@ -261,32 +290,33 @@ public class OEModelEndpoint {
   }
 
   public String fetchData() throws IOException, OEConnectionException {
-	String fetchUri = buildOEExportApiUrl();
+    String fetchUri = buildOEExportApiUrl();
 
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
     setCloudAuthHeaderIfConfigured(clientBuilder);
     try (CloseableHttpClient httpClient = clientBuilder.build()) {
-    	HttpGet httpGet = new HttpGet(fetchUri);
-    	
-    	HttpResponse response = httpClient.execute(httpGet);
-		if (response == null) throw new OEConnectionException("Null response from http client: " + fetchUri);
-		if (response.getStatusLine() == null) throw new OEConnectionException("Null status line from http client: " +  fetchUri);
+      HttpGet httpGet = new HttpGet(fetchUri);
+
+      HttpResponse response = httpClient.execute(httpGet);
+      if (response == null) throw new OEConnectionException("Null response from http client: " + fetchUri);
+      if (response.getStatusLine() == null)
+        throw new OEConnectionException("Null status line from http client: " + fetchUri);
 
 
-		int statusCode = response.getStatusLine().getStatusCode();
+      int statusCode = response.getStatusLine().getStatusCode();
 
-		if (logger.isDebugEnabled())
-			logger.debug("HTTP request complete: " + statusCode + " " + fetchUri);
+      if (logger.isDebugEnabled())
+        logger.debug("HTTP request complete: " + statusCode + " " + fetchUri);
 
-		if (statusCode != HttpStatus.SC_OK) {
-			throw new OEConnectionException("Status code " + statusCode + " received from URL: " + fetchUri);
-		}
+      if (statusCode != HttpStatus.SC_OK) {
+        throw new OEConnectionException("Status code " + statusCode + " received from URL: " + fetchUri);
+      }
 
-		HttpEntity entity = response.getEntity();
+      HttpEntity entity = response.getEntity();
 
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		entity.writeTo(byteArrayOutputStream);
-		return new String(byteArrayOutputStream.toByteArray(), "UTF-8");
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      entity.writeTo(byteArrayOutputStream);
+      return new String(byteArrayOutputStream.toByteArray(), "UTF-8");
     }
   }
 }
