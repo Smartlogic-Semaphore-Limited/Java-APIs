@@ -15,18 +15,26 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public abstract class XMLReader {
-	protected Element getRootElement(byte[] data) throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		documentBuilderFactory.setValidating(false);
-		
-		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-		documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
+	private static DocumentBuilderFactory documentBuilderFactory = null;
+	
+	private static synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
+		if (documentBuilderFactory == null) {
+			documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			documentBuilderFactory.setValidating(false);
+		}
+		return documentBuilderFactory;
+	}
+	
+	protected Document getDocument(byte[] data) throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilder documentBuilder = getDocumentBuilderFactory().newDocumentBuilder();
 		InputStream inputStream = new ByteArrayInputStream(data);
 		InputSource inputSource = new InputSource(inputStream);
-		Document document = documentBuilder.parse(inputSource);
+		return documentBuilder.parse(inputSource);
+	}
 
-		Element element = document.getDocumentElement();
-		return element;
+	protected Element getRootElement(byte[] data) throws ParserConfigurationException, SAXException, IOException {
+		return getDocument(data).getDocumentElement();
 	}
 
 	protected String toString(byte[] data) throws ClassificationException {

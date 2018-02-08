@@ -168,25 +168,43 @@ public class SemaphoreModel {
 
 
 	public Concept createConcept(URI uri, Label prefLabel) throws ModelException {
-		return createConcept(uri, prefLabel, null, null);
+		return createConcept(uri, prefLabel, (Resource[])null, null);
 	}
+	
+	@Deprecated
 	public Concept createConcept(URI uri, Label prefLabel, URI[] classURIs) throws ModelException {
-		return createConcept(uri, prefLabel, classURIs, null);
+		Resource[] classResources = new Resource[classURIs.length];
+		for (int i = 0; i < classURIs.length; i++) 
+			classResources[i] = resourceFromURI(model, classURIs[i]);
+		
+		return createConcept(uri, prefLabel, classResources, null);
 	}
-	public Concept createConcept(URI uri, Label prefLabel, UUID uuid) throws ModelException {
-		return createConcept(uri, prefLabel, null, uuid);
+	
+	public Concept createConcept(URI uri, Label prefLabel, ConceptClass[] conceptClasses) throws ModelException {
+		return createConcept(uri, prefLabel, conceptClasses, null);
 	}
 
-	public Concept createConcept(URI uri, Label prefLabel, URI[] classURIs, UUID uuid) throws ModelException {
+	public Concept createConcept(URI uri, Label prefLabel, ConceptClass[] conceptClasses, UUID uuid) throws ModelException {
+		Resource[] classResources = new Resource[conceptClasses.length];
+		for (int i = 0; i < conceptClasses.length; i++) 
+			classResources[i] = conceptClasses[i].getResource();
+		return createConcept(uri, prefLabel, classResources, uuid);
+	}
+
+	public Concept createConcept(URI uri, Label prefLabel, UUID uuid) throws ModelException {
+		return createConcept(uri, prefLabel, (Resource[])null, uuid);
+	}
+
+	private Concept createConcept(URI uri, Label prefLabel, Resource[] classResources, UUID uuid) throws ModelException {
 		Resource conceptURIResource = resourceFromURI(model, uri);
 
 		if (resourceInUse(conceptURIResource)) throw new ModelException("Attempting to create concept with URI - '%s'. This URI is already in use.", uri.toString());
 		
-		if ((classURIs == null) || (classURIs.length == 0)) {
+		if ((classResources == null) || (classResources.length == 0)) {
 			conceptURIResource.addProperty(RDF.type, SKOS.Concept);
 		} else {
-			for (URI classURI: classURIs) {
-				conceptURIResource.addProperty(RDF.type, resourceFromURI(model, classURI));
+			for (Resource classResource: classResources) {
+				conceptURIResource.addProperty(RDF.type, classResource);
 			}
 		}
 		
@@ -229,6 +247,25 @@ public class SemaphoreModel {
 		conceptSchemeURIResource.addLiteral(RDFS.label, getAsLiteral(model, prefLabel));
 			
 		return new ConceptScheme(model, conceptSchemeURIResource);
+	}
+
+	public ConceptClass createConceptClass(URI uri, Label label) throws ModelException {
+		return createConceptClass(uri, label, SKOS.Concept);
+	}
+	
+	public ConceptClass createConceptClass(URI uri, Label label, URI parentURI) throws ModelException {
+		return createConceptClass(uri, label, resourceFromURI(model, parentURI));
+	}
+
+	private ConceptClass createConceptClass(URI uri, Label label, Resource parentResource) throws ModelException {
+		Resource conceptClassURIResource = resourceFromURI(model, uri);
+
+		if (resourceInUse(conceptClassURIResource)) throw new ModelException(String.format("Attempting to create concept class with URI - '%s'. This URI is already in use.", uri.toString()));
+		
+		conceptClassURIResource.addProperty(RDF.type, OWL.Class);
+		conceptClassURIResource.addLiteral(RDFS.label, getAsLiteral(model, label));
+		conceptClassURIResource.addProperty(RDFS.subClassOf, parentResource);	
+		return new ConceptClass(model, conceptClassURIResource);
 	}
 
 	public ConceptScheme getConceptScheme(URI uri) {

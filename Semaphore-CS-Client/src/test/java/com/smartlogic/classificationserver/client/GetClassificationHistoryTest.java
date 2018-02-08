@@ -1,5 +1,7 @@
 package com.smartlogic.classificationserver.client;
 
+import static org.testng.Assert.assertTrue;
+
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Collection;
@@ -17,6 +19,6 @@ public class GetClassificationHistoryTest extends ClassificationTestCase {
 		Date nextMidnight = new Date(86400000*((new Date()).getTime()/86400000 + 1));
 
 		Collection<ClassificationRecord> classificationRecords = classificationClient.getClassificationHistory(lastMidnight, nextMidnight);
-		assertTrue("There must be records there", classificationRecords.size() > 0);
+		assertTrue(classificationRecords.size() > 0, "There must be records there");
 	}
 }

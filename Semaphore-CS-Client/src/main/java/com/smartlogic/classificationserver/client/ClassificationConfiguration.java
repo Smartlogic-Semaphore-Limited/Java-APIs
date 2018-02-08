@@ -1,5 +1,7 @@
 package com.smartlogic.classificationserver.client;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +14,10 @@ import java.util.Map;
 public class ClassificationConfiguration {
 
 	private String url;
-	public String getUrl() {
+	public String getUrl() throws MalformedURLException {
+		if (url == null) {
+			url = new URL(protocol, hostName, hostPort, hostPath).toExternalForm();
+		}
 		return url;
 	}
 	public void setUrl(String url) {

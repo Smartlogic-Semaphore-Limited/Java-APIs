@@ -1,42 +1,20 @@
 package com.smartlogic.classificationserver.client;
 
+import static org.testng.Assert.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.annotations.Test;
 
 public class ClassifyBinaryArticlesTest extends ClassificationTestCase {
 	protected final static Log logger = LogFactory.getLog(ClassifyBinaryArticlesTest.class);
-	protected static ClassificationClient classificationClient;
 
-	public void setUp() {
-
-		if (classificationClient == null) {
-			classificationClient = new ClassificationClient();
-
-			ClassificationConfiguration classificationConfiguration = new ClassificationConfiguration();
-			classificationConfiguration.setProtocol("http");
-			classificationConfiguration.setHostName("mlhostdev02");
-			classificationConfiguration.setHostPort(5058);
-			classificationConfiguration.setHostPath("/index.html");
-			classificationConfiguration.setSingleArticle(false);
-			classificationConfiguration.setMultiArticle(true);
-			classificationConfiguration.setFeedback(true);
-
-			Map<String, String> additionalParameters = new HashMap<String, String>();
-			additionalParameters.put("threshold","1");
-			additionalParameters.put("language","en1");
-			classificationConfiguration.setAdditionalParameters(additionalParameters);
-			classificationClient.setClassificationConfiguration(classificationConfiguration);
-		}
-	}
-
-
+	@Test
 	public void testBinary() throws IOException, ClassificationException {
 		File file = new File("src/test/resources/data/SampleData.txt");
 		FileInputStream fileInputStream = new FileInputStream(file);
@@ -51,9 +29,7 @@ public class ClassifyBinaryArticlesTest extends ClassificationTestCase {
 		byteArrayOutputStream.close();
 
 		Result result = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt");
-		assertEquals("Article count", 1, result.getArticles().size());
-
+		assertEquals(1, result.getArticles().size());
 	}
-
 
 }

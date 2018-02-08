@@ -1,12 +1,19 @@
 package com.smartlogic.classificationserver.client;
 
-import junit.framework.TestCase;
-
-import java.util.*;
-
 import static java.util.Collections.sort;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.testng.annotations.Test;
 
 /**
  * Created by stevenbiondi on 1/9/14.
@@ -29,15 +36,13 @@ import static org.hamcrest.CoreMatchers.*;
  * While we're at it, we might as well add equals and hashCode to make them consistent
  * with value semantics. (But this is not technically required to fix the bug we found)
  */
-public class ClassificationScoreIdentityComparisonTest extends TestCase {
+public class ClassificationScoreIdentityComparisonTest  {
 
-	public void setUp() {
-
-	}
 
 	/**
 	 * Test all the variants of equality we care about
 	 */
+	@Test
 	public void testIdentity() {
 
 		// use nomenclature A_B where stuff with same A are same by value semantics
@@ -45,35 +50,35 @@ public class ClassificationScoreIdentityComparisonTest extends TestCase {
 		ClassificationScore cs1_1 = new ClassificationScore("Test", "Name1", "1.0");
 		ClassificationScore cs1_2 = new ClassificationScore("Test", "Name1", "1.0");
 
-		assertThat(cs1_1, is(cs1_1));
-		assertThat(cs1_1.hashCode(), is(cs1_1.hashCode()));
+		assertEquals(cs1_1, cs1_1);
+		assertEquals(cs1_1.hashCode(), cs1_1.hashCode());
 
-		assertThat(cs1_2, is(cs1_2));
-		assertThat(cs1_2.hashCode(), is(cs1_2.hashCode()));
+		assertEquals(cs1_2, cs1_2);
+		assertEquals(cs1_2.hashCode(), cs1_2.hashCode());
 
-		assertThat(cs1_1, is(cs1_2));
-		assertThat(cs1_1.hashCode(), is(cs1_2.hashCode()));
+		assertEquals(cs1_1, cs1_2);
+		assertEquals(cs1_1.hashCode(), cs1_2.hashCode());
 
 		ClassificationScore cs3_1 = new ClassificationScore("Test", "Name1", "1.0", "id1");
-		assertThat(cs3_1, is(cs3_1));
-		assertThat(cs3_1.hashCode(), is(cs3_1.hashCode()));
+		assertEquals(cs3_1, cs3_1);
+		assertEquals(cs3_1.hashCode(), cs3_1.hashCode());
 
-		assertThat(cs3_1, is(not(cs1_1)));
+		assertNotEquals(cs3_1, cs1_1);
 
 		ClassificationScore cs3_2 = new ClassificationScore("Test", "Name1", "1.0", "id1");
-		assertThat(cs3_2, is(cs3_2));
-		assertThat(cs3_2.hashCode(), is(cs3_2.hashCode()));
+		assertEquals(cs3_2, cs3_2);
+		assertEquals(cs3_2.hashCode(), cs3_2.hashCode());
 
-		assertThat(cs3_2, is(cs3_1));
-		assertThat(cs3_2.hashCode(), is(cs3_1.hashCode()));
+		assertEquals(cs3_2, cs3_1);
+		assertEquals(cs3_2.hashCode(), cs3_1.hashCode());
 
-		assertThat(cs3_2, is(not(cs1_1)));
+		assertNotEquals(cs3_2, cs1_1);
 
 
 		ClassificationScore cs5 = new ClassificationScore("Test", "Name1", "1.0", "id2");
 
-		assertThat(cs5, is(not(cs3_1)));
-		assertThat(cs5, is(not(cs1_1)));
+		assertNotEquals(cs5, cs3_1);
+		assertNotEquals(cs5, cs1_1);
 
 
 	}
@@ -84,8 +89,8 @@ public class ClassificationScoreIdentityComparisonTest extends TestCase {
 		ClassificationScore cs1_1 = new ClassificationScore("Test", "Name1", "1.0");
 		ClassificationScore cs1_2 = new ClassificationScore("Test", "Name1", "1.0");
 
-		assertThat(cs1_1.compareTo(cs1_2), is(0));
-		assertThat(cs1_2.compareTo(cs1_1), is(0));
+		assertEquals(cs1_1.compareTo(cs1_2), 0);
+		assertEquals(cs1_2.compareTo(cs1_1), 0);
 
 		ClassificationScore cs2_1 = new ClassificationScore("Test", "Name1", ".99");
 		assertTrue(cs2_1.compareTo(cs1_1) > 0);
@@ -99,7 +104,7 @@ public class ClassificationScoreIdentityComparisonTest extends TestCase {
 		assertTrue(cs4_1.compareTo(cs1_1) > 0);
 		assertTrue(cs4_1.compareTo(cs5_1) < 0);
 		assertTrue(cs5_1.compareTo(cs4_1) > 0);
-		assertThat(cs5_1, is(not(cs4_1)));
+		assertNotEquals(cs5_1, cs4_1);
 
 		ClassificationScore cs6_1 = new ClassificationScore("A", null, "1.0", null);
 		ClassificationScore cs7_1 = new ClassificationScore("B", null, "1.0", null);
@@ -116,7 +121,7 @@ public class ClassificationScoreIdentityComparisonTest extends TestCase {
 		theSet.add(cs1);
 		theSet.add(cs2);
 
-		assertThat(theSet.size(), is(2));
+		assertEquals(theSet.size(), 2);
 	}
 
 	public void testHigherScoresFirst() {
@@ -137,16 +142,16 @@ public class ClassificationScoreIdentityComparisonTest extends TestCase {
 		while (it.hasNext())
 			theList.add(it.next());
 
-		assertThat(theList.get(0).getId(), is("id1"));
-		assertThat(theList.get(1).getId(), is("id2"));
-		assertThat(theList.get(2).getId(), is("id3"));
-		assertThat(theList.get(3).getId(), is("id4"));
+		assertEquals(theList.get(0).getId(), "id1");
+		assertEquals(theList.get(1).getId(), "id2");
+		assertEquals(theList.get(2).getId(), "id3");
+		assertEquals(theList.get(3).getId(), "id4");
 
 		sort(theList);
-		assertThat(theList.get(0).getId(), is("id1"));
-		assertThat(theList.get(1).getId(), is("id2"));
-		assertThat(theList.get(2).getId(), is("id3"));
-		assertThat(theList.get(3).getId(), is("id4"));
+		assertEquals(theList.get(0).getId(), "id1");
+		assertEquals(theList.get(1).getId(), "id2");
+		assertEquals(theList.get(2).getId(), "id3");
+		assertEquals(theList.get(3).getId(), "id4");
 
 		Collections.sort(theList, new Comparator<ClassificationScore>() {
 			@Override
@@ -155,10 +160,10 @@ public class ClassificationScoreIdentityComparisonTest extends TestCase {
 			}
 		});
 
-		assertThat(theList.get(3).getId(), is("id1"));
-		assertThat(theList.get(2).getId(), is("id2"));
-		assertThat(theList.get(1).getId(), is("id3"));
-		assertThat(theList.get(0).getId(), is("id4"));
+		assertEquals(theList.get(3).getId(), "id1");
+		assertEquals(theList.get(2).getId(), "id2");
+		assertEquals(theList.get(1).getId(), "id3");
+		assertEquals(theList.get(0).getId(), "id4");
 
 	}
 }

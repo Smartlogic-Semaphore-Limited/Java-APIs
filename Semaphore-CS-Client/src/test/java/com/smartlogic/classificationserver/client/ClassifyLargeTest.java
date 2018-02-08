@@ -1,5 +1,8 @@
 package com.smartlogic.classificationserver.client;
 
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,7 +10,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 
+import org.testng.annotations.Test;
+
 public class ClassifyLargeTest extends ClassificationTestCase {
+	
+	@Test
 	public void testBinary() throws IOException, ClassificationException {
 
 		URL log4jXmlUrl = ClassLoader.getSystemResource("log4j.xml");
@@ -31,7 +38,7 @@ public class ClassifyLargeTest extends ClassificationTestCase {
 			Date startDate = new Date();
 			classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt");
 			Date endDate = new Date();
-			assertTrue("Classification took too long: " + (endDate.getTime() - startDate.getTime()) + "ms", (endDate.getTime() - startDate.getTime()) < 100000);
+			assertTrue((endDate.getTime() - startDate.getTime()) < 100000, "Classification took too long: " + (endDate.getTime() - startDate.getTime()) + "ms");
 		} catch (Exception e) {
 			fail("ClassifyLargeTest failure: " + e.getMessage());
 		}

@@ -9,12 +9,14 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.update.UpdateAction;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.SKOS;
+import org.apache.jena.vocabulary.SKOSXL;
 
 public class Concept extends ConceptObject {
 
@@ -87,6 +89,17 @@ public class Concept extends ConceptObject {
 	}
 	
 	/**
+	 * addLabel
+	 * Adds the label - if there is already a label of this language an exception is thrown.
+	 * @param label - the label in the requested language.
+	 * @throws ModelException - thrown if there is already a label of this language for the object
+	 */
+	public void addLabel(RelationshipType relationshipType, Label label) throws ModelException {
+		
+		addLabelPostCheck(relationshipType, label);
+	}
+	
+	/**
 	 * setLabel
 	 * After this operation, the Concept Scheme will have this label and no other in this language.
 	 * It does not matter whether there already was a label of this language present.
@@ -147,9 +160,20 @@ public class Concept extends ConceptObject {
 
 	
 	private void addLabelPostCheck(Label label) {
-		this.getResource().addProperty(RDFS.label, SemaphoreModel.getAsLiteral(model, label));
+		addLabel(SKOSXL.prefLabel, label);
+	}
+	
+	private void addLabelPostCheck(RelationshipType relationshipType, Label label) {
+		addLabel(relationshipType.getProperty(), label);
 	}
 
+	private void addLabel(Property property, Label label) {
+		Resource labelResource = model.createResource(this.getResource().toString() + "_" + property.getLocalName() + "_" + label.getLanguageCode() + "_" + getBase64(label.getValue()));
+		this.getResource().addProperty(property, labelResource);
+		labelResource.addProperty(SKOSXL.literalForm, SemaphoreModel.getAsLiteral(model, label));
+		labelResource.addProperty(RDF.type, SKOSXL.Label);
+	}
+	
 	private void checkLabelExistsInLanguage(Label label) throws ModelException {
 		if (!labelExistsInLanguage(label)) throw new ModelException("Attempting to delete label for '%s'. This already has no label in language '%s'", resource.getURI(), label.getLanguageCode());
 	}

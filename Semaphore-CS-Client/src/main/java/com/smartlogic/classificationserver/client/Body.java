@@ -6,11 +6,13 @@ package com.smartlogic.classificationserver.client;
  * @author Smartlogic Semaphore
  *
  */
-public class Body {
+public class Body extends StringObject {
+	protected String getParameterName() { return "body"; }
 	
 	private final static int MAX_LENGTH = 1000;
 	
-	private String value;
+	
+	private final String value;
 	/**
 	 * Create the body field from a string
 	 * @param value The string representation of the body of the document
@@ -48,3 +50,4 @@ public class Body {
 		return value;
 	}
 }
+

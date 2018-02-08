@@ -1,5 +1,7 @@
 package com.smartlogic.semaphoremodel;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.Literal;
@@ -7,6 +9,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.vocabulary.SKOS;
 
 public abstract class ConceptObject extends ObjectWithURI {
 
@@ -26,6 +30,22 @@ public abstract class ConceptObject extends ObjectWithURI {
 		Statement statement = resource.getProperty(identifierProperty);
 		if (statement == null) return null;
 		return statement.getObject().asLiteral().getString();
+	}
+	
+	public Collection<ConceptObject> getRelated(Property relationship) {
+		Collection<ConceptObject> returnData = new HashSet<ConceptObject>();
+		StmtIterator stmtIterator = resource.listProperties(relationship);
+		
+		while (stmtIterator.hasNext()) {
+			Statement statement = stmtIterator.next();
+			Resource relatedResource = statement.getObject().asResource();
+			if (relationship.equals(SKOS.topConceptOf)) {
+				returnData.add(new ConceptScheme(model, relatedResource));
+			} else {
+				returnData.add(new Concept(model, relatedResource));
+			}
+		}
+		return returnData;
 	}
 
 	/**

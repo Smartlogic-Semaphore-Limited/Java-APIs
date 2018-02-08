@@ -52,6 +52,4 @@ public class RulebaseClassSet extends XMLReader {
 	public List<RulebaseClass> getRulebaseClasses() {
 		return rulebaseClasses;
 	}
-
-
 }

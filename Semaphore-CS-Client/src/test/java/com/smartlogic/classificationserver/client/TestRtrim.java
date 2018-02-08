@@ -1,20 +1,21 @@
 package com.smartlogic.classificationserver.client;
 
-import junit.framework.TestCase;
+import static org.testng.Assert.assertEquals;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
-public class TestRtrim extends TestCase {
+
+public class TestRtrim {
 
 
 	@Test
 	public void test() {
 		ClassificationHistory classificationHistory = new ClassificationHistory("", "", "");
 
-		assertEquals("CH 1", "abcde", classificationHistory.rtrim("abcde"));
-		assertEquals("CH 2", " abcde", classificationHistory.rtrim(" abcde"));
-		assertEquals("CH 3", "abcde", classificationHistory.rtrim("abcde "));
-		assertEquals("CH 4", " abcde", classificationHistory.rtrim(" abcde "));
+		assertEquals("abcde", classificationHistory.rtrim("abcde"), "CH 1");
+		assertEquals(" abcde", classificationHistory.rtrim(" abcde"), "CH 2");
+		assertEquals("abcde", classificationHistory.rtrim("abcde "), "CH 3");
+		assertEquals(" abcde", classificationHistory.rtrim(" abcde "), "CH 4");
 	}
 
 }

@@ -13,4 +13,8 @@ public class ClassificationException extends Exception {
 	protected ClassificationException(String message) {
 		super(message);
 	}
+	
+	public ClassificationException(String format, Object... arguments) {
+		super(String.format(format, arguments));
+	}
 }
