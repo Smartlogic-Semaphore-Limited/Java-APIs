@@ -12,6 +12,7 @@ import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
 import org.apache.jena.query.*;
+import org.apache.jena.riot.WebContent;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateProcessor;
@@ -296,6 +297,8 @@ public class OEModelEndpoint {
     setCloudAuthHeaderIfConfigured(clientBuilder);
     try (CloseableHttpClient httpClient = clientBuilder.build()) {
       HttpGet httpGet = new HttpGet(fetchUri);
+      /* New way to specify format on export calls: use Accept: header. Leaving old param on URI for now */
+      httpGet.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtle);
 
       HttpResponse response = httpClient.execute(httpGet);
       if (response == null) throw new OEConnectionException("Null response from http client: " + fetchUri);
