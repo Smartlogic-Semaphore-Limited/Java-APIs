@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -181,6 +182,23 @@ public class ClassificationClient {
 		Defaults defaults = new Defaults(sendPostRequest(getCommandXML("getparameterdefaults", null), null));
 		return defaults.getDefaults();
 	}
+	
+	/**
+	 * Return the status of the classification server instance
+	 *
+	 * @return A classification status object
+	 * @throws ClassificationException Classification exception
+	 */
+	@Deprecated // This response appears pretty useless
+	public ClassificationServerStatus status() throws ClassificationException {
+		if (logger.isDebugEnabled())
+			logger.debug("status - entry");
+
+		ClassificationServerStatus status = new ClassificationServerStatus(sendPostRequest(getCommandXML("stats", null), null));
+		return status;
+
+	}
+
 
 	/* Plain getters and setters for this object */	
 	
@@ -294,9 +312,12 @@ public class ClassificationClient {
 	 * @throws ClassificationException Classification exception
 	 */
 	public Result getClassifiedDocument(File inputFile, String fileType) throws ClassificationException {
-		return getClassifiedDocument(inputFile, fileType, null, null);
+		return new Result(getStructuredDocument(inputFile, fileType));
 	}
-
+	
+	public Document getStructuredDocument(File inputFile, String fileType) throws ClassificationException {
+		return getStructuredDocument(inputFile, fileType, null, null);
+	}
 
 	/**
 	 * Classify the supplied title and body as if they were a document
@@ -308,7 +329,11 @@ public class ClassificationClient {
 	 * @throws ClassificationException Classification exception
 	 */
 	public Result getClassifiedDocument(FileName fileName, Body body, Title title) throws ClassificationException {
-		return getClassifiedDocument(fileName, body, title, null);
+		return new Result(getStructuredDocument(fileName, body, title));
+	}
+
+	public Document getStructuredDocument(FileName fileName, Body body, Title title) throws ClassificationException {
+		return getStructuredDocument(fileName, body, title, null);
 	}
 
 	/**
@@ -320,10 +345,13 @@ public class ClassificationClient {
 	 * @throws ClassificationException Classification exception
 	 */
 	public Result getClassifiedDocument(Body body, Title title) throws ClassificationException {
-		return getClassifiedDocument(null, body, title, null);
+		return new Result(getStructuredDocument(body, title));
 	}
 	
-
+	public Document getStructuredDocument(Body body, Title title) throws ClassificationException {
+		return getStructuredDocument(null, body, title, null);
+	}
+	
 	/**
 	 * Classify the supplied title and body as if they were a document
 	 * @param fileName The file name of the document to classify
@@ -333,16 +361,16 @@ public class ClassificationClient {
 	 * @return the classifications as returned by classification server.
 	 * @throws ClassificationException Classification exception
 	 */
-	public Result getClassifiedDocument(FileName fileName, Body body, Title title, Map<String, Collection<String>> metadata)
-			throws ClassificationException {
+	public Result getClassifiedDocument(FileName fileName, Body body, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
+		return new Result(getStructuredDocument(fileName, body, title, metadata));
+	}
+	
+	public Document getStructuredDocument(FileName fileName, Body body, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
 		logger.debug("Treating document: '" + title.getValue() + "'");
 
-		// If there is no body, then don't bother attempting to classify the
-		// document
-		if ((body == null) || (body.getValue() == null)
-				|| (body.getValue().trim().length() == 0)) {
-			Result result = new Result(null);
-			return result;
+		// If there is no body, then don't bother attempting to classify the document
+		if ((body == null) || (body.getValue() == null) || (body.getValue().trim().length() == 0)) {
+			return getBlankStructuredDocument();
 		}
 
 		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
@@ -350,8 +378,9 @@ public class ClassificationClient {
 		addTitle(parts, title);
 		addMetadata(parts, metadata);
 		addByteArray(parts, body, fileName);
-		return getClassifications(parts);
+		return XMLReader.getDocument(getClassifications(parts));
 	}
+	
 	public byte[] getClassificationServerResponse(FileName filename, Body body, Title title, Map<String, Collection<String>> metadata)
 			throws ClassificationException {
 		logger.debug("Treating document: '" + title.getValue() + "'");
@@ -380,13 +409,13 @@ public class ClassificationClient {
 	 * @return the classifications as returned by classification server.
 	 * @throws ClassificationException Classification exception
 	 */
-	public Result getClassifiedDocument(
-			Body body, Title title, Map<String, Collection<String>> metadata)
-			throws ClassificationException {
-		logger.debug("Treating document: '" + title.getValue() + "'");
-		return getClassifiedDocument(null, body, title, metadata);
+	public Result getClassifiedDocument(Body body, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
+		return new Result(getStructuredDocument(body, title, metadata));
 	}
 
+	public Document getStructuredDocument(Body body, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
+		return getStructuredDocument(null, body, title, metadata);
+	}
 	/**
 	 * Classify the supplied url
 	 *
@@ -394,9 +423,12 @@ public class ClassificationClient {
 	 * @return the classifications as returned by classification server.
 	 * @throws ClassificationException Classification exception
 	 */
-	public Result getClassifiedDocument(URL url)
-			throws ClassificationException {
-		return getClassifiedDocument(url, null, null);
+	public Result getClassifiedDocument(URL url) throws ClassificationException {
+		return new Result(getStructuredDocument(url));
+	}
+	
+	public Document getStructuredDocument(URL url) throws ClassificationException {
+		return getStructuredDocument(url, null, null);
 	}
 
 	/**
@@ -408,31 +440,18 @@ public class ClassificationClient {
 	 * @return the classifications as returned by classification server.
 	 * @throws ClassificationException Classification exception
 	 */
-	public Result getClassifiedDocument(URL url, Title title, Map<String, Collection<String>> metadata) 			throws ClassificationException {
-		if (logger.isDebugEnabled())
-			logger.debug("Treating URL: '" + url.toExternalForm() + "'");
+	public Result getClassifiedDocument(URL url, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
+		return new Result(getStructuredDocument(url, title, metadata));
+	}
 
+	public Document getStructuredDocument(URL url, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
 		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
 		addTitle(parts, title);
 		addMetadata(parts, metadata);
 		parts.add(getFormPart("path", url.toExternalForm()));
-		return getClassifications(parts);
+		return XMLReader.getDocument(getClassifications(parts));
 	}
-
-	/**
-	 * Return the status of the classification server instance
-	 *
-	 * @return A classification status object
-	 * @throws ClassificationException Classification exception
-	 */
-	public ClassificationServerStatus status() throws ClassificationException {
-		if (logger.isDebugEnabled())
-			logger.debug("status - entry");
-
-		ClassificationServerStatus status = new ClassificationServerStatus(sendPostRequest(getCommandXML("stats", null), null));
-		return status;
-
-	}
+	
 
 	private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ");
 	/**
@@ -484,14 +503,17 @@ public class ClassificationClient {
 	 * @throws ClassificationException Classification exception
 	 */
 	public Result getClassifiedDocument(byte[] data, String fileName) throws ClassificationException {
-		logger.debug("Treating byte array: '" + fileName + "'");
+		return new Result(getStructuredDocument(data, fileName));
+	}
+	
+	public Document getStructuredDocument(byte[] data, String fileName) throws ClassificationException {
 		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
 
-		if ((data == null) || (data.length == 0)) return new Result(null);
+		if ((data == null) || (data.length == 0)) return getBlankStructuredDocument();
 
 		addByteArray(parts, data, fileName);
 
-		return new Result(getClassificationServerResponse(parts));
+		return XMLReader.getDocument(getClassificationServerResponse(parts));
 	}
 
 	/**
@@ -504,8 +526,11 @@ public class ClassificationClient {
 	 * @return The structured result of the classification
 	 * @throws ClassificationException Classification exception
 	 */
-	public Result getClassifiedDocument(byte[] data, String fileName,  Title title, Map<String, Collection<String>> metadata)
-			throws ClassificationException {
+	public Result getClassifiedDocument(byte[] data, String fileName,  Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
+		return new Result(getStructuredDocument(data, fileName, title, metadata));
+	}
+	
+	public Document getStructuredDocument(byte[] data, String fileName,  Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
 		logger.debug("Treating file: '" + fileName + "'");
 		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
 
@@ -513,7 +538,7 @@ public class ClassificationClient {
 		addMetadata(parts, metadata);
 		addByteArray(parts, data, fileName);
 
-		return new Result(getClassificationServerResponse(parts));
+		return XMLReader.getDocument(getClassificationServerResponse(parts));
 	}
 
 	/**
@@ -528,15 +553,17 @@ public class ClassificationClient {
 	 */
 	public Result getClassifiedDocument(File inputFile, String fileType, Title title, Map<String, Collection<String>> metadata)
 			throws ClassificationException {
-		logger.debug("Treating file: '" + inputFile.getName() + "'");
-
+		return new Result(getStructuredDocument(inputFile, fileType, title, metadata));
+	}
+	
+	public Document getStructuredDocument(File inputFile, String fileType, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
 		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
 
 		addTitle(parts, title);
 		addMetadata(parts, metadata);
 		addFile(parts, inputFile, fileType);
 
-		return new Result(getClassificationServerResponse(parts));
+		return XMLReader.getDocument(getClassificationServerResponse(parts));
 	}
 
 	private void addTitle(Collection<FormBodyPart> parts, Title title) {
@@ -628,19 +655,21 @@ public class ClassificationClient {
 		return returnedData;
 	}
 
-	private Result getClassifications(Collection<FormBodyPart> partsList) throws ClassificationException {
+	private byte[] getClassifications(Collection<FormBodyPart> partsList) throws ClassificationException {
 		return getClassifications(partsList, null);
 	}
 
-	private Result getClassifications(Collection<FormBodyPart> partsList, Map<String, String> outMeta)
-			throws ClassificationException {
-		Result result = new Result(getClassificationServerResponse(partsList));
-		if ((result != null) && (result.getMetadata() != null) && (outMeta != null)) {
-			for (String meta : result.getMetadata().keySet()){
-				outMeta.put(meta, result.getMetadata().get(meta));
+	private byte[]  getClassifications(Collection<FormBodyPart> partsList, Map<String, String> outMeta) throws ClassificationException {
+		byte[] returnedData = getClassificationServerResponse(partsList);
+		if ((returnedData != null) && (outMeta != null)) {
+			Result result = new Result(XMLReader.getDocument(returnedData));
+			if (result.getMetadata() != null) {
+				for (String meta : result.getMetadata().keySet()) {
+					outMeta.put(meta, result.getMetadata().get(meta));
+				}
 			}
 		}
-		return result;
+		return returnedData;
 	}
 
 	public byte[] getClassificationServerResponse(File inputFile, String fileType, Title title, Map<String, Collection<String>> metadata)
@@ -659,7 +688,7 @@ public class ClassificationClient {
 
 	private DocumentBuilder documentBuilder = null;
 
-	protected String getCommandXML(String command, String publishSetName) throws ClassificationException {
+	private String getCommandXML(String command, String publishSetName) throws ClassificationException {
 		if (documentBuilder == null) {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 			try {
@@ -775,8 +804,14 @@ public class ClassificationClient {
 		}
 
 		return responseData;
-}
+	}
 	
+	private static Document blankDocument = null;
+	private final Document getBlankStructuredDocument() throws ClassificationException {
+		if (blankDocument == null) 
+			blankDocument = XMLReader.getDocument("<response><STRUCTUREDDOCUMENT/></response>".getBytes(StandardCharsets.UTF_8));
+		return blankDocument;
+	}
 
 	private void addHeaders(HttpRequest httpRequest) {
 		if (classificationConfiguration.getApiToken() != null) {

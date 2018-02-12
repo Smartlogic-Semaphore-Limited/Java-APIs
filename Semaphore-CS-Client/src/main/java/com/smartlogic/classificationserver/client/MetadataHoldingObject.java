@@ -45,5 +45,5 @@ public class MetadataHoldingObject extends XMLReader {
 	public Map<String, Collection<MetaNode>> getMetaNodes() {
 		return metaNodes;
 	}
-
+	
 }
