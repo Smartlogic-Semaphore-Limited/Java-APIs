@@ -86,7 +86,7 @@ public class ClassificationHistory extends XMLReader {
 	 * @throws ClassificationException Classification exception
 	 */
 	public Collection<ClassificationRecord> getClassificationRecords() throws ClassificationException {
-		logger.info("getClassificationRecords - entry");
+		logger.debug("getClassificationRecords - entry");
 		AuditFormat successFormat = getAuditFormat(getSuccessFormat());
 		if (logger.isDebugEnabled()) logger.debug("getClassificationRecords - success format: " + successFormat);
 		AuditFormat errorFormat = getAuditFormat(getFailFormat());
@@ -124,7 +124,7 @@ public class ClassificationHistory extends XMLReader {
 				
 			}
 		}
-		if (logger.isInfoEnabled()) logger.info("getClassificationRecords - exit: " + returnData.size());
+		if (logger.isDebugEnabled()) logger.debug("getClassificationRecords - exit: " + returnData.size());
 		return returnData;
 	}
 	

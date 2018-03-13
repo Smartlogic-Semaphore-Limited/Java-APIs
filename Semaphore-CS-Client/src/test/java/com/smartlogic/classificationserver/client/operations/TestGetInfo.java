@@ -13,8 +13,8 @@ public class TestGetInfo extends ClassificationTestCase {
 	@Test
 	public void testGetInfo() throws ClassificationException {
 		try {
-			@SuppressWarnings("unused")
 			CSInfo csInfo = classificationClient.getInfo();
+			System.out.println(csInfo);
 		} catch (Exception e) {
 			fail("Exception thrown getting info: " + e.getMessage());
 		}

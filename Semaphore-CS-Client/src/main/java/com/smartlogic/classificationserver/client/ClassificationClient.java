@@ -11,8 +11,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,6 +37,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
@@ -649,6 +653,11 @@ public class ClassificationClient {
 	
 		MultipartEntityBuilder multipartEntityBuilder = getDefaultParts();
 		for (FormBodyPart part: parts) multipartEntityBuilder.addPart(part);
+		
+		if (this.getAuditUUID() != null) {
+			multipartEntityBuilder.addPart(getFormPart("audit_tag", this.getAuditUUID().toString()));
+		}
+		
 		byte[] returnedData = sendPostRequest(multipartEntityBuilder.build());
 			
 		logger.debug("getClassificationServerResponse - exit: " + returnedData.length);
@@ -741,7 +750,80 @@ public class ClassificationClient {
 		return sendPostRequest(multipartEntityBuilder.build());
 	}
 	
+	private boolean initialized = false;
+	private PoolingHttpClientConnectionManager poolingConnectionManager;
+	private RequestConfig requestConfig;
+	
+	private int clientPoolSize = 2;
+	public int getClientPoolSize() {
+		return clientPoolSize;
+	}
+
+	public void setClientPoolSize(int clientPoolSize) {
+		this.clientPoolSize = clientPoolSize;
+	}
+
+	private List<CloseableHttpClient> availableClients = new Vector<CloseableHttpClient>();
+	private IdleConnectionMonitorThread idleConnectionMonitorThread;
+	private void initialize() {
+		poolingConnectionManager = new PoolingHttpClientConnectionManager();
+		poolingConnectionManager.setValidateAfterInactivity(0);
+		poolingConnectionManager.setMaxTotal(clientPoolSize);
+		
+		
+		// Make sure that idle and stale connections are discarded
+		IdleConnectionMonitorThread idleConnectionMonitorThread = new IdleConnectionMonitorThread(poolingConnectionManager);
+		idleConnectionMonitorThread.start();
+		
+		RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
+				.setSocketTimeout(classificationConfiguration.getSocketTimeoutMS())
+				.setConnectTimeout(classificationConfiguration.getConnectionTimeoutMS())
+				.setConnectionRequestTimeout(classificationConfiguration.getConnectionTimeoutMS());
+		if (getProxyURL() != null) {
+			HttpHost proxy = HttpHost.create(getProxyURL());
+			requestConfigBuilder.setProxy(proxy);
+		}
+		requestConfig = requestConfigBuilder.build();
+		initialized = true;
+		
+		for (int i = 0; i < clientPoolSize; i++) {
+			CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig)
+					.setSSLHostnameVerifier(new NoopHostnameVerifier())
+					.setConnectionManager(poolingConnectionManager)
+					.build();
+			availableClients.add(httpClient);
+		}
+		
+	}
+	
+	public void close() {
+		idleConnectionMonitorThread.shutdown = true;
+	}
+	
+	private CloseableHttpClient getClient() throws ClassificationException {
+		CloseableHttpClient client;
+		synchronized (availableClients) {
+			while (availableClients.size() == 0) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					throw new ClassificationException("InterruptedException whilst waiting for client");
+				}
+			}
+			client = availableClients.remove(0);
+		}
+		return client;
+	}
+	
+	private void returnClient(CloseableHttpClient client) {
+		availableClients.add(client);
+	}
+
 	private byte[] sendPostRequest(HttpEntity requestEntity) throws ClassificationException {
+		if (!initialized) initialize();
+		
+		CloseableHttpClient httpClient = getClient();
+		
 		HttpPost httpPost = null;
 		byte[] responseData;
 		try {
@@ -749,47 +831,30 @@ public class ClassificationClient {
 			addHeaders(httpPost);
 			httpPost.setEntity(requestEntity);
 
-			PoolingHttpClientConnectionManager poolingConnectionManager = new PoolingHttpClientConnectionManager();
-			poolingConnectionManager.setValidateAfterInactivity(0);
 			
-			RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
-					.setSocketTimeout(classificationConfiguration.getSocketTimeoutMS())
-					.setConnectTimeout(classificationConfiguration.getConnectionTimeoutMS())
-					.setConnectionRequestTimeout(classificationConfiguration.getConnectionTimeoutMS());
-			if (getProxyURL() != null) {
-				HttpHost proxy = HttpHost.create(getProxyURL());
-				requestConfigBuilder.setProxy(proxy);
-			}
-			RequestConfig requestConfig = requestConfigBuilder.build();
+			try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+				if (response == null)
+					throw new ClassificationException(
+							"Null response from http client: " + classificationConfiguration.getUrl());
+				if (response.getStatusLine() == null)
+					throw new ClassificationException(
+							"Null status line from http client: " + classificationConfiguration.getUrl());
 
-			try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig)
-					.setSSLHostnameVerifier(new NoopHostnameVerifier())
-					.setConnectionManager(poolingConnectionManager)
-					.build()) {
-				try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-					if (response == null)
-						throw new ClassificationException(
-								"Null response from http client: " + classificationConfiguration.getUrl());
-					if (response.getStatusLine() == null)
-						throw new ClassificationException(
-								"Null status line from http client: " + classificationConfiguration.getUrl());
+				int statusCode = response.getStatusLine().getStatusCode();
 
-					int statusCode = response.getStatusLine().getStatusCode();
+				HttpEntity responseEntity = response.getEntity();
 
-					HttpEntity responseEntity = response.getEntity();
-
-					logger.debug("Status: " + statusCode);
-					ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-					IOUtils.copy(responseEntity.getContent(), byteArrayOutputStream);
-					responseData = byteArrayOutputStream.toByteArray();
-					if (statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-						throw new ClassificationException(
-								"Internal classification server error: " + new String(responseData, "UTF-8"));
-					} else if (statusCode != HttpStatus.SC_OK) {
-							throw new ClassificationException(
-									"HttpStatus: " + statusCode + " received from classification server ("
+				logger.debug("Status: " + statusCode);
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+				IOUtils.copy(responseEntity.getContent(), byteArrayOutputStream);
+				responseData = byteArrayOutputStream.toByteArray();
+				if (statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+					throw new ClassificationException(
+							"Internal classification server error: " + new String(responseData, "UTF-8"));
+				} else if (statusCode != HttpStatus.SC_OK) {
+					throw new ClassificationException(
+							"HttpStatus: " + statusCode + " received from classification server ("
 											+ classificationConfiguration.getUrl() + ") " + new String(responseData, "UTF-8"));						
-					}
 				}
 			}
 		} catch (ClientProtocolException e) {
@@ -801,11 +866,14 @@ public class ClassificationClient {
 			if (httpPost != null) {
 				httpPost.abort();
 			}
+			returnClient(httpClient);
 		}
 
 		return responseData;
 	}
 	
+
+
 	private static Document blankDocument = null;
 	private final Document getBlankStructuredDocument() throws ClassificationException {
 		if (blankDocument == null) 
@@ -834,4 +902,40 @@ public class ClassificationClient {
 		return stringBuilder.toString();
 	}
 
+	public static class IdleConnectionMonitorThread extends Thread {
+	    
+	    private final HttpClientConnectionManager connMgr;
+	    private volatile boolean shutdown;
+	    
+	    public IdleConnectionMonitorThread(HttpClientConnectionManager connMgr) {
+	        super();
+	        this.connMgr = connMgr;
+	    }
+
+	    @Override
+	    public void run() {
+	        try {
+	            while (!shutdown) {
+	                synchronized (this) {
+	                    wait(5000);
+	                    // Close expired connections
+	                    connMgr.closeExpiredConnections();
+	                    // Optionally, close connections
+	                    // that have been idle longer than 30 sec
+	                    connMgr.closeIdleConnections(30, TimeUnit.SECONDS);
+	                }
+	            }
+	        } catch (InterruptedException ex) {
+	            // terminate
+	        }
+	    }
+	    
+	    public void shutdown() {
+	        shutdown = true;
+	        synchronized (this) {
+	            notifyAll();
+	        }
+	    }
+	    
+	}
 }

@@ -16,10 +16,8 @@ public abstract class ClassificationTestCase {
 //			classificationClient.setProxyURL("http://localhost:8888");
 
 			ClassificationConfiguration classificationConfiguration = new ClassificationConfiguration();
-			classificationConfiguration.setProtocol("http");
-			classificationConfiguration.setHostName("mlhostdev02");
-			classificationConfiguration.setHostPort(5058);
-			classificationConfiguration.setHostPath("/index.html");
+			classificationConfiguration.setUrl("http://mlhostdev02:5058");
+			classificationConfiguration.setUrl("http://192.168.0.7:5058");
 			classificationConfiguration.setSingleArticle(false);
 			classificationConfiguration.setMultiArticle(true);
 			classificationConfiguration.setSocketTimeoutMS(100000);
