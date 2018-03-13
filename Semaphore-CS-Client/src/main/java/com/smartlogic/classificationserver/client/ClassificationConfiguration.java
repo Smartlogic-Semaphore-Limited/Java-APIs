@@ -239,14 +239,14 @@ public class ClassificationConfiguration {
 	private String apiToken;
 	/**
 	 * Get the token used for authentication within the Smartlogic Cloud
-	 * @return
+	 * @return - the API token in use
 	 */
 	public String getApiToken() {
 		return apiToken;
 	}
 	/**
 	 * Set the token used for authentication within the Smartlogic Cloud
-	 * @param apiToken
+	 * @param apiToken - the API token to use
 	 */
 	public void setApiToken(String apiToken) {
 		this.apiToken = apiToken;
