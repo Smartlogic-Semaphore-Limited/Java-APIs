@@ -1,5 +1,6 @@
 package com.smartlogic.ontologyeditor;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -567,8 +568,44 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			JSONObject valueObject = new JSONObject();
 			valueObject.put("@value", metadataValue);
 			valueObject.put("@language", metadataLanguage);
+			valueObject.put("@type", "http://www.w3.org/2001/XMLSchema#string");
 			addOperation.put("value", valueObject);
 		}
+		operationList.add(addOperation);
+
+		String createMetadataPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("createMetadata payload: {}", createMetadataPayload);
+		Invocation invocation = invocationBuilder.build("PATCH",
+				Entity.entity(createMetadataPayload, "application/json-patch+json"));
+		Response response = invocation.invoke();
+
+		if (response.getStatus() == 200) {
+			return;
+		}
+
+		throw new OEClientException(
+				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+	}
+
+	@SuppressWarnings("unchecked")
+	public void createMetadata(Concept concept, String metadataType, URI uri)
+			throws OEClientException {
+		logger.info("createMetadata entry: {} {} {} {}", concept.getUri(), uri.toString());
+
+		String url = getResourceURL(concept.getUri());
+		logger.info("createMetadata - URL: {}", url);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
+
+		JSONArray operationList = new JSONArray();
+		JSONObject addOperation = new JSONObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataType)));
+
+		JSONObject valueObject = new JSONObject();
+		valueObject.put("@value", uri.toString());
+		valueObject.put("@type", "http://www.w3.org/2001/XMLSchema#anyURI");
+		addOperation.put("value", valueObject);
+
 		operationList.add(addOperation);
 
 		String createMetadataPayload = operationList.toJSONString().replaceAll("\\/", "/");

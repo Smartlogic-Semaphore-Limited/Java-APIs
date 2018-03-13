@@ -1,12 +1,18 @@
 package com.smartlogic.classificationserver.client;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.testng.annotations.Test;
+
 public class ClassifyWithMetaTest extends ClassificationTestCase {
 
+	@Test
 	public void testClassifyWithMeta() {
 
 		try {
@@ -24,9 +30,9 @@ public class ClassifyWithMetaTest extends ClassificationTestCase {
 			metadata.put("other", other);
 
 			Result result = classificationClient.getClassifiedDocument(new Body(body), new Title(title), metadata);
-			assertEquals("run 1 - IPSV", 1, result.getAllClassifications().get("IPSV").size());
-			assertEquals("run 1 - IPSV_ID", 1, result.getAllClassifications().get("IPSV_ID").size());
-			assertEquals("run 1 - IPSV_RAW", 1, result.getAllClassifications().get("IPSV_RAW").size());
+			assertEquals(1, result.getAllClassifications().get("IPSV").size(), "run 1 - IPSV");
+			assertEquals(1, result.getAllClassifications().get("IPSV_ID").size(), "run 1 - IPSV_ID");
+			assertEquals(1, result.getAllClassifications().get("IPSV_RAW").size(), "run 1 - IPSV_RAW");
 
 
 		} catch (Exception e) {

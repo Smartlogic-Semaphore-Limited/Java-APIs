@@ -1,17 +1,12 @@
 package com.smartlogic.classificationserver.client;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.smartlogic.classificationserver.client.csvparser.CSVParser;
 
@@ -33,39 +28,29 @@ public class ClassificationHistory extends XMLReader {
 		// If there is no data provided, then throw an exception
 		if (data == null) throw new ClassificationException("No response from classification server");
 		
-		try {
-			Element element = getRootElement(data);
+		Element element = getRootElement(data);
 			
-			NodeList successFormatNodeList = element.getElementsByTagName("SuccessFormat");
-			if ((successFormatNodeList == null) || (successFormatNodeList.getLength() == 0)) {
-				throw new ClassificationException("No SuccessFormat element returned by classification server: " + toString(data));
-			}
-			Element successFormatElement = (Element)successFormatNodeList.item(0);
-			this.successFormat = successFormatElement.getTextContent();
-
-			NodeList failFormatNodeList = element.getElementsByTagName("FailFormat");
-			if ((failFormatNodeList == null) || (failFormatNodeList.getLength() == 0)) {
-				throw new ClassificationException("No FailFormat element returned by classification server: " + toString(data));
-			}
-			Element failFormatElement = (Element)failFormatNodeList.item(0);
-			this.failFormat = failFormatElement.getTextContent();
-
-			NodeList logDataNodeList = element.getElementsByTagName("logData");
-			if ((logDataNodeList == null) || (logDataNodeList.getLength() == 0)) {
-				throw new ClassificationException("No LogData element returned by classification server: " + toString(data));
-			}
-			Element logDataElement = (Element)logDataNodeList.item(0);
-			this.logData = logDataElement.getTextContent();
-			
-		} catch (ParserConfigurationException e) {
-			throw new ClassificationException("ParserConfigurationException raised: " + e.getMessage());
-		} catch (UnsupportedEncodingException e) {
-			throw new ClassificationException("UnsupportedEncodingException raised: " + e.getMessage());
-		} catch (SAXException e) {
-			throw new ClassificationException("SAXException raised: " + e.getMessage() + "\n" + toString(data));
-		} catch (IOException e) {
-			throw new ClassificationException("IOException raised: " + e.getMessage() + "\n" + toString(data));
+		NodeList successFormatNodeList = element.getElementsByTagName("SuccessFormat");
+		if ((successFormatNodeList == null) || (successFormatNodeList.getLength() == 0)) {
+			throw new ClassificationException("No SuccessFormat element returned by classification server: " + toString(data));
 		}
+		Element successFormatElement = (Element)successFormatNodeList.item(0);
+		this.successFormat = successFormatElement.getTextContent();
+
+		NodeList failFormatNodeList = element.getElementsByTagName("FailFormat");
+		if ((failFormatNodeList == null) || (failFormatNodeList.getLength() == 0)) {
+			throw new ClassificationException("No FailFormat element returned by classification server: " + toString(data));
+		}
+		Element failFormatElement = (Element)failFormatNodeList.item(0);
+		this.failFormat = failFormatElement.getTextContent();
+
+		NodeList logDataNodeList = element.getElementsByTagName("logData");
+		if ((logDataNodeList == null) || (logDataNodeList.getLength() == 0)) {
+			throw new ClassificationException("No LogData element returned by classification server: " + toString(data));
+		}
+		Element logDataElement = (Element)logDataNodeList.item(0);
+		this.logData = logDataElement.getTextContent();
+			
 	}
 	
 	private String successFormat;
@@ -101,7 +86,7 @@ public class ClassificationHistory extends XMLReader {
 	 * @throws ClassificationException Classification exception
 	 */
 	public Collection<ClassificationRecord> getClassificationRecords() throws ClassificationException {
-		logger.info("getClassificationRecords - entry");
+		logger.debug("getClassificationRecords - entry");
 		AuditFormat successFormat = getAuditFormat(getSuccessFormat());
 		if (logger.isDebugEnabled()) logger.debug("getClassificationRecords - success format: " + successFormat);
 		AuditFormat errorFormat = getAuditFormat(getFailFormat());
@@ -139,7 +124,7 @@ public class ClassificationHistory extends XMLReader {
 				
 			}
 		}
-		if (logger.isInfoEnabled()) logger.info("getClassificationRecords - exit: " + returnData.size());
+		if (logger.isDebugEnabled()) logger.debug("getClassificationRecords - exit: " + returnData.size());
 		return returnData;
 	}
 	

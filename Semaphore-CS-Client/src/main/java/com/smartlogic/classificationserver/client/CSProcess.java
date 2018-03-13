@@ -32,6 +32,8 @@ public class CSProcess {
 					setExceptionCount(Integer.parseInt(attributeNode.getValue()));
 				} else if ("bytes".equals(attributeNode.getName())) {
 					setBytes(Long.parseLong(attributeNode.getValue()));
+				} else if ("port".equals(attributeNode.getName())) {
+					setPort(Integer.parseInt(attributeNode.getValue()));
 				} else if ("start_time".equals(attributeNode.getName())) {
 					setStartTime(new Date((long) Double.parseDouble(attributeNode.getValue())));
 				} else if ("stop_time".equals(attributeNode.getName())) {
@@ -126,10 +128,19 @@ public class CSProcess {
 		this.lastUsed = lastUsed;
 	}
 	
+	private int port = -1;
+	public int getPort() {
+		return port;
+	}
+	public void setPort(int port) {
+		this.port = port;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Process: ");
 		sb.append(" ID: " + id);
+		sb.append(" Port: " + port);
 		sb.append(" Status : " + status);
 		sb.append(" Process ID: " + processId);
 		sb.append(" Start Time: " + startTime);

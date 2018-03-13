@@ -168,25 +168,43 @@ public class SemaphoreModel {
 
 
 	public Concept createConcept(URI uri, Label prefLabel) throws ModelException {
-		return createConcept(uri, prefLabel, null, null);
+		return createConcept(uri, prefLabel, (Resource[])null, null);
 	}
+	
+	@Deprecated
 	public Concept createConcept(URI uri, Label prefLabel, URI[] classURIs) throws ModelException {
-		return createConcept(uri, prefLabel, classURIs, null);
+		Resource[] classResources = new Resource[classURIs.length];
+		for (int i = 0; i < classURIs.length; i++) 
+			classResources[i] = resourceFromURI(model, classURIs[i]);
+		
+		return createConcept(uri, prefLabel, classResources, null);
 	}
-	public Concept createConcept(URI uri, Label prefLabel, UUID uuid) throws ModelException {
-		return createConcept(uri, prefLabel, null, uuid);
+	
+	public Concept createConcept(URI uri, Label prefLabel, ConceptClass[] conceptClasses) throws ModelException {
+		return createConcept(uri, prefLabel, conceptClasses, null);
 	}
 
-	public Concept createConcept(URI uri, Label prefLabel, URI[] classURIs, UUID uuid) throws ModelException {
+	public Concept createConcept(URI uri, Label prefLabel, ConceptClass[] conceptClasses, UUID uuid) throws ModelException {
+		Resource[] classResources = new Resource[conceptClasses.length];
+		for (int i = 0; i < conceptClasses.length; i++) 
+			classResources[i] = conceptClasses[i].getResource();
+		return createConcept(uri, prefLabel, classResources, uuid);
+	}
+
+	public Concept createConcept(URI uri, Label prefLabel, UUID uuid) throws ModelException {
+		return createConcept(uri, prefLabel, (Resource[])null, uuid);
+	}
+
+	private Concept createConcept(URI uri, Label prefLabel, Resource[] classResources, UUID uuid) throws ModelException {
 		Resource conceptURIResource = resourceFromURI(model, uri);
 
 		if (resourceInUse(conceptURIResource)) throw new ModelException("Attempting to create concept with URI - '%s'. This URI is already in use.", uri.toString());
 		
-		if ((classURIs == null) || (classURIs.length == 0)) {
+		if ((classResources == null) || (classResources.length == 0)) {
 			conceptURIResource.addProperty(RDF.type, SKOS.Concept);
 		} else {
-			for (URI classURI: classURIs) {
-				conceptURIResource.addProperty(RDF.type, resourceFromURI(model, classURI));
+			for (Resource classResource: classResources) {
+				conceptURIResource.addProperty(RDF.type, classResource);
 			}
 		}
 		
@@ -231,6 +249,25 @@ public class SemaphoreModel {
 		return new ConceptScheme(model, conceptSchemeURIResource);
 	}
 
+	public ConceptClass createConceptClass(URI uri, Label label) throws ModelException {
+		return createConceptClass(uri, label, SKOS.Concept);
+	}
+	
+	public ConceptClass createConceptClass(URI uri, Label label, URI parentURI) throws ModelException {
+		return createConceptClass(uri, label, resourceFromURI(model, parentURI));
+	}
+
+	private ConceptClass createConceptClass(URI uri, Label label, Resource parentResource) throws ModelException {
+		Resource conceptClassURIResource = resourceFromURI(model, uri);
+
+		if (resourceInUse(conceptClassURIResource)) throw new ModelException(String.format("Attempting to create concept class with URI - '%s'. This URI is already in use.", uri.toString()));
+		
+		conceptClassURIResource.addProperty(RDF.type, OWL.Class);
+		conceptClassURIResource.addLiteral(RDFS.label, getAsLiteral(model, label));
+		conceptClassURIResource.addProperty(RDFS.subClassOf, parentResource);	
+		return new ConceptClass(model, conceptClassURIResource);
+	}
+
 	public ConceptScheme getConceptScheme(URI uri) {
 		
 		Resource conceptSchemeResource = model.getResource(uri.toString());
@@ -251,7 +288,7 @@ public class SemaphoreModel {
 		Resource metadataTypeURIResource = resourceFromURI(model, uri);
 		if (resourceInUse(metadataTypeURIResource)) throw new ModelException("Attempting to create metadata type with URI - '%s'. This URI is already in use.", uri.toString());
 
-		metadataTypeURIResource.addProperty(RDF.type, OWL.ObjectProperty);
+		metadataTypeURIResource.addProperty(RDF.type, OWL.DatatypeProperty);
 		metadataTypeURIResource.addProperty(RDFS.label, getAsLiteral(model, label));
 		metadataTypeURIResource.addProperty(RDFS.domain, SKOS.Concept);
 		metadataTypeURIResource.addProperty(RDFS.range, range);
@@ -276,7 +313,7 @@ public class SemaphoreModel {
 	}
 
 	public MetadataType getMetadataTypeIfExists(URI uri) throws ModelException {
-		String sparql = "SELECT ?metadataTypeURI WHERE { VALUES ?metadataTypeURI { ?suppliedURI } . ?metadataTypeURI a owl:DatatypeProperty .  ?metadataTypeURI rdfs:range ?range . }";
+		String sparql = "SELECT ?metadataTypeURI ?range WHERE { VALUES ?metadataTypeURI { ?suppliedURI } . ?metadataTypeURI a owl:DatatypeProperty .  ?metadataTypeURI rdfs:range ?range . }";
 		ParameterizedSparqlString findConceptSchemeSparql = new ParameterizedSparqlString(model);
 		findConceptSchemeSparql.setCommandText(sparql);
 		findConceptSchemeSparql.setParam("suppliedURI", model.getResource(uri.toString()));
@@ -297,7 +334,7 @@ public class SemaphoreModel {
 			} else if (XSD.xboolean.equals(range)) {
 				metadataType = new BooleanMetadataType(model, querySolution.getResource("?metadataTypeURI"));
 			} else {
-				throw new ModelException(String.format("Unable to determine range for metadata type with URI: '%s'", uri));
+				throw new ModelException("Unable to determine range for metadata type with URI: '%s' - '%s'", uri, range);
 			}
 		}
 		return metadataType;

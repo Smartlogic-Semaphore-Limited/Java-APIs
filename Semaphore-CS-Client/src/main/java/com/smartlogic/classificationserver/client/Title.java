@@ -5,9 +5,10 @@ package com.smartlogic.classificationserver.client;
  * @author Smartlogic Semaphore
  *
  */
-public class Title {
+public class Title extends StringObject {
+	protected String getParameterName() { return "title"; }
 	
-	private String value;
+	private final String value;
 	/**
 	 * Create the title from the supplied data
 	 * @param value The title

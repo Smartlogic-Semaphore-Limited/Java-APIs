@@ -11,6 +11,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.update.UpdateAction;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.xerces.impl.dv.util.Base64;
 
 public abstract class ObjectWithURI {
 
@@ -189,5 +190,9 @@ public abstract class ObjectWithURI {
 		return qexec.execAsk();
 	}
 	
+	
+	protected String getBase64(String value) {
+		return Base64.encode(value.getBytes());
+	}
 
 }

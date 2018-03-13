@@ -1,5 +1,7 @@
 package com.smartlogic.classificationserver.client;
 
+import static org.testng.Assert.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,11 +13,12 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.annotations.Test;
 
 public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 	protected final static Log logger = LogFactory.getLog(ClassifyDocumentWithHashTest.class);
 
-
+	@Test
 	public void testBinary() throws IOException, ClassificationException {
 		File file = new File("src/test/resources/data/SampleData.txt");
 		FileInputStream fileInputStream = new FileInputStream(file);
@@ -30,7 +33,7 @@ public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 		byteArrayOutputStream.close();
 
 		Result result1 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt");
-		assertEquals("Hash 1", "f7be152b1d057570b892dbe3dc39bd70", result1.getHash());
+		assertEquals("f7be152b1d057570b892dbe3dc39bd70", result1.getHash(), "Hash 1");
 
 		Map<String, Collection<String>> metadata = new HashMap<String, Collection<String>>();
 		Collection<String> cheeses = new Vector<String>();
@@ -40,7 +43,7 @@ public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 		metadata.put("cheeses", cheeses);
 
 		Result result2 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt", new Title("title"), metadata);
-		assertEquals("Hash 2", "c723555e774c94d0ead71d5c1cc06efc", result2.getHash());
+		assertEquals("c723555e774c94d0ead71d5c1cc06efc", result2.getHash(), "Hash 2");
 
 	}
 

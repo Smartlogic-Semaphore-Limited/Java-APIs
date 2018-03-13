@@ -28,4 +28,10 @@ public class Parameter {
 	public String getName() {
 		return name;
 	}
+
+	@Override
+	public String toString() {
+		return "Parameter [name=" + name + ", value=" + value + ", translation=" + translation + "]";
+	}
+	
 }

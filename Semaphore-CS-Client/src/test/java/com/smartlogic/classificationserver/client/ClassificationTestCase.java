@@ -3,24 +3,20 @@ package com.smartlogic.classificationserver.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
+import org.testng.annotations.BeforeTest;
 
-public abstract class ClassificationTestCase extends TestCase {
+public abstract class ClassificationTestCase {
 	protected static ClassificationClient classificationClient;
 
-
+	@BeforeTest
 	public void setUp() {
 
 		if (classificationClient == null) {
 			classificationClient = new ClassificationClient();
-//			classificationClient.setProxyHost("localhost");
-//			classificationClient.setProxyPort(8888);
+//			classificationClient.setProxyURL("http://localhost:8888");
 
 			ClassificationConfiguration classificationConfiguration = new ClassificationConfiguration();
-			classificationConfiguration.setProtocol("http");
-			classificationConfiguration.setHostName("mlhostdev02");
-			classificationConfiguration.setHostPort(5058);
-			classificationConfiguration.setHostPath("/index.html");
+			classificationConfiguration.setUrl("http://mlhostdev02:5058");
 			classificationConfiguration.setSingleArticle(false);
 			classificationConfiguration.setMultiArticle(true);
 			classificationConfiguration.setSocketTimeoutMS(100000);
