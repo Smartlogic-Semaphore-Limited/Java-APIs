@@ -47,6 +47,22 @@ public abstract class ConceptObject extends ObjectWithURI {
 		}
 		return returnData;
 	}
+	
+	public Collection<ConceptObject> getRelated(RelationshipType relationshipType) {
+		Collection<ConceptObject> returnData = new HashSet<ConceptObject>();
+		StmtIterator stmtIterator = resource.listProperties(relationshipType.getProperty());
+		
+		while (stmtIterator.hasNext()) {
+			Statement statement = stmtIterator.next();
+			Resource relatedResource = statement.getObject().asResource();
+			if (relationshipType.getProperty().equals(SKOS.topConceptOf)) {
+				returnData.add(new ConceptScheme(model, relatedResource));
+			} else {
+				returnData.add(new Concept(model, relatedResource));
+			}
+		}
+		return returnData;
+	}
 
 	/**
 	 * Add this guid to the concept object.

@@ -26,13 +26,11 @@ public class Concept extends ConceptObject {
 
 	
 	public void addChildConcept(Concept childConcept) {
-		resource.addProperty(SKOS.narrower, childConcept.getResource());
 		childConcept.getResource().addProperty(SKOS.broader, resource);
 	}
 		
 	public void addParentConcept(Concept childConcept) {
 		resource.addProperty(SKOS.broader, childConcept.getResource());
-		childConcept.getResource().addProperty(SKOS.narrower, resource);
 	}
 
 	public void addMetadata(StringMetadataType metadataType, String value, Language language) {
@@ -63,7 +61,7 @@ public class Concept extends ConceptObject {
 		resource.addProperty(SKOS.broader, concept.getResource());
 	}
 	public void addChild(Concept concept) {
-		resource.addProperty(SKOS.narrower, concept.getResource());
+		concept.getResource().addProperty(SKOS.broader, resource);
 	}
 
 	public void addRelationship(ConceptToConceptRelationshipType relationshipType, Concept concept2) {

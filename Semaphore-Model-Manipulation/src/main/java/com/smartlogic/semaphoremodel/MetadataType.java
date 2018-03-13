@@ -16,4 +16,12 @@ public abstract class MetadataType extends ObjectWithURI {
 		return property;
 	}
 
+	public boolean equals(Object otherObject) {
+		if (!this.getClass().equals(otherObject.getClass())) return false;
+		
+		MetadataType otherMetadataType = (MetadataType)otherObject;
+		
+		return this.getProperty().equals(otherMetadataType.getProperty());
+	}
+
 }

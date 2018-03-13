@@ -288,7 +288,7 @@ public class SemaphoreModel {
 		Resource metadataTypeURIResource = resourceFromURI(model, uri);
 		if (resourceInUse(metadataTypeURIResource)) throw new ModelException("Attempting to create metadata type with URI - '%s'. This URI is already in use.", uri.toString());
 
-		metadataTypeURIResource.addProperty(RDF.type, OWL.ObjectProperty);
+		metadataTypeURIResource.addProperty(RDF.type, OWL.DatatypeProperty);
 		metadataTypeURIResource.addProperty(RDFS.label, getAsLiteral(model, label));
 		metadataTypeURIResource.addProperty(RDFS.domain, SKOS.Concept);
 		metadataTypeURIResource.addProperty(RDFS.range, range);
@@ -313,7 +313,7 @@ public class SemaphoreModel {
 	}
 
 	public MetadataType getMetadataTypeIfExists(URI uri) throws ModelException {
-		String sparql = "SELECT ?metadataTypeURI WHERE { VALUES ?metadataTypeURI { ?suppliedURI } . ?metadataTypeURI a owl:DatatypeProperty .  ?metadataTypeURI rdfs:range ?range . }";
+		String sparql = "SELECT ?metadataTypeURI ?range WHERE { VALUES ?metadataTypeURI { ?suppliedURI } . ?metadataTypeURI a owl:DatatypeProperty .  ?metadataTypeURI rdfs:range ?range . }";
 		ParameterizedSparqlString findConceptSchemeSparql = new ParameterizedSparqlString(model);
 		findConceptSchemeSparql.setCommandText(sparql);
 		findConceptSchemeSparql.setParam("suppliedURI", model.getResource(uri.toString()));
@@ -334,7 +334,7 @@ public class SemaphoreModel {
 			} else if (XSD.xboolean.equals(range)) {
 				metadataType = new BooleanMetadataType(model, querySolution.getResource("?metadataTypeURI"));
 			} else {
-				throw new ModelException(String.format("Unable to determine range for metadata type with URI: '%s'", uri));
+				throw new ModelException("Unable to determine range for metadata type with URI: '%s' - '%s'", uri, range);
 			}
 		}
 		return metadataType;
