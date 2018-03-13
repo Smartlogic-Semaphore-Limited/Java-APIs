@@ -133,7 +133,7 @@ public class OEBatchClient implements Closeable {
     switch (batchMode) {
       case None:
         RDFDifference diff = getBatchDiff();
-        if (diff.getInLeftOnly().size() > 1 || diff.getInRightOnly().size() > 1) {
+        if (diff.getInLeftOnly().size() > 0 || diff.getInRightOnly().size() > 0) {
           if (logger.isDebugEnabled())
             logger.debug("Changes detected, running SPARQL Update");
           result = endpoint.runSparqlUpdate(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(getBatchDiff()));
