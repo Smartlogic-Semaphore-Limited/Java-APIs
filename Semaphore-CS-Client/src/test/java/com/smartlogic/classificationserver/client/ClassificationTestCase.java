@@ -17,7 +17,6 @@ public abstract class ClassificationTestCase {
 
 			ClassificationConfiguration classificationConfiguration = new ClassificationConfiguration();
 			classificationConfiguration.setUrl("http://mlhostdev02:5058");
-			classificationConfiguration.setUrl("http://192.168.0.7:5058");
 			classificationConfiguration.setSingleArticle(false);
 			classificationConfiguration.setMultiArticle(true);
 			classificationConfiguration.setSocketTimeoutMS(100000);
