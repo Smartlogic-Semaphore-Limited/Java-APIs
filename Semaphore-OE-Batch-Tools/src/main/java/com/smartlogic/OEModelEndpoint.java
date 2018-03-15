@@ -101,13 +101,10 @@ public class OEModelEndpoint {
       logger.debug("run SPARQL update: {}", sparql);
 
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-
+    setProxyHttpHost(clientBuilder);
+    
     setCloudAuthHeaderIfConfigured(clientBuilder);
 
-    if (proxyHost != null && proxyPort != null) {
-      HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-      clientBuilder.setProxy(proxy);
-    }
 
     try (CloseableHttpClient client = clientBuilder.build()) {
       UpdateRequest update = UpdateFactory.create(sparql, Syntax.syntaxARQ);
@@ -117,6 +114,13 @@ public class OEModelEndpoint {
       throw new RuntimeException("IOException.", ioe);
     }
     return true;
+  }
+  
+  private void setProxyHttpHost(HttpClientBuilder clientBuilder) {
+	  if (proxyHost != null && proxyPort != null) {
+		  HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+		  clientBuilder.setProxy(proxy);
+	  }
   }
 
   /**
@@ -294,6 +298,7 @@ public class OEModelEndpoint {
     String fetchUri = buildOEExportApiUrl();
 
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+    setProxyHttpHost(clientBuilder);
     setCloudAuthHeaderIfConfigured(clientBuilder);
     try (CloseableHttpClient httpClient = clientBuilder.build()) {
       HttpGet httpGet = new HttpGet(fetchUri);
