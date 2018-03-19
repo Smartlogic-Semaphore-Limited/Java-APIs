@@ -73,14 +73,11 @@ public class OEModelEndpoint {
 
     Query query = QueryFactory.create(sparql);
     ResultSet results = null;
+    
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+    setProxyHttpHost(clientBuilder);
 
     setCloudAuthHeaderIfConfigured(clientBuilder);
-
-    if (proxyHost != null && proxyPort != null) {
-      HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-      clientBuilder.setProxy(proxy);
-    }
 
     try (CloseableHttpClient client = clientBuilder.build();
          QueryExecution qe = QueryExecutionFactory.sparqlService(buildSPARQLUrl().toString(), query, client)) {
