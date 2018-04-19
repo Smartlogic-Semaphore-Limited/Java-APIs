@@ -46,6 +46,8 @@ public class VersionInfo implements Serializable {
 						setApi(revision);
 					} else if ("SES build".equals(name)) {
 						setBuild(revision);
+					} else if ("SES version".equals(name)) {
+						setVersion(revision);
 					} else {
 						logger.trace("Unexpected version information: " + name + " (" + revision + ")");
 					}
@@ -89,6 +91,14 @@ public class VersionInfo implements Serializable {
 	}
 	public void setBuild(String build) {
 		this.build = build;
+	}
+	
+	private String version;
+	public String getVersion() {
+		return version;
+	}
+	public void setVersion(String version) {
+		this.version = version;
 	}
 
 	@Override

@@ -414,8 +414,27 @@ public class SESClient {
 		return returnData;
 	}
 
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-	private String getFilterString(SESFilter sesFilter) {
+	private String dateFormat = null;
+	private synchronized void setDateFormat() throws SESException {
+		VersionInfo versionInfo = this.getVersion();
+		String version = versionInfo.getVersion();
+		logger.debug("setDateFormat - version: {}", version);
+		if (version != null) {
+			// This is SES > 4.0.36
+			dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
+		} else {
+			dateFormat= "yyyyMMddHHmmss";
+		}
+	}
+	
+	private SimpleDateFormat getDateFormatter() throws SESException {
+		if (dateFormat == null) {
+			setDateFormat();
+		}
+		return new SimpleDateFormat(dateFormat);
+	}
+	
+	private String getFilterString(SESFilter sesFilter) throws SESException {
 		if (sesFilter == null) return "";
 		StringBuilder path = new StringBuilder();
 		try {
@@ -439,10 +458,10 @@ public class SESClient {
 				}
 			}
 			if (sesFilter.getModifiedBeforeDate() != null) {
-				path.append("&filter=MODIFIED_BEFORE=" + sdf.format(sesFilter.getModifiedBeforeDate()));
+				path.append("&filter=MODIFIED_BEFORE=" + getDateFormatter().format(sesFilter.getModifiedBeforeDate()));
 			}
 			if (sesFilter.getModifiedAfterDate() != null) {
-				path.append("&filter=MODIFIED_AFTER=" + sdf.format(sesFilter.getModifiedAfterDate()));
+				path.append("&filter=MODIFIED_AFTER=" + getDateFormatter().format(sesFilter.getModifiedAfterDate()));
 			}
 			if (sesFilter.getExcludeAttributes() != null ) {
 				for (String attribute: sesFilter.getExcludeAttributes()) {
