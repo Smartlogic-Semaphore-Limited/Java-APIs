@@ -78,6 +78,10 @@ public class Term implements Serializable
 					setAttribute(new Attribute(childElement));
 				} else if ("METADATA".equals(childElement.getNodeName())) {
 					setMetadata(new Metadata(childElement));
+				} else if ("CREATED_DATE".equals(childElement.getNodeName())) {
+					setCreatedDate(new CreatedDate(childElement));
+				} else if ("MODIFIED_DATE".equals(childElement.getNodeName())) {
+					setModifiedDate(new ModifiedDate(childElement));
 				} else if ("SYNONYMS".equals(childElement.getNodeName())) {
 					Synonyms synonyms = new Synonyms(childElement);
 					addSynonyms(synonyms);
@@ -283,8 +287,25 @@ public class Term implements Serializable
 		synonymsList.add(synonyms);
 		this.synonyms = synonyms;
 	}
+	
+	private CreatedDate createdDate;
+    public CreatedDate getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(CreatedDate createdDate) {
+		this.createdDate = createdDate;
+	}
 
-    private Synonyms synonyms;
+	private ModifiedDate modifiedDate;
+	public ModifiedDate getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(ModifiedDate modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	private Synonyms synonyms;
     /**
      *
      * @return List of synonyms
