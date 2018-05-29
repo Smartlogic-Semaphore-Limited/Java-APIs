@@ -3,6 +3,7 @@ package com.smartlogic.semaphoremodel;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -38,11 +39,11 @@ public class Concept extends ConceptObject {
 	}
 
 	public void addMetadata(CalendarMetadataType metadataType, Calendar calendar) {
-		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(calendar.getTime(), "xsd:Date"));
+		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(calendar.getTime(), XSDDatatype.XSDdate));
 	}
 
 	public void addMetadata(CalendarMetadataType metadataType, Date date) {
-		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(date, "xsd:Date"));
+		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(date, XSDDatatype.XSDdate));
 	}
 
 	public void addMetadata(BooleanMetadataType metadataType, boolean bool) {
