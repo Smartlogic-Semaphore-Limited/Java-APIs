@@ -1,8 +1,12 @@
 package com.smartlogic.semaphoremodel;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -20,6 +24,8 @@ import org.apache.jena.vocabulary.SKOSXL;
 
 public class Concept extends ConceptObject {
 
+	private final static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	
 	protected Concept(Model model, Resource resource) {
 		super(model, resource);
 	}
@@ -37,12 +43,22 @@ public class Concept extends ConceptObject {
 		resource.addProperty(metadataType.getProperty(), model.createLiteral(value, language.getCode()));
 	}
 
+	private String getFormattedDate(Date date) {
+		return getFormattedDate(date.toInstant());
+	}
+	private String getFormattedDate(Calendar calendar) {
+		return getFormattedDate(calendar.toInstant());
+	}
+	private String getFormattedDate(Instant instant) {
+		return dateFormatter.format(instant.atZone(ZoneId.systemDefault()).toLocalDate());
+	}
+	
 	public void addMetadata(CalendarMetadataType metadataType, Calendar calendar) {
-		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(calendar.getTime(), "xsd:Date"));
+		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(getFormattedDate(calendar), XSDDatatype.XSDdate));
 	}
 
 	public void addMetadata(CalendarMetadataType metadataType, Date date) {
-		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(date, "xsd:Date"));
+		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(getFormattedDate(date), XSDDatatype.XSDdate));
 	}
 
 	public void addMetadata(BooleanMetadataType metadataType, boolean bool) {

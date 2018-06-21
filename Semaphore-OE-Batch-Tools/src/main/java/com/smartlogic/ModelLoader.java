@@ -2,13 +2,13 @@ package com.smartlogic;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb.TDBLoader;
@@ -69,7 +69,7 @@ public class ModelLoader {
     logger.debug("Downloaded model: {}", modelAsTTL);
     
     Model model = ModelFactory.createDefaultModel();
-    model.read(new ByteArrayInputStream(modelAsTTL.getBytes()), null, "TTL");
+    model.read(new ByteArrayInputStream(modelAsTTL.getBytes(StandardCharsets.UTF_8)), null, "TTL");
     return model;
   }
 
