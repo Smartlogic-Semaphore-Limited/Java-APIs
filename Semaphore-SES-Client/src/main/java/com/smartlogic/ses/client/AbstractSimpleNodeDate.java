@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter;
 
 import org.w3c.dom.Element;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 public abstract class AbstractSimpleNodeDate extends AbstractSimpleNode  {
 	private static final long serialVersionUID = -7383419011106091654L;
 
@@ -19,7 +21,8 @@ public abstract class AbstractSimpleNodeDate extends AbstractSimpleNode  {
 	}
 	
 	
-	private final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ"); 
+	private final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+	@XmlTransient
 	public ZonedDateTime getZonedDateTime() {
 		if ((getValue() == null) || (getValue().length() == 0)) return null;
 		
