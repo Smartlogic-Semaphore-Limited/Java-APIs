@@ -65,6 +65,10 @@ public class Concept extends ConceptObject {
 		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(bool));
 	}
 
+	public void addMetadata(IntegerMetadataType metadataType, int value) {
+		resource.addProperty(metadataType.getProperty(), model.createTypedLiteral(value));
+	}
+
 	public void addRelation(RelationshipType relationshipType, Concept concept) {
 		resource.addProperty(relationshipType.getProperty(), concept.getResource());
 	}

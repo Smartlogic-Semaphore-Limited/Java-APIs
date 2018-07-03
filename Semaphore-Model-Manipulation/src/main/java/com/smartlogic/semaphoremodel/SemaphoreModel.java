@@ -299,6 +299,10 @@ public class SemaphoreModel {
 		Resource metadataTypeResource = createMetadataTypeResource(uri, label, XSD.xboolean);
 		return new BooleanMetadataType(model, metadataTypeResource);
 	}
+	public IntegerMetadataType createIntegerMetadataType(URI uri, Label label) throws ModelException {
+		Resource metadataTypeResource = createMetadataTypeResource(uri, label, XSD.integer);
+		return new IntegerMetadataType(model, metadataTypeResource);
+	}
 	public CalendarMetadataType createCalendarMetadataType(URI uri, Label label) throws ModelException {
 		Resource metadataTypeResource = createMetadataTypeResource(uri, label, XSD.date);
 		return new CalendarMetadataType(model, metadataTypeResource);
@@ -333,6 +337,8 @@ public class SemaphoreModel {
 				metadataType = new CalendarMetadataType(model, querySolution.getResource("?metadataTypeURI"));
 			} else if (XSD.xboolean.equals(range)) {
 				metadataType = new BooleanMetadataType(model, querySolution.getResource("?metadataTypeURI"));
+			} else if (XSD.integer.equals(range)) {
+				metadataType = new IntegerMetadataType(model, querySolution.getResource("?metadataTypeURI"));
 			} else {
 				throw new ModelException("Unable to determine range for metadata type with URI: '%s' - '%s'", uri, range);
 			}

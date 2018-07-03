@@ -35,6 +35,9 @@ public class TestModelBuilder {
 		CalendarMetadataType metadataCreationDate = semaphoreModel.createCalendarMetadataType(new URI("http://kma.com/CreationDate"), new Label("Creation Date", english));
 		concept1.addMetadata(metadataCreationDate, Calendar.getInstance());
 
+		IntegerMetadataType metadataCount = semaphoreModel.createIntegerMetadataType(new URI("http://kma.com/Count"), new Label("Count", english));
+		concept1.addMetadata(metadataCount, 43);
+
 		Concept concept2 = semaphoreModel.createConcept(new URI("http://kma.com/Concept2"), new Label("Second concept", english));
 		conceptScheme.addTopConcept(concept2);
 		
