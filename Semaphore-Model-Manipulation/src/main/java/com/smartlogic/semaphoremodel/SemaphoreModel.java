@@ -354,63 +354,83 @@ public class SemaphoreModel {
 	}
 
 	public HasBroaderRelationshipType createHasBroaderRelationshipType(URI uri, Label label, URI inverseURI, Label inverseLabel) throws ModelException {
-		Resource relationshipTypeResource = createConceptToConceptRelationshipTypeResource(uri, label, SKOS.broader);
+		return createHasBroaderRelationshipType(uri, label, inverseURI, inverseLabel, null, null);
+	}
+
+	public HasBroaderRelationshipType createHasBroaderRelationshipType(URI uri, Label label, URI inverseURI, Label inverseLabel, ConceptClass domain, ConceptClass range) throws ModelException {
+		Resource relationshipTypeResource = createConceptToConceptRelationshipTypeResource(uri, label, SKOS.broader, domain, range);
 		Resource inverseRelationshipTypeResource = null;
 		if (inverseURI != null) {
-			inverseRelationshipTypeResource = createConceptToConceptRelationshipTypeResource(inverseURI, inverseLabel, SKOS.narrower);
+			inverseRelationshipTypeResource = createConceptToConceptRelationshipTypeResource(inverseURI, inverseLabel, SKOS.narrower, range, domain);
 			relationshipTypeResource.addProperty(OWL.inverseOf, inverseRelationshipTypeResource);
 			inverseRelationshipTypeResource.addProperty(OWL.inverseOf, relationshipTypeResource);
 		}
 		return new HasBroaderRelationshipType(model, relationshipTypeResource, inverseRelationshipTypeResource);
 	}
+	
+	
 	public HasNarrowerRelationshipType createHasNarrowerRelationshipType(URI uri, Label label, URI inverseURI, Label inverseLabel) throws ModelException {
-		Resource relationshipTypeResource = createConceptToConceptRelationshipTypeResource(uri, label, SKOS.narrower);
+		return createHasNarrowerRelationshipType(uri, label, inverseURI, inverseLabel, null, null);
+	}
+	
+	public HasNarrowerRelationshipType createHasNarrowerRelationshipType(URI uri, Label label, URI inverseURI, Label inverseLabel, ConceptClass domain, ConceptClass range) throws ModelException {
+		Resource relationshipTypeResource = createConceptToConceptRelationshipTypeResource(uri, label, SKOS.narrower, domain, range);
 		Resource inverseRelationshipTypeResource = null;
 		if (inverseURI != null) {
-			inverseRelationshipTypeResource = createConceptToConceptRelationshipTypeResource(inverseURI, inverseLabel, SKOS.narrower);
+			inverseRelationshipTypeResource = createConceptToConceptRelationshipTypeResource(inverseURI, inverseLabel, SKOS.broader, range, domain); // Inverse has domain and range reversed
 			relationshipTypeResource.addProperty(OWL.inverseOf, inverseRelationshipTypeResource);
 			inverseRelationshipTypeResource.addProperty(OWL.inverseOf, relationshipTypeResource);
 		}
 		return new HasNarrowerRelationshipType(model, relationshipTypeResource, inverseRelationshipTypeResource);
 	}
+	
 	public AssocativeRelationshipType createAssociativeRelationshipType(URI uri, Label label, URI inverseURI, Label inverseLabel) throws ModelException {
-		Resource relationshipTypeResource = createConceptToConceptRelationshipTypeResource(uri, label, SKOS.related);
+		return createAssociativeRelationshipType(uri, label, inverseURI, inverseLabel, null, null);
+	}
+	
+	public AssocativeRelationshipType createAssociativeRelationshipType(URI uri, Label label, URI inverseURI, Label inverseLabel, ConceptClass domain, ConceptClass range) throws ModelException {
+		Resource relationshipTypeResource = createConceptToConceptRelationshipTypeResource(uri, label, SKOS.related, domain, range);
 		Resource inverseRelationshipTypeResource = null;
 		if (inverseURI == null) {
 			relationshipTypeResource.addProperty(RDF.type, OWL.SymmetricProperty);
 		} else {
-			inverseRelationshipTypeResource = createConceptToConceptRelationshipTypeResource(inverseURI, inverseLabel, SKOS.related);
+			inverseRelationshipTypeResource = createConceptToConceptRelationshipTypeResource(inverseURI, inverseLabel, SKOS.related, range, domain); // Inverse has domain and range reversed
 			relationshipTypeResource.addProperty(OWL.inverseOf, inverseRelationshipTypeResource);
 			inverseRelationshipTypeResource.addProperty(OWL.inverseOf, relationshipTypeResource);
 		}
 		return new AssocativeRelationshipType(model, relationshipTypeResource, inverseRelationshipTypeResource);
 	}
 
+	
 	public HasEquivalentRelationshipType createHasEquivalentRelationshipType(URI uri, Label label) throws ModelException {
-		Resource relationshipTypeResource = createConceptToLabelRelationshipTypeResource(uri, label, SKOSXL.altLabel);
+		Resource relationshipTypeResource = createConceptToLabelRelationshipTypeResource(uri, label, SKOSXL.altLabel, null);
+		return new HasEquivalentRelationshipType(model, relationshipTypeResource);
+	}
+	public HasEquivalentRelationshipType createHasEquivalentRelationshipType(URI uri, Label label, Resource domain) throws ModelException {
+		Resource relationshipTypeResource = createConceptToLabelRelationshipTypeResource(uri, label, SKOSXL.altLabel, null);
 		return new HasEquivalentRelationshipType(model, relationshipTypeResource);
 	}
 	
 
-	private Resource createRelationshipTypeResource(URI uri, Label label, Property parentProperty) throws ModelException {
+	private Resource createRelationshipTypeResource(URI uri, Label label, Property parentProperty, ConceptClass domain) throws ModelException {
 		Resource relationshipTypeURIResource = resourceFromURI(model, uri);
 		if (resourceInUse(relationshipTypeURIResource)) throw new ModelException("Attempting to create relationship type with URI - '%s'. This URI is already in use.", uri.toString());
 
 		relationshipTypeURIResource.addProperty(RDF.type, OWL.ObjectProperty);
 		relationshipTypeURIResource.addProperty(RDFS.label, getAsLiteral(model, label));
-		relationshipTypeURIResource.addProperty(RDFS.domain, SKOS.Concept);
+		relationshipTypeURIResource.addProperty(RDFS.domain, domain == null ? SKOS.Concept : domain.getResource());
 		relationshipTypeURIResource.addProperty(RDFS.subPropertyOf, parentProperty);
 		return relationshipTypeURIResource;
 		
 	}
-	private Resource createConceptToConceptRelationshipTypeResource(URI uri, Label label, Property parentProperty) throws ModelException {
-		Resource relationshipTypeURIResource =  createRelationshipTypeResource(uri, label, parentProperty);
-		relationshipTypeURIResource.addProperty(RDFS.range, SKOS.Concept);
+	private Resource createConceptToConceptRelationshipTypeResource(URI uri, Label label, Property parentProperty, ConceptClass domain, ConceptClass range) throws ModelException {
+		Resource relationshipTypeURIResource =  createRelationshipTypeResource(uri, label, parentProperty, domain);
+		relationshipTypeURIResource.addProperty(RDFS.range, range == null ? SKOS.Concept : range.getResource());
 		return relationshipTypeURIResource;
 	}
 
-	private Resource createConceptToLabelRelationshipTypeResource(URI uri, Label label, Property parentProperty) throws ModelException {
-		Resource relationshipTypeURIResource =  createRelationshipTypeResource(uri, label, parentProperty);
+	private Resource createConceptToLabelRelationshipTypeResource(URI uri, Label label, Property parentProperty, ConceptClass domain) throws ModelException {
+		Resource relationshipTypeURIResource =  createRelationshipTypeResource(uri, label, parentProperty, domain);
 		relationshipTypeURIResource.addProperty(RDFS.range, SKOSXL.Label);
 		return relationshipTypeURIResource;
 	}

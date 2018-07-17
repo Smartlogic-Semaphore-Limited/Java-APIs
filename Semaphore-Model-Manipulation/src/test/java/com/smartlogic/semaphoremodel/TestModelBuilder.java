@@ -28,6 +28,9 @@ public class TestModelBuilder {
 		
 		ConceptScheme conceptScheme = semaphoreModel.createConceptScheme(new URI("http://kma.com/ConceptScheme"), new Label("Concept Scheme", english), null);
 
+		ConceptClass conceptClass1 = semaphoreModel.createConceptClass(new URI("http://kma.com/Class1"), new Label("Class 1", english));
+		ConceptClass conceptClass2 = semaphoreModel.createConceptClass(new URI("http://kma.com/Class2"), new Label("Class 2", english));
+		
 		Concept concept1 = semaphoreModel.createConcept(new URI("http://kma.com/Concept1"), new Label("Concept1", english));
 		conceptScheme.addTopConcept(concept1);
 		conceptScheme.addLabel(new Label("Concepti Schema", italian));
@@ -50,7 +53,9 @@ public class TestModelBuilder {
 		HasNarrowerRelationshipType hasPart = semaphoreModel.getNarrowerRelationshipType(new URI("http://kma.com/hasPart"));
 		Concept concept3 = semaphoreModel.createConcept(new URI("http://kma.com/Concept3"), new Label("concept that is part of something", english));
 		concept1.addRelation(hasPart, concept3);
-		
+
+		semaphoreModel.createAssociativeRelationshipType(new URI("http://kma.com/RT1"), new Label("RT1", english), new URI("http://kma.com/iRT1"), new Label("iRT1", english));
+		semaphoreModel.createAssociativeRelationshipType(new URI("http://kma.com/RT2"), new Label("RT2", english), new URI("http://kma.com/iRT2"), new Label("iRT2", english), conceptClass1, conceptClass2);
 		semaphoreModel.write(new File("C:/temp/model.ttl"));
 	}
 
