@@ -15,9 +15,11 @@ public class TestMetadataType {
 	  
 	  SemaphoreModel semaphoreModel = new SemaphoreModel();
 	  StringMetadataType stringMetadataType = semaphoreModel.createStringMetadataType(uri, label);
+	  stringMetadataType.setAlwaysVisibleProperty();
 	  
 	  MetadataType stringMetadataType1 = semaphoreModel.getMetadataType(uri);
-	  
+	  stringMetadataType1.setAlwaysVisibleProperty();
+	  stringMetadataType1.removeAlwaysVisibleProperty();
 	  assertEquals(stringMetadataType, stringMetadataType1);
 	  
 	  
