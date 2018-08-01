@@ -317,11 +317,13 @@ public class SESClient {
           if ((hierarchyType != null) && (!hierarchyType.equalsIgnoreCase(hierarchy.getType()))) {
             continue;
           }
+          
+          // We don't want to go up the hierarchy
+          if ("Broader Term".equalsIgnoreCase(hierarchy.getType())) {
+        	  continue;
+          }
 
           for (Field field : hierarchy.getFields().values()) {
-            if ("a2e28f91-3939-cc4f-99aa-566e5348041e".equals(field.getId())) {
-              System.err.println(term.getName() + " " + term.getId());
-            }
             if (!returnData.containsKey(field.getId()) && !missingTerms.contains(field.getId())) {
               termsToGet.add(field.getId());
             }
