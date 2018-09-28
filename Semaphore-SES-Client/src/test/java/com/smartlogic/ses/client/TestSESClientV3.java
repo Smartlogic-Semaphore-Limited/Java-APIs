@@ -18,7 +18,7 @@ public class TestSESClientV3 extends PrintingTestCase {
 		if (sesClient == null) {
 			sesClient = new SESClient();
 			sesClient.setConnectionTimeoutMS(0);
-			sesClient.setHost("mlhostdev02");
+			sesClient.setHost("build-reference");
 			sesClient.setOntology("disp_taxonomy");
 			sesClient.setPath("/ses");
 			sesClient.setPort(80);
