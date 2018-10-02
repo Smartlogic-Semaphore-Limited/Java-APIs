@@ -10,9 +10,10 @@
 		<xmlunit.version>1.3</xmlunit.version>
 		<jackson.version>2.5.4</jackson.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<semaphore-api-version>Semaphore-4.1.18-SNAPSHOT</semaphore-api-version>
 	</properties>
 
-	<version>Semaphore-4.1.17-SNAPSHOT</version>
+	<version>Semaphore-4.1.18-SNAPSHOT</version>
 	<groupId>com.smartlogic</groupId>
 	<artifactId>Semaphore-Java-APIs</artifactId>
 	<description>Java connectors to the Smartlogic Semaphore Services</description>
@@ -174,17 +175,17 @@
 			<dependency>
 				<groupId>com.smartlogic.csclient</groupId>
 				<artifactId>Semaphore-CS-Client</artifactId>
-				<version>Semaphore-4.1.17-SNAPSHOT</version>
+				<version>${semaphore-api-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.smartlogic.sesclient</groupId>
 				<artifactId>Semaphore-SES-Client</artifactId>
-				<version>Semaphore-4.1.17-SNAPSHOT</version>
+				<version>${semaphore-api-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.smartlogic.cloud</groupId>
 				<artifactId>Semaphore-Cloud-Client</artifactId>
-				<version>Semaphore-4.1.17-SNAPSHOT</version>
+				<version>${semaphore-api-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
@@ -219,19 +220,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
-	<repositories>
-		<repository>
-			<id>nexus</id>
-			<url>http://cart:8081/repository/maven-public/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
 
 </project>

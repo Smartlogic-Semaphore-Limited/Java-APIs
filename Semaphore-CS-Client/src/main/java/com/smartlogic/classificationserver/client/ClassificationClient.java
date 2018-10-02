@@ -599,6 +599,13 @@ public class ClassificationClient {
 		parts.add(getFormPart("UploadFile", inputFile));
 	}
 
+	private void addFileContent(Collection<FormBodyPart> parts, byte[] fileContent, String fileName) throws ClassificationException {
+		if (fileContent == null) {
+			throw new ClassificationException("Null input file provided");
+		}
+		parts.add(FormBodyPartBuilder.create("UploadFile", new ByteArrayBody(fileContent, fileName)).build());
+	}
+
 
 	private void addMetadata(Collection<FormBodyPart> parts,
 			Map<String, Collection<String>> metadata) {
@@ -687,6 +694,18 @@ public class ClassificationClient {
 
 		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
 		addFile(parts, inputFile, fileType);
+
+		addTitle(parts, title);
+		addMetadata(parts, metadata);
+		return getClassificationServerResponse(parts);
+	}
+
+	public byte[] getClassificationServerResponse(byte[] fileContent, String fileName, Title title, Map<String, Collection<String>> metadata)
+			throws ClassificationException {
+		logger.debug("Treating raw bytes: '" + title + "'");
+
+		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
+		addFileContent(parts, fileContent, fileName);
 
 		addTitle(parts, title);
 		addMetadata(parts, metadata);
