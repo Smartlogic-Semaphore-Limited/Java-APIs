@@ -37,10 +37,11 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -1237,7 +1238,7 @@ public class SESClient {
 
       SSLContextBuilder builder = new SSLContextBuilder();
       SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
-          SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+    		  NoopHostnameVerifier.INSTANCE);
 
       CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig)
           .setSSLSocketFactory(sslsf).build();
