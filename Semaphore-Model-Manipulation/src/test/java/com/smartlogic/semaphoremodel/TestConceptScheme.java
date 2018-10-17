@@ -14,13 +14,7 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.smartlogic.semaphoremodel.ConceptScheme;
-import com.smartlogic.semaphoremodel.Label;
-import com.smartlogic.semaphoremodel.Language;
-import com.smartlogic.semaphoremodel.ModelException;
-import com.smartlogic.semaphoremodel.SemaphoreModel;
-
-public class TestConceptScheme {
+public class TestConceptScheme extends AbstractTest {
 
 	private SemaphoreModel semaphoreModel;
 	private Language english = Language.getLanguage("en");
@@ -33,7 +27,7 @@ public class TestConceptScheme {
 	
 	@AfterTest
 	public void dumpModel() throws FileNotFoundException {
-		semaphoreModel.write(new File("ConceptModelDump.ttl"));
+		dumpModel(semaphoreModel);
 	}
 	
 	@Test
