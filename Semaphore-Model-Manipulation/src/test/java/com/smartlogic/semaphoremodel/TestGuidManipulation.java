@@ -14,12 +14,7 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.smartlogic.semaphoremodel.ConceptScheme;
-import com.smartlogic.semaphoremodel.ModelException;
-import com.smartlogic.semaphoremodel.SemaphoreModel;
-import com.smartlogic.semaphoremodel.Utils;
-
-public class TestGuidManipulation {
+public class TestGuidManipulation extends AbstractTest {
 
 	private SemaphoreModel semaphoreModel;
 	
@@ -30,9 +25,9 @@ public class TestGuidManipulation {
 	
 	@AfterTest
 	public void dumpModel() throws FileNotFoundException {
-		semaphoreModel.write(new File("ConceptModelDump.ttl"));
+		dumpModel(semaphoreModel);
 	}
-	
+
 	@Test
 	public void testGetGuid() throws URISyntaxException, ModelException {
 		ConceptScheme conceptScheme = semaphoreModel.getConceptScheme(new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyFirstConceptScheme"));

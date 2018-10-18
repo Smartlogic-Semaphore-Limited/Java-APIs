@@ -94,7 +94,8 @@ public class DiffToSparqlInsertUpdateBuilderTests {
 
     it = model2.listStatements(res2, prop3, (RDFNode) null);
     stmt = it.nextStatement();
-    XSDDateTime date = (XSDDateTime) stmt.getObject().asLiteral().getValue();
+    @SuppressWarnings("unused")
+	XSDDateTime date = (XSDDateTime) stmt.getObject().asLiteral().getValue();
 
     it = model2.listStatements(res2, prop4, (RDFNode) null);
     stmt = it.nextStatement();
