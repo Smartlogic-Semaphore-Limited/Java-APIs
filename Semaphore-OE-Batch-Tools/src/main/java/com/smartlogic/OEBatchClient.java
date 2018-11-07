@@ -23,6 +23,7 @@ public class OEBatchClient implements Closeable {
   protected Model currentModel = null;
   protected Model pendingModel = null;
   protected BatchMode batchMode = BatchMode.None;
+  protected SparqlUpdateOptions sparqlUpdateOptions = new SparqlUpdateOptions();
 
   /**
    * Constructor for a OEBatchClient object. The OEModelEndpoint includes
@@ -107,6 +108,21 @@ public class OEBatchClient implements Closeable {
     this.pendingModel = model;
   }
 
+  /**
+   * Get the SparqlUpdateOptions config object.
+   * @return
+   */
+  public SparqlUpdateOptions getSparqlUpdateOptions() {
+    return this.sparqlUpdateOptions;
+  }
+
+  /**
+   * Set the SparqlUpdateOptions config object.
+   * @param options
+   */
+  public void setSparqlUpdateOptions(SparqlUpdateOptions options) {
+    this.sparqlUpdateOptions = options;
+  }
 
   /**
    * Reset the client by copying pending to current model. Use this if you've committed all pending changes
@@ -136,7 +152,8 @@ public class OEBatchClient implements Closeable {
         if (diff.getInLeftOnly().size() > 0 || diff.getInRightOnly().size() > 0) {
           if (logger.isDebugEnabled())
             logger.debug("Changes detected, running SPARQL Update");
-          result = endpoint.runSparqlUpdate(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(getBatchDiff()));
+          result = endpoint.runSparqlUpdate(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(getBatchDiff()),
+                                            sparqlUpdateOptions);
         } else {
           if (logger.isDebugEnabled())
             logger.debug("No changes detected in model. Not running SPARQL update.");

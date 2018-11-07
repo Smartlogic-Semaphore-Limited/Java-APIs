@@ -1,9 +1,5 @@
 package com.smartlogic;
 
-import static junit.framework.TestCase.assertTrue;
-
-import java.io.File;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -12,6 +8,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.File;
+
+import static junit.framework.TestCase.assertTrue;
 
 public class ModelLoaderTests {
   @BeforeClass
