@@ -8,9 +8,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.jena.ext.com.google.common.base.Joiner;
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
+import org.apache.jena.ext.com.google.common.collect.Lists;
 import org.apache.jena.query.*;
 import org.apache.jena.riot.WebContent;
 import org.apache.jena.update.UpdateExecutionFactory;
@@ -22,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by stevenbiondi on 6/21/17.
@@ -55,8 +58,44 @@ public class OEModelEndpoint {
     return buf;
   }
 
-  public StringBuffer buildSPARQLUrl() {
-    return buildApiUrl().append("/").append(modelIri).append("/sparql");
+  /**
+   * Returns SPARQL URL with default sparql options.
+   * @return
+   */
+  public String buildSPARQLUrl() {
+    return buildSPARQLUrl(new SparqlUpdateOptions());
+  }
+
+  public String buildSPARQLUrl(SparqlUpdateOptions options) {
+
+    StringBuffer buf = buildApiUrl().append("/").append(modelIri).append("/sparql");
+
+    if (null != options) {
+      List optionsList = Lists.newArrayList();
+
+      // default is false, don't set unless changed.
+      if (options.acceptWarnings) {
+        optionsList.add("warningsAccepted=true");
+      }
+
+      if (options.runEditRules) {
+        optionsList.add("runEditRules=true");
+      } else {
+        optionsList.add("runEditRules=false");
+      }
+
+      if (options.runCheckConstraints) {
+        optionsList.add("checkConstraints=true");
+      } else {
+        optionsList.add("checkConstraints=false");
+      }
+
+      if (optionsList.size() > 0) {
+        buf.append("?");
+        buf.append(Joiner.on("&").join(optionsList));
+      }
+    }
+    return buf.toString();
   }
 
   /**
@@ -79,8 +118,9 @@ public class OEModelEndpoint {
 
     setCloudAuthHeaderIfConfigured(clientBuilder);
 
+    SparqlUpdateOptions options = new SparqlUpdateOptions();
     try (CloseableHttpClient client = clientBuilder.build();
-         QueryExecution qe = QueryExecutionFactory.sparqlService(buildSPARQLUrl().toString(), query, client)) {
+         QueryExecution qe = QueryExecutionFactory.sparqlService(buildSPARQLUrl(null).toString(), query, client)) {
       results = ResultSetFactory.copyResults(qe.execSelect());
     } catch (IOException ioe) {
       throw new RuntimeException("IOException.", ioe);
@@ -92,7 +132,7 @@ public class OEModelEndpoint {
    * @param sparql
    * @return
    */
-  public boolean runSparqlUpdate(String sparql) {
+  public boolean runSparqlUpdate(String sparql, SparqlUpdateOptions options) {
 
     if (logger.isDebugEnabled())
       logger.debug("run SPARQL update: {}", sparql);
@@ -105,7 +145,7 @@ public class OEModelEndpoint {
 
     try (CloseableHttpClient client = clientBuilder.build()) {
       UpdateRequest update = UpdateFactory.create(sparql, Syntax.syntaxARQ);
-      UpdateProcessor processor = UpdateExecutionFactory.createRemoteForm(update, buildSPARQLUrl().toString(), client);
+      UpdateProcessor processor = UpdateExecutionFactory.createRemoteForm(update, buildSPARQLUrl(options).toString(), client);
       processor.execute();
     } catch (IOException ioe) {
       throw new RuntimeException("IOException.", ioe);

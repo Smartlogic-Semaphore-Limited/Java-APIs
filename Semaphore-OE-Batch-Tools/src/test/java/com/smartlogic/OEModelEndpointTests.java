@@ -1,7 +1,5 @@
 package com.smartlogic;
 
-import static org.junit.Assert.assertEquals;
-
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.system.IRIResolver;
@@ -12,6 +10,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class OEModelEndpointTests {
 
@@ -39,7 +39,7 @@ public class OEModelEndpointTests {
     ep.setBaseUrl("http://localhost:8080/swoe/");
 
     assertEquals(ep.buildApiUrl().toString(), "http://localhost:8080/swoe/api/t/ACCESSTOKEN");
-    assertEquals(ep.buildSPARQLUrl().toString(),
+    assertEquals(ep.buildSPARQLUrl(null).toString(),
         "http://localhost:8080/swoe/api/t/ACCESSTOKEN/model:ModelID/sparql");
   }
 

@@ -8,6 +8,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.apache.jena.vocabulary.SKOSXL;
 
+import java.util.Properties;
 import java.util.UUID;
 
 public class ExampleClientWithProxy {
@@ -15,12 +16,13 @@ public class ExampleClientWithProxy {
     try {
 
       OEModelEndpoint endpoint = new OEModelEndpoint();
-      endpoint.setBaseUrl("http://localhost:8080/Semaphore-4.1.20-SemaphoreWorkbenchOntologyEditor");
-      endpoint.setModelIRI("model:Playpen");
-      endpoint.setProxyHost("localhost");
-      endpoint.setProxyPort(8888);
-      endpoint.setAccessToken("WyJBZG1pbmlzdHJhdG9yIiwxNTI3NjgyNTA5LCJNQ0FDRGo1T2MzR1NoK3NIUHlWYkQ4U2ZBZzVVNXpQMnRFL0YrUVZCeWEzajB3PT0iXQ==");
+      Properties config = TestConfig.getConfig();
 
+      endpoint.setBaseUrl(config.getProperty("oeurl"));
+      endpoint.setModelIRI("model:Playpen");
+      endpoint.setProxyHost(config.getProperty("proxyhost"));
+      endpoint.setProxyPort(Integer.valueOf(config.getProperty("proxyport")));
+      endpoint.setAccessToken(config.getProperty("accesstoken"));
       try (OEBatchClient client = new OEBatchClient(endpoint)) {
         client.loadCurrentModelFromOE();
         Model m = client.getPendingModel();
