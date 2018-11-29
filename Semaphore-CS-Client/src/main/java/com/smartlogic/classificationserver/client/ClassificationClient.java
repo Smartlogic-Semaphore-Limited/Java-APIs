@@ -791,7 +791,7 @@ public class ClassificationClient {
 		
 		
 		// Make sure that idle and stale connections are discarded
-		IdleConnectionMonitorThread idleConnectionMonitorThread = new IdleConnectionMonitorThread(poolingConnectionManager);
+		idleConnectionMonitorThread = new IdleConnectionMonitorThread(poolingConnectionManager);
 		idleConnectionMonitorThread.start();
 		
 		RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
