@@ -20,4 +20,28 @@ public class SparqlUpdateOptions {
    * Set to false to not run edit rules when SPARQL Update is sent.
    */
   public boolean runEditRules = true;
+
+  public boolean isAcceptWarnings() {
+    return acceptWarnings;
+  }
+
+  public void setAcceptWarnings(boolean acceptWarnings) {
+    this.acceptWarnings = acceptWarnings;
+  }
+
+  public boolean isRunCheckConstraints() {
+    return runCheckConstraints;
+  }
+
+  public void setRunCheckConstraints(boolean runCheckConstraints) {
+    this.runCheckConstraints = runCheckConstraints;
+  }
+
+  public boolean isRunEditRules() {
+    return runEditRules;
+  }
+
+  public void setRunEditRules(boolean runEditRules) {
+    this.runEditRules = runEditRules;
+  }
 }
