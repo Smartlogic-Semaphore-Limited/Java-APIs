@@ -782,66 +782,52 @@ public class ClassificationClient {
 		this.clientPoolSize = clientPoolSize;
 	}
 
-	private List<CloseableHttpClient> availableClients = new Vector<CloseableHttpClient>();
+	private CloseableHttpClient httpClient = null;
 	private IdleConnectionMonitorThread idleConnectionMonitorThread;
 	private void initialize() {
-		poolingConnectionManager = new PoolingHttpClientConnectionManager();
-		poolingConnectionManager.setValidateAfterInactivity(0);
-		poolingConnectionManager.setMaxTotal(clientPoolSize);
-		
-		
-		// Make sure that idle and stale connections are discarded
-		idleConnectionMonitorThread = new IdleConnectionMonitorThread(poolingConnectionManager);
-		idleConnectionMonitorThread.start();
-		
-		RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
-				.setSocketTimeout(classificationConfiguration.getSocketTimeoutMS())
-				.setConnectTimeout(classificationConfiguration.getConnectionTimeoutMS())
-				.setConnectionRequestTimeout(classificationConfiguration.getConnectionTimeoutMS());
-		if (getProxyURL() != null) {
-			HttpHost proxy = HttpHost.create(getProxyURL());
-			requestConfigBuilder.setProxy(proxy);
+		synchronized (this) {
+			if (!initialized) {
+				poolingConnectionManager = new PoolingHttpClientConnectionManager();
+				poolingConnectionManager.setValidateAfterInactivity(0);
+				poolingConnectionManager.setDefaultMaxPerRoute(clientPoolSize);
+				poolingConnectionManager.setMaxTotal(clientPoolSize);
+
+				// Make sure that idle and stale connections are discarded
+				idleConnectionMonitorThread = new IdleConnectionMonitorThread(poolingConnectionManager);
+				idleConnectionMonitorThread.start();
+
+				RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
+						.setSocketTimeout(classificationConfiguration.getSocketTimeoutMS())
+						.setConnectTimeout(classificationConfiguration.getConnectionTimeoutMS())
+						.setConnectionRequestTimeout(classificationConfiguration.getConnectionTimeoutMS());
+				if (getProxyURL() != null) {
+					HttpHost proxy = HttpHost.create(getProxyURL());
+					requestConfigBuilder.setProxy(proxy);
+				}
+				requestConfig = requestConfigBuilder.build();
+
+				httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig)
+						.setSSLHostnameVerifier(new NoopHostnameVerifier())
+						.setConnectionManager(poolingConnectionManager)
+						.build();
+				initialized = true;
+			}
 		}
-		requestConfig = requestConfigBuilder.build();
-		initialized = true;
-		
-		for (int i = 0; i < clientPoolSize; i++) {
-			CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig)
-					.setSSLHostnameVerifier(new NoopHostnameVerifier())
-					.setConnectionManager(poolingConnectionManager)
-					.build();
-			availableClients.add(httpClient);
-		}
-		
 	}
 	
 	public void close() {
-		idleConnectionMonitorThread.shutdown = true;
-	}
-	
-	private CloseableHttpClient getClient() throws ClassificationException {
-		CloseableHttpClient client;
-		synchronized (availableClients) {
-			while (availableClients.size() == 0) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					throw new ClassificationException("InterruptedException whilst waiting for client");
-				}
+		idleConnectionMonitorThread.shutdown();
+		if (httpClient != null) {
+			try {
+				httpClient.close();
+			} catch (IOException ioe) {
+				throw new RuntimeException("HTTP client close failed.", ioe);
 			}
-			client = availableClients.remove(0);
 		}
-		return client;
-	}
-	
-	private void returnClient(CloseableHttpClient client) {
-		availableClients.add(client);
 	}
 
 	private byte[] sendPostRequest(HttpEntity requestEntity) throws ClassificationException {
 		if (!initialized) initialize();
-		
-		CloseableHttpClient httpClient = getClient();
 		
 		HttpPost httpPost = null;
 		byte[] responseData;
@@ -885,7 +871,6 @@ public class ClassificationClient {
 			if (httpPost != null) {
 				httpPost.abort();
 			}
-			returnClient(httpClient);
 		}
 
 		return responseData;
