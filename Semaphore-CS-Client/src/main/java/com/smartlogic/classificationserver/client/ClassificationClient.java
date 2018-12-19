@@ -480,6 +480,29 @@ public class ClassificationClient {
 		return classificationHistory.getClassificationRecords();
 	}
 
+	public byte[] getClassifiedBytes(Body body, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
+		logger.debug("Treating document: '" + title.getValue() + "'");
+
+		// If there is no body, then don't bother attempting to classify the document
+		if ((body == null) || (body.getValue() == null) || (body.getValue().trim().length() == 0)) {
+			return new byte[0];
+		}
+
+		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
+
+		addTitle(parts, title);
+		addMetadata(parts, metadata);
+		return getClassifications(parts);
+	}
+	
+	public byte[] getClassifiedBytes(URL url, Title title, Map<String, Collection<String>> metadata) throws ClassificationException {
+		Collection<FormBodyPart> parts = new ArrayList<FormBodyPart>();
+		addTitle(parts, title);
+		addMetadata(parts, metadata);
+		parts.add(getFormPart("path", url.toExternalForm()));
+		return getClassifications(parts);
+	}
+	
 
 
 	public byte[] getClassificationServerResponse(Body body, Title title) throws ClassificationException {
