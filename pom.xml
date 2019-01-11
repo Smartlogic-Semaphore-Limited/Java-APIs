@@ -8,7 +8,7 @@
 		<commons-codec.version>1.10</commons-codec.version>
 		<junit.version>4.12</junit.version>
 		<xmlunit.version>1.3</xmlunit.version>
-		<jackson.version>2.9.7</jackson.version>
+		<jackson.version>2.9.8</jackson.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<semaphore-api-version>Semaphore-4.2.2-SNAPSHOT</semaphore-api-version>
 	</properties>
