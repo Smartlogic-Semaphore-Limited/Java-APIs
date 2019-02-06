@@ -492,6 +492,7 @@ public class ClassificationClient {
 
 		addTitle(parts, title);
 		addMetadata(parts, metadata);
+		addByteArray(parts, body, null);
 		return getClassifications(parts);
 	}
 	
