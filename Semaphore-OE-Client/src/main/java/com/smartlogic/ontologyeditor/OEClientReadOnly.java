@@ -22,6 +22,7 @@ import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.atlas.json.JsonValue;
+import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.sparql.util.FmtUtils;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
@@ -127,27 +128,30 @@ public class OEClientReadOnly {
 	private String modelURL = null;
 	protected String getModelURL() {
 		if (modelURL == null) {
-			StringBuilder stringBuilder = new StringBuilder(baseURL);
-			if (!baseURL.endsWith("/")) stringBuilder.append("/");
-			stringBuilder.append("api/");
-			stringBuilder.append("t/");
-			stringBuilder.append(token);
-			stringBuilder.append("/");
+			StringBuilder stringBuilder = new StringBuilder(getApiURL());
 			stringBuilder.append(modelUri);
 			modelURL = stringBuilder.toString();
+
+			if (logger.isDebugEnabled()) logger.debug("modelURL: {}", modelURL);
+
 		}
 		return modelURL;
 	}
+
 	private String apiURL = null;
 	protected String getApiURL() {
 		if (apiURL == null) {
 			StringBuilder stringBuilder = new StringBuilder(baseURL);
 			if (!baseURL.endsWith("/")) stringBuilder.append("/");
 			stringBuilder.append("api/");
-			stringBuilder.append("t/");
-			stringBuilder.append(token);
-			stringBuilder.append("/");
+			if (!Strings.isNullOrEmpty(token)) {
+				stringBuilder.append("t/");
+				stringBuilder.append(token);
+				stringBuilder.append("/");
+			}
 			apiURL = stringBuilder.toString();
+
+			if (logger.isDebugEnabled()) logger.debug("apiURL: {}", apiURL);
 		}
 		return apiURL;
 	}
@@ -155,25 +159,20 @@ public class OEClientReadOnly {
 	private String modelSysURL = null;
 	protected String getModelSysURL() {
 		if (modelSysURL == null) {
-			StringBuilder stringBuilder = new StringBuilder(baseURL);
-			if (!baseURL.endsWith("/")) stringBuilder.append("/");
-			stringBuilder.append("api/");
-			stringBuilder.append("t/");
-			stringBuilder.append(token);
-			stringBuilder.append("/sys/");
+			StringBuilder stringBuilder = new StringBuilder(getApiURL());
+			stringBuilder.append("sys/");
 			stringBuilder.append(modelUri);
 			modelSysURL = stringBuilder.toString();
+
+			if (logger.isDebugEnabled()) logger.debug("modelSysURL: {}", modelSysURL);
+
 		}
 		return modelSysURL;
 	}
 
 	protected String getTaskSysURL(Task task) {
-		StringBuilder stringBuilder = new StringBuilder(baseURL);
-		if (!baseURL.endsWith("/")) stringBuilder.append("/");
-		stringBuilder.append("api/");
-		stringBuilder.append("t/");
-		stringBuilder.append(token);
-		stringBuilder.append("/sys/");
+		StringBuilder stringBuilder = new StringBuilder(getApiURL());
+		stringBuilder.append("sys/");
 		stringBuilder.append(task.getGraphUri());
 		return stringBuilder.toString();
 	}
@@ -260,12 +259,8 @@ public class OEClientReadOnly {
 
 	public Collection<ChangeRecord> getChangesSince(Date date) throws OEClientException {
 
-			StringBuilder stringBuilder = new StringBuilder(baseURL);
-			if (!baseURL.endsWith("/")) stringBuilder.append("/");
-			stringBuilder.append("api/");
-			stringBuilder.append("t/");
-			stringBuilder.append(token);
-			stringBuilder.append("/tch");
+			StringBuilder stringBuilder = new StringBuilder(getApiURL());
+			stringBuilder.append("tch");
 			stringBuilder.append(modelUri);
 			stringBuilder.append("/teamwork:Change/rdf:instance");
 			
