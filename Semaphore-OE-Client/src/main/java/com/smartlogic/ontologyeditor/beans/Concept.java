@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.atlas.json.JsonValue;
@@ -37,6 +38,16 @@ public class Concept extends AbstractBeanFromJson {
 			JsonArray jsonTypes = jsonValue.getAsArray();
 			for (int i = 0; i < jsonTypes.size(); i++) {
 				this.types.add(jsonTypes.get(i).getAsString().value());
+			}
+		}
+
+		JsonValue jsonGuidValue = jsonObject.get(GUID_RELATIONSHIP_URI);
+		if (jsonGuidValue != null) {
+			JsonArray guidArray = getAsArray(jsonObject, GUID_RELATIONSHIP_URI );
+			if (guidArray.size() > 0) {
+				String guidVal = guidArray.get(0).getAsObject().get("@value").getAsString().value();
+				Identifier guidIdentifier = new Identifier(GUID_RELATIONSHIP_URI, guidVal);
+				addIdentifier(guidIdentifier);
 			}
 		}
 
