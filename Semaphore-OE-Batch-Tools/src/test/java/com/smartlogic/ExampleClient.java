@@ -47,6 +47,8 @@ public class ExampleClient {
         c.addProperty(RDF.type, SKOS.Concept);
         c.addProperty(semGuid, UUID.randomUUID().toString());
 
+        c.addProperty(SKOS.definition, "\"Here is some\tspecial\r\n stuff for us to \' look at\n\"");
+
         Resource cl = m.createResource("http://myexample.com/MyTestConcept1_prefLabel_en");
         cl.addProperty(SKOSXL.literalForm, "My Test Concept 1", "en");
         cl.addProperty(RDF.type, SKOSXL.Label);
@@ -57,6 +59,7 @@ public class ExampleClient {
 
         client.commit();
 
+        System.out.println("definition (with whitespace): " + c.getProperty(SKOS.definition));
 
       } finally {
 
