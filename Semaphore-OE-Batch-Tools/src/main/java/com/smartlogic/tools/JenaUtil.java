@@ -136,6 +136,7 @@ public class JenaUtil {
     value = value.replace("\'", "\\\'");
     value = value.replace("\n", "\\\n");
     value = value.replace("\t", "\\\t");
+    value = value.replace("\r", "\\\r");
     return value;
   }
 
