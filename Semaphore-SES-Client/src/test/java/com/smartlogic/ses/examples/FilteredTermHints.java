@@ -4,20 +4,14 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.smartlogic.ses.client.SESClient;
-import com.smartlogic.ses.client.SESFilter;
-import com.smartlogic.ses.client.Term;
-import com.smartlogic.ses.client.TermHint;
+import com.smartlogic.ses.client.*;
 import com.smartlogic.ses.client.exceptions.SESException;
 
 public class FilteredTermHints {
 	
 	public static void main(String[] args) throws SESException {
 		
-		SESClient sesClient = new SESClient();
-		sesClient.setHost("localhost");
-		sesClient.setPath("/ses");
-		sesClient.setOntology("disp_taxonomy");
+		SESClient sesClient = ConfigUtil.getSESClient();
 		
 		Date startCacheFetch = new Date();
 		Map<String, Term> fordTerms = sesClient.getAllDescendants("Manufacturer_36", "Narrower Term");

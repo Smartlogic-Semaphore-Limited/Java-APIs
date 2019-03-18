@@ -5,27 +5,28 @@
 //----------------------------------------------------------------------
 package com.smartlogic.ses.client;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 @XmlRootElement(name = "statisticsInfo")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class StatisticsInfo implements Serializable {
 	protected final static Log logger = LogFactory.getLog(Terms.class);
 	private static final long serialVersionUID = 6729391679309758805L;
+	private static final XPath xPath = XPathFactory.newInstance().newXPath();
 
 	// This is required by the XML Marshalling/Unmarshalling
 	public StatisticsInfo() {}
@@ -33,47 +34,32 @@ public class StatisticsInfo implements Serializable {
 	public StatisticsInfo(Element element) {
 		logger.debug("Constructor - entry");
 
-		NodeList nodeList = element.getChildNodes();
-		for (int n = 0; n < nodeList.getLength(); n++) {
-			Node node = nodeList.item(n);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element childElement = (Element) node;
-				if ("NumOfTerms".equals(childElement.getNodeName())) {
-					String indexName = childElement.getAttribute("index");
-					int termCount = Integer.parseInt(childElement.getTextContent());
-					this.termCounts.put(indexName, termCount);
-				} else {
-					logger.trace("Unrecognized child node: '" + childElement.getNodeName() + "'");
-				}
-			} else if ((node.getNodeType() == Node.TEXT_NODE) && (node.getNodeValue() != null) && (node.getNodeValue().trim().length() > 0)) {
-				logger.trace("Unexpected text node (" + this.getClass().getName() + "): '" + node.getNodeValue() + "'");
-			}
-		}
-		NamedNodeMap namedNodeMap = element.getAttributes();
-		if (namedNodeMap != null) {
-			for (int a = 0; a < namedNodeMap.getLength(); a++) {
-				Attr attributeNode = (Attr) namedNodeMap.item(a);
-				if ("NumOfIndexes".equals(attributeNode.getName())) {
-					setNumOfIndexes(attributeNode.getValue());
-				} else if ("NumOfWorkers".equals(attributeNode.getName())) {
-					setNumOfWorkers(attributeNode.getValue());
-				} else if ("TotalNumOfRequests".equals(attributeNode.getName())) {
-					setTotalNumOfRequests(attributeNode.getValue());
-				} else if ("AvgNumOfRequestsPerSecOver5Mins".equals(attributeNode.getName())) {
-					setAvgNumOfRequestsPerSecOver5Mins(attributeNode.getValue());
-				} else if ("AvgNumOfRequestsPerSecOverLastHour".equals(attributeNode.getName())) {
-					setAvgNumOfRequestsPerSecOverLastHour(attributeNode.getValue());
-				} else if ("PeakNumOfRequestsPerSec".equals(attributeNode.getName())) {
-					setPeakNumOfRequestsPerSec(attributeNode.getValue());
-				} else {
-					logger.trace("Unrecognized attribute: '" + attributeNode.getName() + "' (" + this.getClass().getName() + ")");
-				}
-			}
-		}
+		setNumOfIndexes(element.getAttribute("indexes"));
+		setTotalNumOfRequests(element.getAttribute("requests"));
 
+
+		try {
+			NodeList nodeList = (NodeList) xPath.evaluate("/SEMAPHORE/STATS/Indexes/Index", element, XPathConstants.NODESET);
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				Node n = nodeList.item(i);
+				String name = n.getAttributes().getNamedItem("name").getNodeValue();
+
+				int termCount = 0;
+				NodeList labelsNodeList = (NodeList)xPath.evaluate("./Labels/*/Language[@code='en']/Label", n, XPathConstants.NODESET);
+				for (int j = 0; j < labelsNodeList.getLength(); j++) {
+					Node labelNode = labelsNodeList.item(j);
+					String val = labelNode.getAttributes().getNamedItem("count").getNodeValue();
+					if (val != null && val.length() > 0) {
+						termCount += Integer.parseInt(val);
+					}
+				}
+				termCounts.put(name, termCount);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 		logger.debug("Constructor - exit");
 	}
-
 
 	private int numOfIndexes;
 	public int getNumOfIndexes() {
