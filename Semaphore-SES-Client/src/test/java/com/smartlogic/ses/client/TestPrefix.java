@@ -1,24 +1,16 @@
 package com.smartlogic.ses.client;
 
-import java.util.Map;
-
 import com.smartlogic.ses.client.exceptions.SESException;
-
 import junit.framework.TestCase;
+
+import java.util.Map;
 
 public class TestPrefix extends TestCase {
 	private static SESClient sesClient;
 
 	public void setUp() {
 		if (sesClient == null) {
-			sesClient = new SESClient();
-			sesClient.setConnectionTimeoutMS(0);
-			sesClient.setHost("build-reference");
-			sesClient.setOntology("disp_taxonomy");
-			sesClient.setPath("/ses");
-			sesClient.setPort(80);
-			sesClient.setProtocol("http");
-			sesClient.setSocketTimeoutMS(0);
+			sesClient = ConfigUtil.getSESClient();
 		}
 	}
 
@@ -40,15 +32,9 @@ public class TestPrefix extends TestCase {
 	public void testPrefix1() throws SESException {
 		Map<String, TermHint> termHints = sesClient.getTermHints("chi");
 
-		TermHint termHint1 = termHints.get("d7115e73-ed70-5e33-971e-d0ccbe6214fd");
-		assertEquals("TH1", "d7115e73-ed70-5e33-971e-d0ccbe6214fd", termHint1.getId());
-//		assertEquals("TH1", "disp_taxonomy", termHint1.getIndex());
-		assertEquals("TH1", "Leisure and culture", termHint1.getFacets().getFacets().get(0).getName());
-		assertEquals("TH1", "Tai ", termHint1.getValues().getValues().get(0).getPreEm());
-		assertEquals("TH1", "chi", termHint1.getValues().getValues().get(0).getEm());
-		assertEquals("TH1", "", termHint1.getValues().getValues().get(0).getPostEm());
-//		assertTrue("TH1",Math.abs(termHint1.getWeight()-15.9336f) < 0.1);
-		assertEquals("TH1", 10, termHints.size());
+		TermHint termHint1 = termHints.get("9e933b80-b6b1-5d31-9f77-8d25c3dc5816");
+		assertEquals("TH1", "Environment", termHint1.getFacets().getFacets().get(0).getName());
+		assertEquals("TH1", 10, termHints.size()); //NOTE: this is the default we ship with.
 	}
 
 	public void testPrefix2() throws SESException {

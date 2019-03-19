@@ -1,14 +1,13 @@
 package com.smartlogic.ses.client;
 
+import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Map;
-
-import junit.framework.TestCase;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class TestTermsXML extends TestCase {
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -18,16 +17,7 @@ public class TestTermsXML extends TestCase {
 
 	public void setUp() throws Exception {
 		if (sesClient == null) {
-			sesClient = new SESClient();
-			sesClient.setConnectionTimeoutMS(0);
-			sesClient.setHost("build-reference");
-			sesClient.setOntology("disp_taxonomy");
-			sesClient.setPath("/ses");
-			sesClient.setPort(80);
-			sesClient.setProtocol("http");
-			sesClient.setSocketTimeoutMS(0);
-//			sesClient.setLanguage("English");
-
+			sesClient = ConfigUtil.getSESClient();
 
 			BufferedReader reader = new BufferedReader(new FileReader(new File("src/test/resources/TestTerm.xml")));
 			String data;
