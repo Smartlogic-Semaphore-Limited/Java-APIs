@@ -24,16 +24,16 @@ public class TestHintsXML extends TestCase {
 			"    <weight>0.0</weight>\n" +
 			"    <facet>\n" +
 			"        <name>Government, politics and public administration</name>\n" +
-			"        <id>fa08303d-4ad5-4d4a-abec-a2a1e3f1aded</id>\n" +
+			"        <id>ed296c39-8be6-4257-b44b-4bae4ad2d9c9</id>\n" +
 			"    </facet>\n" +
 			"    <facets>\n" +
 			"        <facetList>\n" +
 			"            <name>Business and industry</name>\n" +
-			"            <id>2fdca937-c0bf-41bb-9469-9e9f7ab16258</id>\n" +
+			"            <id>abb97cf2-3b2c-4ed2-a205-36ad9a7b0085</id>\n" +
 			"        </facetList>\n" +
 			"        <facetList>\n" +
 			"            <name>Government, politics and public administration</name>\n" +
-			"            <id>fa08303d-4ad5-4d4a-abec-a2a1e3f1aded</id>\n" +
+			"            <id>ed296c39-8be6-4257-b44b-4bae4ad2d9c9</id>\n" +
 			"        </facetList>\n" +
 			"    </facets>\n" +
 			"    <termClasses>\n" +
