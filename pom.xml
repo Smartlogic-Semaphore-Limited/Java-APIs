@@ -10,10 +10,10 @@
 		<xmlunit.version>1.3</xmlunit.version>
 		<jackson.version>2.9.8</jackson.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<semaphore-api-version>Semaphore-4.2.4</semaphore-api-version>
+		<semaphore-api-version>Semaphore-4.2.5-SNAPSHOT</semaphore-api-version>
 	</properties>
 
-	<version>Semaphore-4.2.4</version>
+	<version>Semaphore-4.2.5-SNAPSHOT</version>
 	<groupId>com.smartlogic</groupId>
 	<artifactId>Semaphore-Java-APIs</artifactId>
 	<description>Java connectors to the Smartlogic Semaphore Services</description>
