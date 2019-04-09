@@ -60,7 +60,7 @@ import org.w3c.dom.Element;
  * @author Smartlogic Semaphore
  *
  */
-public class ClassificationClient {
+public class ClassificationClient implements AutoCloseable {
 	public static Logger logger = LoggerFactory.getLogger(ClassificationClient.class);
 	
 	/* Methods that are classification requests */
@@ -838,7 +838,8 @@ public class ClassificationClient {
 			}
 		}
 	}
-	
+
+	@Override
 	public void close() {
 		idleConnectionMonitorThread.shutdown();
 		if (httpClient != null) {

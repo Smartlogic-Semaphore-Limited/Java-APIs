@@ -57,8 +57,14 @@ public class TestHintsXML extends TestCase {
 		Map<String, TermHint> termHints = sesClient.getTermHints("appo");
 
 		XMLifier<TermHint> xmlifier = new XMLifier<TermHint>(TermHint.class);
-		String savedXml = xmlifier.objectAsXML(termHints.values().toArray(new TermHint[0])[0]);
-		assertEquals("Term hint serialized", xml, savedXml);
+		TermHint startTh = termHints.values().iterator().next();
+		String savedXml = xmlifier.objectAsXML(startTh);
+		TermHint newTh = xmlifier.objectFromXML(savedXml);
+
+		assertEquals("Values arrays are not the same size", startTh.getValues().getValues().size(),
+				newTh.getValues().getValues().size());
+		assertEquals("Term IDs do not match", startTh.getId(), newTh.getId());
+		assertEquals("Term names do not match", startTh.getName(), newTh.getName());
 	}
 
 	public void testUnmarshall() throws Exception {

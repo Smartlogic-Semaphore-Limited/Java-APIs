@@ -41,6 +41,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ import org.xml.sax.SAXException;
 import com.smartlogic.ses.client.exceptions.NoSuchTermException;
 import com.smartlogic.ses.client.exceptions.SESException;
 
-public class SESClient {
+public class SESClient implements AutoCloseable {
   Logger logger = LoggerFactory.getLogger(this.getClass());
 
   public enum DetailLevel {
@@ -69,9 +70,13 @@ public class SESClient {
   private int connectionTimeoutMS;
   private int socketTimeoutMS;
 
+  private int maxConnections = 10;
+
   private String language;
 
   private String url;
+
+  private CloseableHttpClient httpClient;
 
   public String getUrl() {
     return url;
@@ -196,6 +201,10 @@ public class SESClient {
     this.socketTimeoutMS = socketTimeoutMS;
   }
 
+  public void setMaxConnections(int maxConnections) { this.maxConnections = maxConnections; }
+
+  public int getMaxConnections()  { return this.maxConnections; }
+
   private File saveFile = null;
 
   public File getSaveFile() {
@@ -204,6 +213,18 @@ public class SESClient {
 
   public void setSaveFile(File saveFile) {
     this.saveFile = saveFile;
+  }
+
+  @Override
+  public void close() {
+    if (httpClient != null) {
+      try {
+        httpClient.close();
+      } catch (IOException ioe) {
+        logger.warn("Failed to cleanly close HttpClient.", ioe);
+      }
+      httpClient = null;
+    }
   }
 
   /**
@@ -1218,6 +1239,31 @@ public class SESClient {
     return treeSet;
   }
 
+  protected void initHttpClient() throws NoSuchAlgorithmException, KeyManagementException {
+
+    if (this.httpClient == null) {
+      Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
+              .setSocketTimeout(getSocketTimeoutMS()).setConnectTimeout(getConnectionTimeoutMS())
+              .setConnectionRequestTimeout(getConnectionTimeoutMS());
+      if ((getProxyHost() != null) && (getProxyHost().length() > 0) && (getProxyPort() > 0)) {
+        HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort(), "http");
+        requestConfigBuilder.setProxy(proxy);
+      }
+      RequestConfig requestConfig = requestConfigBuilder.build();
+
+      SSLContextBuilder builder = new SSLContextBuilder();
+      SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
+              NoopHostnameVerifier.INSTANCE);
+
+      PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+      cm.setMaxTotal(this.maxConnections);
+      cm.setDefaultMaxPerRoute(this.maxConnections);
+
+      this.httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig)
+              .setSSLSocketFactory(sslsf).build();
+    }
+  }
+
   protected Semaphore getSemaphore(URL url) throws SESException {
     if (logger.isInfoEnabled()) {
       logger.info("getSemaphore - entry: '" + url.toExternalForm() + "'");
@@ -1227,21 +1273,7 @@ public class SESClient {
 
     try {
 
-      Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
-          .setSocketTimeout(getSocketTimeoutMS()).setConnectTimeout(getConnectionTimeoutMS())
-          .setConnectionRequestTimeout(getConnectionTimeoutMS());
-      if ((getProxyHost() != null) && (getProxyHost().length() > 0) && (getProxyPort() > 0)) {
-        HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort(), "http");
-        requestConfigBuilder.setProxy(proxy);
-      }
-      RequestConfig requestConfig = requestConfigBuilder.build();
-
-      SSLContextBuilder builder = new SSLContextBuilder();
-      SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
-    		  NoopHostnameVerifier.INSTANCE);
-
-      CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig)
-          .setSSLSocketFactory(sslsf).build();
+      initHttpClient();
 
       if (logger.isDebugEnabled()) {
         logger.debug("About to make HTTP request: " + url.toExternalForm());
