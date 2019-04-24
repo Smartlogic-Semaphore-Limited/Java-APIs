@@ -1,5 +1,6 @@
 package com.smartlogic.cloud;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,76 +41,89 @@ public class TokenFetcher {
 	}
 
 	private String proxyHost;
+
 	public String getProxyHost() {
 		return proxyHost;
 	}
+
 	public void setProxyHost(String proxyHost) {
 		this.proxyHost = proxyHost;
 	}
 
 	private int proxyPort;
+
 	public int getProxyPort() {
 		return proxyPort;
 	}
+
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
-	
+
 	private String proxyProtocol = "http";
+
 	public String getProxyProtocol() {
 		return proxyProtocol;
 	}
+
 	public void setProxyProtocol(String proxyProtocol) {
 		this.proxyProtocol = proxyProtocol;
 	}
 
 	private int socketTimeoutMS = 10000;
+
 	public int getSocketTimeoutMS() {
 		return socketTimeoutMS;
 	}
+
 	public void setSocketTimeoutMS(int socketTimeoutMS) {
 		this.socketTimeoutMS = socketTimeoutMS;
 	}
 
 	private int connectionTimeoutMS = 10000;
+
 	public int getConnectionTimeoutMS() {
 		return connectionTimeoutMS;
 	}
+
 	public void setConnectionTimeoutMS(int connectionTimeoutMS) {
 		this.connectionTimeoutMS = connectionTimeoutMS;
 	}
 
 	private int connectionRequestTimeoutMS = 10000;
+
 	public int getConnectionRequestTimeoutMS() {
 		return connectionRequestTimeoutMS;
 	}
+
 	public void setConnectionRequestTimeoutMS(int connectionRequestTimeoutMS) {
 		this.connectionRequestTimeoutMS = connectionRequestTimeoutMS;
 	}
 
 	/**
 	 * Get the access token
+	 * 
 	 * @return
 	 * @throws CloudException
 	 */
 	public Token getAccessToken() throws CloudException {
 		logger.info("getAccessToken: '" + tokenUrl + "'");
 		try {
-			
+
 			SSLContextBuilder builder = new SSLContextBuilder();
-		    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(), NoopHostnameVerifier.INSTANCE);
-		    
-		    Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder
-		            .<ConnectionSocketFactory> create().register("https", sslsf)
-		            .build();
-		    
-			PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build(),
+					NoopHostnameVerifier.INSTANCE);
+
+			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+					.register("https", sslsf).build();
+
+			PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
+					socketFactoryRegistry);
 			connectionManager.setMaxTotal(200);
 			connectionManager.setDefaultMaxPerRoute(100);
 
 			Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
-					.setSocketTimeout(getSocketTimeoutMS())
-					.setConnectTimeout(getConnectionTimeoutMS())
+					.setSocketTimeout(getSocketTimeoutMS()).setConnectTimeout(getConnectionTimeoutMS())
 					.setConnectionRequestTimeout(getConnectionRequestTimeoutMS());
 			if ((getProxyHost() != null) && (getProxyHost().length() > 0) && (getProxyPort() > 0)) {
 				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort(), getProxyProtocol());
@@ -117,12 +131,8 @@ public class TokenFetcher {
 			}
 			RequestConfig requestConfig = requestConfigBuilder.build();
 
-			HttpClient httpClient =
-				      HttpClients.custom()
-				      			.setConnectionManager(connectionManager)
-				      			.setDefaultRequestConfig(requestConfig)
-				      			.setSSLSocketFactory(sslsf)
-				                .build();
+			HttpClient httpClient = HttpClients.custom().setConnectionManager(connectionManager)
+					.setDefaultRequestConfig(requestConfig).setSSLSocketFactory(sslsf).build();
 
 			List<NameValuePair> postParams = new ArrayList<NameValuePair>();
 			postParams.add(new BasicNameValuePair("grant_type", "apikey"));
@@ -150,18 +160,22 @@ public class TokenFetcher {
 				throw new CloudException("Internal cloud server error: " + entity.toString());
 			} else if (statusCode != HttpStatus.SC_OK) {
 				throw new CloudException(
-					"HttpStatus: " + statusCode + " received from cloud server (" + entity.toString() + ")");
-			}
-			byte[] returnedData = IOUtils.toByteArray(entity.getContent());
-			if (logger.isDebugEnabled()) {
-				logger.debug("Reponse: " + new String(returnedData, "UTF-8"));
+						"HttpStatus: " + statusCode + " received from cloud server (" + entity.toString() + ")");
 			}
 
-			ObjectMapper mapper = new ObjectMapper();
-			Token token = mapper.readValue(returnedData, Token.class);
-			return token;
+			try (InputStream inputStream = entity.getContent()) {
+				byte[] returnedData = IOUtils.toByteArray(entity.getContent());
+				if (logger.isDebugEnabled()) {
+					logger.debug("Reponse: " + new String(returnedData, "UTF-8"));
+				}
+
+				ObjectMapper mapper = new ObjectMapper();
+				Token token = mapper.readValue(returnedData, Token.class);
+				return token;
+			}
 		} catch (Exception e) {
-			String message = String.format("%s thrown fetching token: %s", e.getClass().getSimpleName(), e.getMessage());
+			String message = String.format("%s thrown fetching token: %s", e.getClass().getSimpleName(),
+					e.getMessage());
 			logger.error(message, e);
 			throw new CloudException(message);
 		}

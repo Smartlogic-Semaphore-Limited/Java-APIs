@@ -21,31 +21,33 @@ public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 	@Test
 	public void testBinary() throws IOException, ClassificationException {
 		File file = new File("src/test/resources/data/SampleData.txt");
-		FileInputStream fileInputStream = new FileInputStream(file);
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		int available;
-		while ((available = fileInputStream.available()) > 0) {
-			byte[] data = new byte[available];
-			fileInputStream.read(data);
-			byteArrayOutputStream.write(data);
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			int available;
+			while ((available = fileInputStream.available()) > 0) {
+				byte[] data = new byte[available];
+				fileInputStream.read(data);
+				byteArrayOutputStream.write(data);
+			}
+			fileInputStream.close();
+			byteArrayOutputStream.close();
+
+			Result result1 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(),
+					"SampleData.txt");
+			assertEquals("f7be152b1d057570b892dbe3dc39bd70", result1.getHash(), "Hash 1");
+
+			Map<String, Collection<String>> metadata = new HashMap<String, Collection<String>>();
+			Collection<String> cheeses = new Vector<String>();
+			cheeses.add("Brie");
+			cheeses.add("Camenbert");
+			cheeses.add("Cheddar");
+			metadata.put("cheeses", cheeses);
+
+			Result result2 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(),
+					"SampleData.txt", new Title("title"), metadata);
+			assertEquals("c723555e774c94d0ead71d5c1cc06efc", result2.getHash(), "Hash 2");
+
 		}
-		fileInputStream.close();
-		byteArrayOutputStream.close();
-
-		Result result1 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt");
-		assertEquals("f7be152b1d057570b892dbe3dc39bd70", result1.getHash(), "Hash 1");
-
-		Map<String, Collection<String>> metadata = new HashMap<String, Collection<String>>();
-		Collection<String> cheeses = new Vector<String>();
-		cheeses.add("Brie");
-		cheeses.add("Camenbert");
-		cheeses.add("Cheddar");
-		metadata.put("cheeses", cheeses);
-
-		Result result2 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt", new Title("title"), metadata);
-		assertEquals("c723555e774c94d0ead71d5c1cc06efc", result2.getHash(), "Hash 2");
-
 	}
-
 
 }

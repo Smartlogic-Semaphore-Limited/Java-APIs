@@ -279,8 +279,9 @@ public class SemaphoreModel {
 		
 		Query query = QueryFactory.create(findConceptSchemeSparql.asQuery());
 
-		QueryExecution qexec = QueryExecutionFactory.create(query, model);
-		return qexec.execAsk() ? new ConceptScheme(model, conceptSchemeResource) : null;
+		try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+			return qexec.execAsk() ? new ConceptScheme(model, conceptSchemeResource) : null;
+		}
 	}
 
 	private Resource createMetadataTypeResource(URI uri, Label label, Resource range) throws ModelException {

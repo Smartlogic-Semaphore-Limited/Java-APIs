@@ -1,6 +1,4 @@
 
-
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,7 +18,7 @@ import com.smartlogic.classificationserver.client.ClassificationScore;
 
 public class DirectoryClassifier extends DirectoryParser {
 	protected final static Log logger = LogFactory.getLog(DirectoryClassifier.class);
-	
+
 	public DirectoryClassifier(ClassificationClient classificationClient) {
 		super(classificationClient);
 	}
@@ -30,11 +28,11 @@ public class DirectoryClassifier extends DirectoryParser {
 			System.out.println("Usage \"Directory Classifier inputDirectory outputDirectory\" ");
 			System.exit(0);
 		}
-		
+
 		ClassificationClient classificationClient = new ClassificationClient();
 //		classificationClient.setProxyHost("localhost");
 //		classificationClient.setProxyPort(8888);
-		
+
 		ClassificationConfiguration classificationConfiguration = new ClassificationConfiguration();
 		classificationConfiguration.setProtocol("http");
 		classificationConfiguration.setHostName("127.0.0.1");
@@ -42,10 +40,10 @@ public class DirectoryClassifier extends DirectoryParser {
 		classificationConfiguration.setHostPath("/index.html");
 		classificationConfiguration.setSingleArticle(true);
 		classificationConfiguration.setMultiArticle(false);
-		
+
 		Map<String, String> additionalParameters = new HashMap<String, String>();
-		additionalParameters.put("threshold","1");
-		additionalParameters.put("language","en1");
+		additionalParameters.put("threshold", "1");
+		additionalParameters.put("language", "en1");
 		classificationConfiguration.setAdditionalParameters(additionalParameters);
 		classificationClient.setClassificationConfiguration(classificationConfiguration);
 
@@ -60,25 +58,24 @@ public class DirectoryClassifier extends DirectoryParser {
 			System.err.println("Exception encountered: " + e.getMessage());
 		}
 	}
-	
-	
+
 	public String getSuffix() {
 		return "txt";
 	}
-	
+
 	public void parseFile(File inputFile, File outputFile) throws ClassificationException, IOException {
 		logger.debug("Treating file: '" + inputFile + "'");
-		
-		
-		Map<String, Collection<ClassificationScore>> classificationScores = classificationClient.getClassifiedDocument(inputFile, null).getAllClassifications();
 
-		FileWriter fileWriter = new FileWriter(outputFile);
-		for (String rulebaseClass: classificationScores.keySet()) {
-			fileWriter.write(rulebaseClass + "\r\n");
-			for (ClassificationScore classificationScore: classificationScores.get(rulebaseClass)) {
-				fileWriter.write(classificationScore.getName() + ":" + classificationScore.getScore() + "\r\n");
+		Map<String, Collection<ClassificationScore>> classificationScores = classificationClient
+				.getClassifiedDocument(inputFile, null).getAllClassifications();
+
+		try (FileWriter fileWriter = new FileWriter(outputFile)) {
+			for (String rulebaseClass : classificationScores.keySet()) {
+				fileWriter.write(rulebaseClass + "\r\n");
+				for (ClassificationScore classificationScore : classificationScores.get(rulebaseClass)) {
+					fileWriter.write(classificationScore.getName() + ":" + classificationScore.getScore() + "\r\n");
+				}
 			}
 		}
-		fileWriter.close();
 	}
 }
