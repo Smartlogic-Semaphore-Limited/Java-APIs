@@ -27,8 +27,10 @@ public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 			int available;
 			while ((available = fileInputStream.available()) > 0) {
 				byte[] data = new byte[available];
-				fileInputStream.read(data);
-				byteArrayOutputStream.write(data);
+				int readBytes = fileInputStream.read(data);
+				if (readBytes > 0) {
+					byteArrayOutputStream.write(data);
+				}
 			}
 			fileInputStream.close();
 			byteArrayOutputStream.close();
@@ -47,8 +49,10 @@ public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 			int available;
 			while ((available = fileInputStream.available()) > 0) {
 				byte[] data = new byte[available];
-				fileInputStream.read(data);
-				byteArrayOutputStream.write(data);
+				int readBytes = fileInputStream.read(data);
+				if (readBytes > 0) {
+					byteArrayOutputStream.write(data);
+				}
 			}
 			fileInputStream.close();
 			byteArrayOutputStream.close();
@@ -79,27 +83,25 @@ public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 	public void testBodyTitleMetaInBytesOut() throws IOException, ClassificationException {
 		Properties props = new Properties();
 		File file = new File("src/test/resources/data/testBodyTestInBytesOut.txt");
-		FileInputStream fileInputStream = new FileInputStream(file);
-		props.load(fileInputStream);
-		fileInputStream.close();
-		byte[] xmlb = classificationClient.getClassifiedBytes(new Body(props.getProperty("body")),
-				new Title(props.getProperty("title")), makeMetaData(props));
-		assert xmlb != null;
-		XMLReader.getDocument(xmlb);
-
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			props.load(fileInputStream);
+			byte[] xmlb = classificationClient.getClassifiedBytes(new Body(props.getProperty("body")),
+					new Title(props.getProperty("title")), makeMetaData(props));
+			assert xmlb != null;
+			XMLReader.getDocument(xmlb);
+		}
 	}
 
 	@Test
 	public void testUrlTitleMetaInBytesOut() throws IOException, ClassificationException {
 		Properties props = new Properties();
 		File file = new File("src/test/resources/data/testBodyTestInBytesOut.txt");
-		FileInputStream fileInputStream = new FileInputStream(file);
-		props.load(fileInputStream);
-		fileInputStream.close();
-		byte[] xmlb = classificationClient.getClassifiedBytes(new URL(props.getProperty("url")),
-				new Title(props.getProperty("title")), makeMetaData(props));
-		assert xmlb != null;
-		XMLReader.getDocument(xmlb);
-
+		try (FileInputStream fileInputStream = new FileInputStream(file)) {
+			props.load(fileInputStream);
+			byte[] xmlb = classificationClient.getClassifiedBytes(new URL(props.getProperty("url")),
+					new Title(props.getProperty("title")), makeMetaData(props));
+			assert xmlb != null;
+			XMLReader.getDocument(xmlb);
+		}
 	}
 }
