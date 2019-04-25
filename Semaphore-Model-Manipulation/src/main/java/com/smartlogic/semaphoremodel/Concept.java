@@ -252,8 +252,9 @@ public class Concept extends ConceptObject {
 
 		Query query = QueryFactory.create(parameterizedSparql.asQuery());
 
-		QueryExecution qexec = QueryExecutionFactory.create(query, model);
-		return qexec.execAsk();
+		try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+			return qexec.execAsk();
+		}
 	}
 
 }
