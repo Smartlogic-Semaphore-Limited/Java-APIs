@@ -824,7 +824,6 @@ public class ClassificationClient implements AutoCloseable {
 		return sendPostRequest(multipartEntityBuilder.build());
 	}
 
-	private boolean initialized = false;
 	private PoolingHttpClientConnectionManager poolingConnectionManager;
 	private RequestConfig requestConfig;
 
@@ -841,46 +840,46 @@ public class ClassificationClient implements AutoCloseable {
 	private CloseableHttpClient httpClient = null;
 	private IdleConnectionMonitorThread idleConnectionMonitorThread;
 
-	private void initialize() {
-		synchronized (this) {
-			if (!initialized) {
-				poolingConnectionManager = new PoolingHttpClientConnectionManager();
-				poolingConnectionManager.setValidateAfterInactivity(0);
-				poolingConnectionManager.setDefaultMaxPerRoute(clientPoolSize);
-				poolingConnectionManager.setMaxTotal(clientPoolSize);
-
-				// Make sure that idle and stale connections are discarded
-				idleConnectionMonitorThread = new IdleConnectionMonitorThread(poolingConnectionManager);
-				idleConnectionMonitorThread.start();
-
-				RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
-						.setSocketTimeout(classificationConfiguration.getSocketTimeoutMS())
-						.setConnectTimeout(classificationConfiguration.getConnectionTimeoutMS())
-						.setConnectionRequestTimeout(classificationConfiguration.getConnectionTimeoutMS());
-				if (getProxyURL() != null) {
-					HttpHost proxy = HttpHost.create(getProxyURL());
-					requestConfigBuilder.setProxy(proxy);
-				}
-				requestConfig = requestConfigBuilder.build();
-
-				httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig)
-						.setSSLHostnameVerifier(new NoopHostnameVerifier())
-						.setConnectionManager(poolingConnectionManager).build();
-				initialized = true;
-			}
+	private synchronized void initialize() {
+		if (httpClient == null) {
+			httpClient = getHttpClient();
 		}
+	}
+	
+	private CloseableHttpClient getHttpClient() {
+			
+		poolingConnectionManager = new PoolingHttpClientConnectionManager();
+		poolingConnectionManager.setValidateAfterInactivity(0);
+		poolingConnectionManager.setDefaultMaxPerRoute(clientPoolSize);
+		poolingConnectionManager.setMaxTotal(clientPoolSize);
+
+		// Make sure that idle and stale connections are discarded
+		idleConnectionMonitorThread = new IdleConnectionMonitorThread(poolingConnectionManager);
+		idleConnectionMonitorThread.start();
+
+		RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
+				.setSocketTimeout(classificationConfiguration.getSocketTimeoutMS())
+				.setConnectTimeout(classificationConfiguration.getConnectionTimeoutMS())
+				.setConnectionRequestTimeout(classificationConfiguration.getConnectionTimeoutMS());
+		if (getProxyURL() != null) {
+			HttpHost proxy = HttpHost.create(getProxyURL());
+			requestConfigBuilder.setProxy(proxy);
+		}
+		requestConfig = requestConfigBuilder.build();
+
+		return HttpClients.custom().setDefaultRequestConfig(requestConfig)
+				.setSSLHostnameVerifier(new NoopHostnameVerifier())
+				.setConnectionManager(poolingConnectionManager).build();
 	}
 
 	@Override
 	public void close() {
-		synchronized (this) {
-			idleConnectionMonitorThread.shutdown();
-			if (httpClient != null) {
-				try {
-					httpClient.close();
-				} catch (IOException ioe) {
-					throw new RuntimeException("HTTP client close failed.", ioe);
-				}
+		idleConnectionMonitorThread.shutdown();
+		if (httpClient != null) {
+			try {
+				httpClient.close();
+			} catch (IOException ioe) {
+				throw new RuntimeException("HTTP client close failed.", ioe);
 			}
 		}
 	}

@@ -20,6 +20,7 @@ public class TestModelsList extends PrintingTestCase {
 	public void testListModels() throws SESException {
 		logger.info("testListModels - entry");
 		Collection<Model> models = sesClient.listModels();
+		assertNotNull(models);
 		logger.info("testListModels - exit");
 	}
 

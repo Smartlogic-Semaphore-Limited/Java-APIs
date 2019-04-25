@@ -19,14 +19,12 @@ public class ExampleReadClient {
       endpoint.setModelIRI("model:myExample");
       endpoint.setAccessToken(config.getProperty("accesstoken"));
 
-      String sparqlUrl = endpoint.buildSPARQLUrl(null);
       ResultSet rs = endpoint.runSparqlQuery("select ?s ?p ?o where { ?s ?p ?o . } LIMIT 100");
       while (rs.hasNext()) {
         QuerySolution sol = rs.next();
         System.out.println(sol.toString());
       }
 
-      String sparqlUrl2 = endpoint.buildSPARQLUrl();
       ResultSet rs2 = endpoint.runSparqlQuery("select ?s ?p ?o where { ?s ?p ?o . } LIMIT 100");
       while (rs2.hasNext()) {
         QuerySolution sol = rs2.next();
