@@ -841,6 +841,11 @@ public class ClassificationClient implements AutoCloseable {
 	private CloseableHttpClient httpClient = null;
 	private IdleConnectionMonitorThread idleConnectionMonitorThread;
 
+	private boolean isInitialized() {
+		synchronized(this) {
+			return initialized;
+		}
+	}
 	private void initialize() {
 		synchronized (this) {
 			if (!initialized) {
@@ -886,7 +891,7 @@ public class ClassificationClient implements AutoCloseable {
 	}
 
 	private byte[] sendPostRequest(HttpEntity requestEntity) throws ClassificationException {
-		if (!initialized)
+		if (!isInitialized())
 			initialize();
 
 		HttpPost httpPost = null;
