@@ -31,10 +31,14 @@ abstract public class DirectoryParser {
 	}
 
 	public void parseDirectory(File inputDirectory, File outputDirectory) throws Exception {
+		if ((inputDirectory == null) || (outputDirectory == null)) return;
+		
 		if (!outputDirectory.exists()) outputDirectory.mkdirs();
 		if (!outputDirectory.isDirectory()) throw new Exception("Output directory '" + outputDirectory.getAbsolutePath() + "' is not a directory");
 		
 		File[] inputFiles = inputDirectory.listFiles();
+		if (inputFiles == null) return;
+		
 		for (File inputFile: inputFiles) {
 			File outputFile = new File(outputDirectory, inputFile.getName() + "." + getSuffix());
 			if (inputFile.isDirectory()) {

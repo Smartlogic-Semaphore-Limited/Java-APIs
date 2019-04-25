@@ -1,5 +1,14 @@
 package com.smartlogic.rdfdiff;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.ext.com.google.common.collect.Lists;
@@ -19,14 +28,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
 
 public class DiffToSparqlInsertUpdateBuilderTests {
 
@@ -80,6 +81,10 @@ public class DiffToSparqlInsertUpdateBuilderTests {
     Model model2 = hydrateAndModifySecondModel();
     String sparql = DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(
         RDFDifferenceBuilder.buildDifference(model, model2));
+    if (sparql == null) {
+    	fail("Null sparql returned");
+    	return;
+    }
     System.out.println(sparql);
     assertTrue(sparql.startsWith("DELETE"));
 
