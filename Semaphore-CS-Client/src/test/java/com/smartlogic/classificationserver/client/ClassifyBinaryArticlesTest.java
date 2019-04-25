@@ -17,19 +17,22 @@ public class ClassifyBinaryArticlesTest extends ClassificationTestCase {
 	@Test
 	public void testBinary() throws IOException, ClassificationException {
 		File file = new File("src/test/resources/data/SampleData.txt");
-		FileInputStream fileInputStream = new FileInputStream(file);
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		int available;
-		while ((available = fileInputStream.available()) > 0) {
-			byte[] data = new byte[available];
-			fileInputStream.read(data);
-			byteArrayOutputStream.write(data);
-		}
-		fileInputStream.close();
-		byteArrayOutputStream.close();
+		try (FileInputStream fileInputStream = new FileInputStream(file);
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();) {
 
-		Result result = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt");
-		assertEquals(1, result.getArticles().size());
+			int available;
+			while ((available = fileInputStream.available()) > 0) {
+				byte[] data = new byte[available];
+				int readCount = fileInputStream.read(data);
+				if (readCount > 0) {
+					byteArrayOutputStream.write(data);
+				}
+			}
+
+			Result result = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(),
+					"SampleData.txt");
+			assertEquals(1, result.getArticles().size());
+		}
 	}
 
 }

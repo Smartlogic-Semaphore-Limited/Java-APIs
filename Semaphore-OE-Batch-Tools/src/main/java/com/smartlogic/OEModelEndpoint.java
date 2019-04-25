@@ -1,9 +1,16 @@
 package com.smartlogic;
 
-import com.smartlogic.cloud.CloudException;
-import com.smartlogic.cloud.Token;
-import com.smartlogic.cloud.TokenFetcher;
-import org.apache.http.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -12,8 +19,13 @@ import org.apache.jena.ext.com.google.common.base.Joiner;
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
-import org.apache.jena.ext.com.google.common.collect.Lists;
-import org.apache.jena.query.*;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.query.ResultSetFactory;
+import org.apache.jena.query.Syntax;
 import org.apache.jena.riot.WebContent;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
@@ -22,9 +34,9 @@ import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.cloud.Token;
+import com.smartlogic.cloud.TokenFetcher;
 
 /**
  * Created by stevenbiondi on 6/21/17.
@@ -71,7 +83,7 @@ public class OEModelEndpoint {
     StringBuffer buf = buildApiUrl().append("/").append(modelIri).append("/sparql");
 
     if (null != options) {
-      List optionsList = Lists.newArrayList();
+      List<String> optionsList = new ArrayList<String>();
 
       // default is false, don't set unless changed.
       if (options.acceptWarnings) {
@@ -118,7 +130,6 @@ public class OEModelEndpoint {
 
     setCloudAuthHeaderIfConfigured(clientBuilder);
 
-    SparqlUpdateOptions options = new SparqlUpdateOptions();
     try (CloseableHttpClient client = clientBuilder.build();
          QueryExecution qe = QueryExecutionFactory.sparqlService(buildSPARQLUrl(null).toString(), query, client)) {
       results = ResultSetFactory.copyResults(qe.execSelect());

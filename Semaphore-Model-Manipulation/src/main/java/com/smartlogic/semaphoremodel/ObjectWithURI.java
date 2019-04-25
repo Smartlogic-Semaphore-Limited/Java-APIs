@@ -164,8 +164,9 @@ public abstract class ObjectWithURI {
 		
 		Query query = QueryFactory.create(parameterizedSparql.asQuery());
 
-		QueryExecution qexec = QueryExecutionFactory.create(query, model);
-		return qexec.execAsk();
+		try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+			return qexec.execAsk();
+		}
 	}
 
 	private void checkLabelExists(Label label) throws ModelException {
@@ -186,8 +187,9 @@ public abstract class ObjectWithURI {
 		
 		Query query = QueryFactory.create(parameterizedSparql.asQuery());
 
-		QueryExecution qexec = QueryExecutionFactory.create(query, model);
-		return qexec.execAsk();
+		try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+			return qexec.execAsk();
+		}
 	}
 	
 	

@@ -1,13 +1,14 @@
 package com.smartlogic.ses.client;
 
-import junit.framework.TestCase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import junit.framework.TestCase;
 
 public class TestTermsXML extends TestCase {
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -19,19 +20,17 @@ public class TestTermsXML extends TestCase {
 		if (sesClient == null) {
 			sesClient = ConfigUtil.getSESClient();
 
-			BufferedReader reader = new BufferedReader(new FileReader(new File("src/test/resources/TestTerm.xml")));
-			String data;
-			StringBuilder stringBuilder = new StringBuilder();
-			while ((data = reader.readLine()) != null) {
-				stringBuilder.append(data);
-				stringBuilder.append("\n");
+			try (BufferedReader reader = new BufferedReader(new FileReader(new File("src/test/resources/TestTerm.xml")))) {
+				String data;
+				StringBuilder stringBuilder = new StringBuilder();
+				while ((data = reader.readLine()) != null) {
+					stringBuilder.append(data);
+					stringBuilder.append("\n");
+				}
+				xml = stringBuilder.toString();
 			}
-			reader.close();
-			xml = stringBuilder.toString();
-
 		}
 	}
-
 
 	public void testMarshal() throws Exception {
 		Map<String, Term> terms = sesClient.getTermDetailsByName("Livestock markets");
@@ -62,6 +61,5 @@ public class TestTermsXML extends TestCase {
 		System.out.println(xmlifier.objectAsXML(structure));
 
 	}
-
 
 }

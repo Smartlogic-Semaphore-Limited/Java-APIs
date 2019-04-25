@@ -52,7 +52,9 @@ public class OEBatchClient implements Closeable {
   }
 
   public void setBatchMode(BatchMode mode) {
-    this.batchMode = mode;
+	  if (mode != null) {
+		  this.batchMode = mode;
+	  }
   }
 
   /**
@@ -148,12 +150,10 @@ public class OEBatchClient implements Closeable {
     boolean result = false;
     switch (batchMode) {
       case None:
-        RDFDifference diff = getBatchDiff();
-        if (diff.getInLeftOnly().size() > 0 || diff.getInRightOnly().size() > 0) {
-          if (logger.isDebugEnabled())
+        String sparql = DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(getBatchDiff());
+        if (sparql != null) {
             logger.debug("Changes detected, running SPARQL Update");
-          result = endpoint.runSparqlUpdate(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(getBatchDiff()),
-                                            sparqlUpdateOptions);
+            result = endpoint.runSparqlUpdate(sparql, sparqlUpdateOptions);
         } else {
           if (logger.isDebugEnabled())
             logger.debug("No changes detected in model. Not running SPARQL update.");

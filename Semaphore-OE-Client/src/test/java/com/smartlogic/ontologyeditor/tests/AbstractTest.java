@@ -11,9 +11,9 @@ public abstract class AbstractTest {
 	private static Properties properties = null;
 	public static synchronized String get(String name) throws IOException {
 		if (properties == null) {
-			try {
+			try (FileInputStream propertiesInputStream = new FileInputStream("config.properties")) {
 				properties = new Properties();
-				properties.load(new FileInputStream("config.properties"));
+				properties.load(propertiesInputStream);
 			} catch (IOException e) {
 				System.err.println("Error attempting to read properties from file \"config.properties\"");
 				throw e;

@@ -11,11 +11,12 @@ import com.smartlogic.ontologyeditor.OEClientReadWrite;
 public abstract class CloudModelManipulation {
 
 	private static Properties properties = null;
+
 	public static synchronized String get(String name) throws IOException {
 		if (properties == null) {
-			try {
+			try (FileInputStream propertiesInputStream = new FileInputStream("cloud.properties")) {
 				properties = new Properties();
-				properties.load(new FileInputStream("cloud.properties"));
+				properties.load(propertiesInputStream);
 			} catch (IOException e) {
 				System.err.println("Error attempting to read properties from file \"config.properties\"");
 				throw e;
@@ -26,8 +27,9 @@ public abstract class CloudModelManipulation {
 
 	protected static OEClientReadWrite getCloudOEClient(boolean proxy) throws IOException, CloudException {
 		OEClientReadWrite oeClient = new OEClientReadWrite();
-		if (proxy) oeClient.setProxyAddress(get("proxy.address"));
-		
+		if (proxy)
+			oeClient.setProxyAddress(get("proxy.address"));
+
 		TokenFetcher tokenFetcher = new TokenFetcher(get("token.url"), get("token.key"));
 		oeClient.setCloudToken(tokenFetcher.getAccessToken());
 		oeClient.setBaseURL(get("base.url"));
@@ -36,4 +38,3 @@ public abstract class CloudModelManipulation {
 		return oeClient;
 	}
 }
-

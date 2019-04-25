@@ -66,6 +66,9 @@ public class LoadTightLoopExample {
                 allTerms.add(t);
                 System.out.println("Top concept: " + t.getName().getValue());
                 Map<String, Term> childTerms = client.browse(t.getId().getValue());
+                if (childTerms != null) {
+                	System.out.println(childTerms.size() + " child terms returned");
+                }
             }
 
             int loopCounter = 0;
