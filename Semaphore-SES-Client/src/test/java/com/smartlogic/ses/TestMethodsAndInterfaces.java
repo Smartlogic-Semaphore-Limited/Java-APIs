@@ -33,6 +33,7 @@ public class TestMethodsAndInterfaces extends TestCase {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void testClassBehavior() throws IOException, ClassNotFoundException {
 		String[] javaNames = getClassNamesInDirectory(new File("src/main/java"), "com.smartlogic.ses.client");
+		if (javaNames == null) return;
 		
 		for (String javaName: javaNames) {
 			String className = javaName.substring(0,javaName.length()-5);
