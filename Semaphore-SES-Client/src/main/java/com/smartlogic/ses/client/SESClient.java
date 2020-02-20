@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -689,7 +690,9 @@ public class SESClient implements AutoCloseable {
 			String sep = "";
 			StringBuffer path = new StringBuffer(basepath);
 			for (String id : ids) {
-				if (this.getPath().length() + path.length() + id.length() > 2048) {
+				String thisPath = this.getPath();
+				Objects.requireNonNull(thisPath);
+				if (thisPath.length() + path.length() + id.length() > 2048) {
 					url = getURLImpl(path.toString());
 					if (logger.isDebugEnabled()) {
 						logger.debug("URL: " + url.toExternalForm());
