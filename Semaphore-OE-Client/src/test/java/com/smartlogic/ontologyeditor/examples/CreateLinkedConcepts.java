@@ -1,4 +1,4 @@
-package com.smartlogic.ontologyeditor.sapexamples;
+package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,12 +10,12 @@ import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Label;
-import com.smartlogic.ontologyeditor.examples.ModelManipulation;
+import com.smartlogic.ontologyeditor.cloudexamples.CloudModelManipulation;
 
-public class CreateLinkedConcepts extends ModelManipulation {
+public class CreateLinkedConcepts extends CloudModelManipulation {
 
 	public static void main(String[] args) throws IOException, OEClientException, CloudException {
-		OEClientReadWrite oeClient = getOEClient(false);
+		OEClientReadWrite oeClient = getCloudOEClient(false);
 
 		List<Label> labelsCS = new ArrayList<Label>();
 		labelsCS.add(new Label("en", "MyConceptScheme"));
