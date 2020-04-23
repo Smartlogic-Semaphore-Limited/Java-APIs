@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
+import org.apache.jena.ext.com.google.common.collect.ImmutableMap;
 import org.apache.jena.sparql.util.FmtUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -517,11 +518,21 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("createRelationship entry: {} {} {}", relationshipTypeUri, sourceConcept.getUri(),
 				targetConcept.getUri());
 
-		String url = getResourceURL(sourceConcept.getUri());
+		String url = getModelURL();
 		logger.info("createRelationship - URL: {}", url);
+		
+		
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
 		JSONArray operationList = new JSONArray();
+		JSONObject testOperation = new JSONObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
+		JSONObject valueObject = new JSONObject();
+		valueObject.put("@id", sourceConcept.getUri());
+		testOperation.put("value", valueObject);
+		operationList.add(testOperation);
+		
 		JSONObject addOperation = new JSONObject();
 		addOperation.put("op", "add");
 		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(relationshipTypeUri)));

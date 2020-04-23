@@ -10,7 +10,7 @@ public class TestHash extends ClassificationTestCase {
 	public void testHash() throws ClassificationException {
 
 		Result result = classificationClient.getClassifiedDocument(new Body("Wibble bot"), new Title("Cheese crackers"));
-		assertEquals("95bda699dc5f262137a7903d211bcc62", result.getHash());
+		assertEquals("b86a6ace2b05946eaad628b32ebc7603", result.getHash());
 
 	}
 
