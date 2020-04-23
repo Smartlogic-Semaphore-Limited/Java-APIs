@@ -37,7 +37,7 @@ public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 
 			Result result1 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(),
 					"SampleData.txt");
-			assertEquals("f7be152b1d057570b892dbe3dc39bd70", result1.getHash(), "Hash 1");
+			assertEquals("e1bd32ef968c3508c1cae0d909b33a84", result1.getHash(), "Hash 1");
 
 			Map<String, Collection<String>> metadata = new HashMap<String, Collection<String>>();
 			Collection<String> cheeses = new Vector<String>();
@@ -48,7 +48,7 @@ public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 
 			Result result2 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(),
 					"SampleData.txt", new Title("title"), metadata);
-			assertEquals("c723555e774c94d0ead71d5c1cc06efc", result2.getHash(), "Hash 2");
+			assertEquals("7067aac90aea369e3220eb74fb12596a", result2.getHash(), "Hash 2");
 
 		}
 	}

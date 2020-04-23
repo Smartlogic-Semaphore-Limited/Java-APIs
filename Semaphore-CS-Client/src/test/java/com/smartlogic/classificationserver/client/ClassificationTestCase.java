@@ -13,10 +13,10 @@ public abstract class ClassificationTestCase {
 
 		if (classificationClient == null) {
 			classificationClient = new ClassificationClient();
-//			classificationClient.setProxyURL("http://localhost:8888");
+			classificationClient.setProxyURL("http://localhost:8888");
 
 			ClassificationConfiguration classificationConfiguration = new ClassificationConfiguration();
-			classificationConfiguration.setUrl("http://build-reference:5058");
+			classificationConfiguration.setUrl("http://svrka02:5058");
 			classificationConfiguration.setSingleArticle(false);
 			classificationConfiguration.setMultiArticle(true);
 			classificationConfiguration.setSocketTimeoutMS(100000);

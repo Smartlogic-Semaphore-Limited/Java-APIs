@@ -11,7 +11,7 @@ import com.smartlogic.classificationserver.client.ClassificationTestCase;
 
 public class TestPublishPakFiles extends ClassificationTestCase {
 
-	@Test
+//	@Test
 	public void publishPakFiles() throws ClassificationException {
 		classificationClient.clearPublishSet("TestPublishSet");
 		

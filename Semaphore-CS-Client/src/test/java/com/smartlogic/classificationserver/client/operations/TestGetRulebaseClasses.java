@@ -18,7 +18,7 @@ public class TestGetRulebaseClasses extends ClassificationTestCase {
 
 		Collection<RulebaseClass> rulebaseClasses = classificationClient.getRulebaseClasses();
 
-		assertEquals(4, rulebaseClasses.size(), "Rulebase count");
+		assertEquals(17, rulebaseClasses.size(), "Rulebase count");
 
 		for (RulebaseClass rulebaseClass: rulebaseClasses) System.err.println(rulebaseClass);
 		

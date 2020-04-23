@@ -14,7 +14,7 @@ public class ClassifySimpleMultipleTest extends ClassificationTestCase {
 		File file = new File("src/test/resources/data/SampleData.txt");
 		for (int i = 0; i < 5; i++) {
 			Result result = classificationClient.getClassifiedDocument(file, "text");
-			assertEquals(3, result.getAllClassifications().size(), "Result " + i);
+			assertEquals(6, result.getAllClassifications().size(), "Result " + i);
 		}
 		
 	}
