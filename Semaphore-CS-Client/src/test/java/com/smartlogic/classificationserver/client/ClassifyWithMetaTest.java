@@ -30,9 +30,8 @@ public class ClassifyWithMetaTest extends ClassificationTestCase {
 			metadata.put("other", other);
 
 			Result result = classificationClient.getClassifiedDocument(new Body(body), new Title(title), metadata);
-			assertEquals(1, result.getAllClassifications().get("IPSV").size(), "run 1 - IPSV");
-			assertEquals(1, result.getAllClassifications().get("IPSV_ID").size(), "run 1 - IPSV_ID");
-			assertEquals(1, result.getAllClassifications().get("IPSV_RAW").size(), "run 1 - IPSV_RAW");
+			System.out.println(result.getAllClassifications());
+			assertEquals(2, result.getAllClassifications().get("IPSV-Health, well-being and care").size(), "run 1 - IPSV-Health, well-being and care");
 
 
 		} catch (Exception e) {

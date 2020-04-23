@@ -11,7 +11,7 @@ public class TestAutoCloseable {
     public void testBody() {
         try (ClassificationClient client = new ClassificationClient()) {
             ClassificationConfiguration config = new ClassificationConfiguration();
-            config.setUrl("http://build-reference:5058");
+            config.setUrl("http://svrka02:5058");
             config.setSingleArticle(false);
             config.setMultiArticle(true);
             config.setSocketTimeoutMS(100000);
