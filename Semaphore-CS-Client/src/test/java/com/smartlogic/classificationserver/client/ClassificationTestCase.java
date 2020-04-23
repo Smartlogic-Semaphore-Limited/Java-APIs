@@ -13,7 +13,7 @@ public abstract class ClassificationTestCase {
 
 		if (classificationClient == null) {
 			classificationClient = new ClassificationClient();
-			classificationClient.setProxyURL("http://localhost:8888");
+//			classificationClient.setProxyURL("http://localhost:8888");
 
 			ClassificationConfiguration classificationConfiguration = new ClassificationConfiguration();
 			classificationConfiguration.setUrl("http://svrka02:5058");
