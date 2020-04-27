@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.Response;
 
 import org.apache.jena.atlas.json.JsonArray;
@@ -336,6 +337,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		}
 	}
 
+
+
 	/**
 	 * Update a label object
 	 *
@@ -465,36 +468,41 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void createLabel(Concept concept, String relationshipTypeUri, Label label) throws OEClientException {
 		logger.info("createLabel entry: {} {} {}", concept.getUri(), relationshipTypeUri, label);
 
-		String url = getResourceURL(concept.getUri());
-		logger.info("createRelationship - URL: {}", url);
+		String url = getModelURL();
+		logger.info("createLabel - URL: {}", url);
+		
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
 		JSONArray operationList = new JSONArray();
+		JSONObject testOperation = new JSONObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
+		JSONObject testValue = new JSONObject();
+		testValue.put("@id", concept.getUri());
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
+
 		JSONObject addOperation = new JSONObject();
 		addOperation.put("op", "add");
 		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(relationshipTypeUri)));
 
+		JSONArray valueArray = new JSONArray();
+		JSONObject valueObject = new JSONObject();
+		JSONArray typeArray = new JSONArray();
+		typeArray.add("skosxl:Label");
+		valueObject.put("@type", typeArray);
+		
+		JSONArray labelArray = new JSONArray();
 		JSONObject labelObject = new JSONObject();
 		if ((label.getUri() != null) && (label.getUri().trim().length() > 0))
 			labelObject.put("@id", label.getUri());
-		else
-			labelObject.put("@id", concept.getUri() + "_" + (new Date()).getTime());
+		labelObject.put("@language", label.getLanguageCode());
+		labelObject.put("@value", label.getValue());
+		labelArray.add(labelObject);
+		valueObject.put("skosxl:literalForm", labelArray);
 
-		JSONArray typeArray = new JSONArray();
-		typeArray.add("skosxl:Label");
-		labelObject.put("@type", typeArray);
-
-		JSONObject literalFormObject = new JSONObject();
-		literalFormObject.put("@value", label.getValue());
-		literalFormObject.put("@language", label.getLanguageCode());
-		JSONArray literalFormArray = new JSONArray();
-		literalFormArray.add(literalFormObject);
-		labelObject.put("skosxl:literalForm", literalFormArray);
-
-		JSONArray valueArray = new JSONArray();
-		valueArray.add(labelObject);
+		valueArray.add(valueObject);
 		addOperation.put("value", valueArray);
-
 		operationList.add(addOperation);
 
 		String createLabelPayload = operationList.toJSONString().replaceAll("\\/", "/");
@@ -509,7 +517,6 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		throw new OEClientException(
 				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -559,29 +566,35 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void createMetadata(Concept concept, String metadataType, String metadataValue, String metadataLanguage)
+	public void createMetadata(Concept concept, String metadataTypeUri, String metadataValue, String metadataLanguage)
 			throws OEClientException {
-		logger.info("createMetadata entry: {} {} {} {}", concept.getUri(), metadataType, metadataValue,
-				metadataLanguage);
+		logger.info("createMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, metadataValue, metadataLanguage);
 
-		String url = getResourceURL(concept.getUri());
+		String url = getModelURL();
 		logger.info("createMetadata - URL: {}", url);
+		
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
 		JSONArray operationList = new JSONArray();
+		JSONObject testOperation = new JSONObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
+		JSONObject testValue = new JSONObject();
+		testValue.put("@id", concept.getUri());
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
+
 		JSONObject addOperation = new JSONObject();
 		addOperation.put("op", "add");
-		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataType)));
+		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataTypeUri)));
 
-		if ((metadataLanguage == null) || (metadataLanguage.trim().length() == 0)) {
-			addOperation.put("value", metadataValue);
-		} else {
-			JSONObject valueObject = new JSONObject();
-			valueObject.put("@value", metadataValue);
-			valueObject.put("@language", metadataLanguage);
-			valueObject.put("@type", "http://www.w3.org/2001/XMLSchema#string");
-			addOperation.put("value", valueObject);
-		}
+		JSONArray valueArray = new JSONArray();
+		JSONObject valueObject = new JSONObject();
+		valueObject.put("@language", metadataLanguage);
+		valueObject.put("@value", metadataValue);
+		
+		valueArray.add(valueObject);
+		addOperation.put("value", valueArray);
 		operationList.add(addOperation);
 
 		String createMetadataPayload = operationList.toJSONString().replaceAll("\\/", "/");

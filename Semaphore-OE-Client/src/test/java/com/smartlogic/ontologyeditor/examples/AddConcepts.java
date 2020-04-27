@@ -1,50 +1,60 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
+import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Label;
 
 public class AddConcepts extends ModelManipulation {
 
-	public static void main(String[] args) throws IOException {
-		OEClientReadWrite oeClient = getOEClient(false);
+	public static void main(String args[]) throws IOException, CloudException, OEClientException {
+		runTests(new AddConcepts());
+	}
 
-		addConcept(oeClient, "Concepts with a +");
-		addConcept(oeClient, "Concepts with : problems");
-		addConcept(oeClient, "Concepts - things");
-		addConcept(oeClient, "Concepts && Onions");
-		addConcept(oeClient, "Concepts || Parakeets");
-		addConcept(oeClient, "! a concept");
-		addConcept(oeClient, "Concepts with (brackets)");
-		addConcept(oeClient, "Concepts with {curly} brackets");
-		addConcept(oeClient, "Concepts with [square] brackets");
-		addConcept(oeClient, "^Concepts)");
-		addConcept(oeClient, "\"Quoted Concepts\"");
-		addConcept(oeClient, "~ is a cat");
-		addConcept(oeClient, "Are you sure?");
-		addConcept(oeClient, "Sometimes you just need a /");
+	@Override
+	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
+		List<Label> labels = new ArrayList<Label>();
+		labels.add(new Label("en", "Concept Scheme for multiple concepts"));
 
+		ConceptScheme conceptScheme = new ConceptScheme(oeClient,
+				"http://example.com/APITest#ConceptSchemeForMultipleConcepts", labels);
+
+		oeClient.createConceptScheme(conceptScheme);
+
+		addConcept(oeClient, conceptScheme, "Concepts with a +");
+		addConcept(oeClient, conceptScheme, "Concepts with : problems");
+		addConcept(oeClient, conceptScheme, "Concepts - things");
+		addConcept(oeClient, conceptScheme, "Concepts && Onions");
+		addConcept(oeClient, conceptScheme, "Concepts || Parakeets");
+		addConcept(oeClient, conceptScheme, "! a concept");
+		addConcept(oeClient, conceptScheme, "Concepts with (brackets)");
+		addConcept(oeClient, conceptScheme, "Concepts with {curly} brackets");
+		addConcept(oeClient, conceptScheme, "Concepts with [square] brackets");
+		addConcept(oeClient, conceptScheme, "^Concepts)");
+		addConcept(oeClient, conceptScheme, "\"Quoted Concepts\"");
+		addConcept(oeClient, conceptScheme, "~ is a cat");
+		addConcept(oeClient, conceptScheme, "Are you sure?");
+		addConcept(oeClient, conceptScheme, "Sometimes you just need a /");
 
 	}
 
-	private static void addConcept(OEClientReadWrite oeClient, String label) throws UnsupportedEncodingException {
+	private void addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) {
 
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", "Concept " + label));
-		
-		Concept concept = new Concept(oeClient, "http://example.com/APITest#Concept" + URLEncoder.encode(label, "UTF-8"), labels);
 
-		String conceptSchemeURI = "http://example.com/APITest#" + URLEncoder.encode(label, "UTF-8");
-		oeClient.createConcept(conceptSchemeURI, concept);
-		
-		
+		Concept concept = new Concept(oeClient,
+				"http://example.com/APITest#Concept" + URLEncoder.encode(label, StandardCharsets.UTF_8), labels);
+
+		oeClient.createConcept(conceptScheme.getUri(), concept);
 	}
-
 
 }

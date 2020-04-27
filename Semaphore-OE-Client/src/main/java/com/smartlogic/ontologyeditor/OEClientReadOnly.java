@@ -69,6 +69,14 @@ public class OEClientReadOnly {
 	public void setToken(String token) {
 		this.token = token;
 	}
+	
+	private String headerToken;
+	public String getHeaderToken() {
+		return headerToken;
+	}
+	public void setHeaderToken(String headerToken) {
+		this.headerToken = headerToken;
+	}
 
 	private Token cloudToken;
 	public Token getCloudToken() {
@@ -117,12 +125,15 @@ public class OEClientReadOnly {
 
 		if (queryParameters != null) {
 			for (Map.Entry<String, String> queryParameter: queryParameters.entrySet())
-//				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue().replace("_", "_1").replace("%",  "_0"));
 				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue());
 		}
 
 		
-		return webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json").header("Authorization", getCloudTokenValue());
+		Builder builder = webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json").header("Authorization", getCloudTokenValue());
+		if (headerToken != null) {
+			builder.header("X-Api-Key", headerToken);
+		}
+		return builder;
 	}
 
 	private String modelURL = null;
@@ -149,8 +160,8 @@ public class OEClientReadOnly {
 				stringBuilder.append(token);
 				stringBuilder.append("/");
 			}
-			apiURL = stringBuilder.toString();
 
+			apiURL = stringBuilder.toString();
 			if (logger.isDebugEnabled()) logger.debug("apiURL: {}", apiURL);
 		}
 		return apiURL;
