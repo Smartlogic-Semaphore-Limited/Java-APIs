@@ -7,12 +7,10 @@ import java.util.Map;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.Response;
 
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
-import org.apache.jena.ext.com.google.common.collect.ImmutableMap;
 import org.apache.jena.sparql.util.FmtUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -84,7 +82,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void createModel(Model model) throws OEClientException {
 		logger.info("createModel entry: {}", model.getLabel());
 
-		String url = getApiURL() + "/sys/sys:Model/rdf:instance";
+		String url = getApiURL() + "sys/sys:Model/rdf:instance";
 		logger.info("createModel URL: {}", url);
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
@@ -140,7 +138,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void deleteModel(Model model) throws OEClientException {
 		logger.info("deleteModel entry: {}", model.getLabel());
 
-		String url = getApiURL() + "/sys/" + model.getUri();
+		String url = getApiURL() + "sys/" + model.getUri();
 		logger.info("deleteModel URL: {}", url);
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 		
@@ -196,11 +194,18 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		}
 		
 	}
-	
+
 	public void commitTask(Task task) {
+		Label label = new Label("en", "Commit added via API");
+		String comment = "No comment supplied";
+		commitTask(task, label, comment);
+	}
+	
+	public void commitTask(Task task, Label label, String comment) {
 		logger.info("commitTask entry: {}", task);
 
 		String url = getTaskSysURL(task) + "/teamwork:Change/rdf:instance";
+		logger.info("commitTask URL: {}", url);
 		
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("action", "commit");
@@ -208,9 +213,30 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
+		JsonObject taskObject = new JsonObject();
+		JsonObject commitObject = new JsonObject();
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("sem:Commit");
+	    commitObject.put("@type", typeArray);
+		JsonArray labelArray = new JsonArray();
+		JsonObject labelObject = new JsonObject();
+		labelObject.put("@language", label.getLanguageCode());
+		labelObject.put("@value", label.getValue());
+		labelArray.add(labelObject);
+		commitObject.put("rdfs:label", labelArray);
+		JsonArray commentArray = new JsonArray();
+		JsonObject commentObject = new JsonObject();
+		commentObject.put("@language", "");
+		commentObject.put("@value", comment);
+		commentArray.add(commentObject);
+		commitObject.put("rdfs:comment", commentArray);
+		
+		taskObject.put("@graph", commitObject);
+		String taskPayload = taskObject.toString();
+
 		Date startDate = new Date();
-		logger.info("commitTask making call  : {}", startDate.getTime());
-		Response response = invocationBuilder.post(null);
+		logger.info("commitTask making call  : {} {}", taskPayload, startDate.getTime());
+		Response response = invocationBuilder.post(Entity.entity(taskPayload, "application/ld+json"));
 		logger.info("commitTask call complete: {}", startDate.getTime());
 
 		/*
@@ -649,17 +675,26 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void deleteConcept(Concept concept) throws OEClientException {
 		logger.info("deleteConcept entry: {} {} {}", concept.getUri());
 
-		String url = getResourceURL(concept.getUri());
+		String url = getApiURL();
+		url = url.substring(0, url.length() - 1);
 		logger.info("deleteConcept - URL: {}", url);
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("mode", "empty");
+		
+		StringBuilder pathBuilder = new StringBuilder(getModelUri());
+		pathBuilder.append("/");
+		pathBuilder.append(getEscapedUri(getEscapedUri("<" + concept.getUri() + ">")));
+		String path = pathBuilder.toString();
+		logger.info("deleteConcept - path: {}", path);
+		queryParameters.put("path", path);
 
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
 		Response response = invocationBuilder.delete();
 
-		if (response.getStatus() == 204) {
+		logger.info("deleteConcept response status: {}", response.getStatus());
+		if (response.getStatus() == 200) {
 			return;
 		}
 

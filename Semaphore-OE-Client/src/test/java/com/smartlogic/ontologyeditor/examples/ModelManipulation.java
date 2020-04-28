@@ -9,6 +9,7 @@ import java.util.Properties;
 import com.smartlogic.cloud.CloudException;
 import com.smartlogic.cloud.TokenFetcher;
 import com.smartlogic.ontologyeditor.OEClientException;
+import com.smartlogic.ontologyeditor.OEClientReadOnly;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 
 public abstract class ModelManipulation {
@@ -57,6 +58,10 @@ public abstract class ModelManipulation {
 		for (OEClientReadWrite oeClient: oeClients) {
 			modelManipulation.alterModel(oeClient);
 		}
+	}
+	
+	public String getModelName(OEClientReadOnly oeClient) {
+		return oeClient.getModelUri().substring(oeClient.getModelUri().indexOf(":") + 1);
 	}
 	
 	protected abstract void alterModel(OEClientReadWrite oeClient) throws OEClientException;

@@ -1,41 +1,25 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
-import java.util.Collection;
 
+import com.smartlogic.cloud.CloudException;
 import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Label;
 import com.smartlogic.ontologyeditor.beans.Model;
 
 public class AddModel extends ModelManipulation {
-	public static void main(String[] args) throws OEClientException, IOException {
-		OEClientReadWrite oeClient = getOEClient(false);
+	public static void main(String args[]) throws IOException, CloudException, OEClientException {
+		runTests(new AddModel());
+	}
 
-		System.out.println("-------------------------- Before anything --------------------------");
-		Collection<Model> models1 = oeClient.getAllModels();
-		for (Model modelInstance: models1) {
-			System.out.println(modelInstance.getLabel());
-		}
+	@Override
+	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
+		Label modelLabel = new Label("", getModelName(oeClient));
+		String comment = "Model created for testing the Java OE Client API";
 		
-		Model model = new Model("http://smartlogic.com/api-test#", new Label("", "API Test"), "A model created for the purposes of testing the Java API");
+		Model model = new Model(oeClient.getModelUri(), modelLabel, comment);
+		model.setDefaultNamespace("http://example.com/APITest#");
 		oeClient.createModel(model);
-
-		System.out.println("-------------------------- After create --------------------------");
-		Collection<Model> models2 = oeClient.getAllModels();
-		for (Model modelInstance: models2) {
-			System.out.println(modelInstance.getLabel());
-		}
-		
-		
-		oeClient.deleteModel(model);
-
-		System.out.println("-------------------------- After delete --------------------------");
-		Collection<Model> models3 = oeClient.getAllModels();
-		for (Model modelInstance: models3) {
-			System.out.println(modelInstance.getLabel());
-		}
-		
-
 	}
 }

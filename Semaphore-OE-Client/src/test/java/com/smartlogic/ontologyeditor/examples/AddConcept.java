@@ -22,7 +22,6 @@ public class AddConcept extends ModelManipulation {
 
 		List<Label> csLabels = new ArrayList<Label>();
 		csLabels.add(new Label("en", "Concept Scheme for Add Concept"));
-
 		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#ConceptSchemeForAddConcept",
 				csLabels);
 		oeClient.createConceptScheme(conceptScheme);
