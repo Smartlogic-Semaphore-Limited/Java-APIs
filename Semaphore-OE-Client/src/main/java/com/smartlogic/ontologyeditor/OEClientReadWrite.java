@@ -760,7 +760,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throws OEClientException {
 		logger.info("deleteMetadata entry: {} {} {} {}", metadataTypeUri, concept.getUri(), value, languageCode);
 
-		String url = getResourceURL(concept.getUri());
+		String url = getModelURL();
 		logger.info("deleteMetadata - URL: {}", url);
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
@@ -768,36 +768,41 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JSONObject testOperation1 = new JSONObject();
 		testOperation1.put("op", "test");
-		testOperation1.put("path", "@graph/1");
-		JSONObject valueObject1 = new JSONObject();
-		valueObject1.put("@id", concept.getUri());
-		testOperation1.put("value", valueObject1);
+		testOperation1.put("path","@graph/2");
+		JSONArray valueArray1 = new JSONArray();
+		JSONObject value1 = new JSONObject();
+		value1.put("@id", concept.getUri()); 
+		valueArray1.add(value1);
+		testOperation1.put("value", value1);
 		operationList.add(testOperation1);
 		
+		String pathToRemove = "@graph/2/" + getTildered(metadataTypeUri) + "/0";
 		JSONObject testOperation2 = new JSONObject();
 		testOperation2.put("op", "test");
-		testOperation2.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
-		JSONObject valueObject2 = new JSONObject();
-		valueObject2.put("@value", value);
-		valueObject2.put("@language", languageCode);
-		testOperation2.put("value", valueObject2);
+		testOperation2.put("path",pathToRemove);
+		JSONArray valueArray2 = new JSONArray();
+		JSONObject value2 = new JSONObject();
+		value2.put("@language", languageCode); 
+		value2.put("@value", value); 
+		valueArray2.add(value2);
+		testOperation2.put("value", value2);
 		operationList.add(testOperation2);
-				
+		
 		JSONObject removeOperation = new JSONObject();
 		removeOperation.put("op", "remove");
-		removeOperation.put("path", String.format("@graph/0/%s/0", getTildered(metadataTypeUri)));
+		removeOperation.put("path", pathToRemove);
 		operationList.add(removeOperation);
-
-		String deleteMetadataPayload = operationList.toJSONString().replaceAll("\\/", "/");
-		logger.info("deleteMetadata payload: {}", deleteMetadataPayload);
+		
+		String deleteRelationshipPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("deleteMetadata payload: {}", deleteRelationshipPayload);
 		Invocation invocation = invocationBuilder.build("PATCH",
-				Entity.entity(deleteMetadataPayload, "application/json-patch+json"));
+				Entity.entity(deleteRelationshipPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
 		if (response.getStatus() == 200) {
 			return;
 		}
-
+		
 		logger.warn(response.readEntity(String.class));
 		throw new OEClientException(
 				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
