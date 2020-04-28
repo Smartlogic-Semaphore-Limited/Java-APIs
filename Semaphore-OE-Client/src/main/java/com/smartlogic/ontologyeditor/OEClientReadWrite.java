@@ -382,50 +382,64 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void updateLabel(Label label, String newLabelLanguage, String newLabelValue) throws OEClientException {
 		logger.info("updateLabel entry: {}", label.getUri());
 
-		if (label.getUri() == null) {
-			throw new OEClientException("Attemping to update label with null URI");
-		}
-		String processedLabelUri = FmtUtils.stringForURI(label.getUri());
-		String escapedLabelUri = getEscapedUri(processedLabelUri);
-
-		String url = String.format("%s/%s", getModelURL(), escapedLabelUri);
+		String url = getModelURL();
 		logger.info("updateLabel - URL: {}", url);
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
+
 		JSONArray operationList = new JSONArray();
-		JSONObject testOperation = new JSONObject();
-		JSONObject replaceOperation = new JSONObject();
 
-		testOperation.put("op", "test");
-		testOperation.put("path", "@graph/0/skosxl:literalForm/0");
-		JSONObject oldLabelObject = new JSONObject();
-		oldLabelObject.put("@value", label.getValue());
-		oldLabelObject.put("@language", label.getLanguageCode());
-		testOperation.put("value", oldLabelObject);
-
-		replaceOperation.put("op", "replace");
-		replaceOperation.put("path", "@graph/0/skosxl:literalForm/0");
-		JSONObject newLabelObject = new JSONObject();
-		newLabelObject.put("@value", newLabelValue);
-		newLabelObject.put("@language", newLabelLanguage);
-		replaceOperation.put("value", newLabelObject);
-
-		operationList.add(testOperation);
-		operationList.add(replaceOperation);
-
-		String conceptSchemePayload = operationList.toJSONString();
-
+		JSONObject testOperation1 = new JSONObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path","@graph/2");
+		JSONArray valueArray1 = new JSONArray();
+		JSONObject value1 = new JSONObject();
+		value1.put("@id", label.getUri()); 
+		valueArray1.add(value1);
+		testOperation1.put("value", value1);
+		operationList.add(testOperation1);
+		
+		String pathToUpdate = "@graph/2/skosxl:literalForm/0";
+		
+		JSONObject testOperation2 = new JSONObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path",pathToUpdate);
+		JSONArray valueArray2 = new JSONArray();
+		JSONObject value2 = new JSONObject();
+		value2.put("@language", label.getLanguageCode()); 
+		value2.put("@value", label.getValue()); 
+		valueArray2.add(value2);
+		testOperation2.put("value", value2);
+		operationList.add(testOperation2);
+		
+		JSONObject removeOperation = new JSONObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", pathToUpdate);
+		operationList.add(removeOperation);
+		
+		JSONObject addOperation = new JSONObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", pathToUpdate);
+		JSONArray valueArray3 = new JSONArray();
+		JSONObject value3 = new JSONObject();
+		value3.put("@language", newLabelLanguage); 
+		value3.put("@value", newLabelValue); 
+		valueArray3.add(value3);
+		addOperation.put("value", valueArray3);
+		operationList.add(addOperation);
+		
+		
+		String updateLabelPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("updateLabel payload: {}", updateLabelPayload);
 		Invocation invocation = invocationBuilder.build("PATCH",
-				Entity.entity(conceptSchemePayload, "application/json-patch+json"));
+				Entity.entity(updateLabelPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
 		if (response.getStatus() == 200) {
-			label.setValue(newLabelValue);
-			label.setLanguage(newLabelLanguage);
 			return;
 		}
-
-		throw new OEClientException(
-				String.format("%s Response recieved\n%s", response.getStatus(), response.getEntity().toString()));
+		
+		logger.warn(response.readEntity(String.class));
+		throw new OEClientException("Unable to update label");
 	}
 
 	@SuppressWarnings("unchecked")
