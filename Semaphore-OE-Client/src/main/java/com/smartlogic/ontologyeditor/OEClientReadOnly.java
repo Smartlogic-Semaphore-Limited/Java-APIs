@@ -69,6 +69,14 @@ public class OEClientReadOnly {
 	public void setToken(String token) {
 		this.token = token;
 	}
+	
+	private String headerToken;
+	public String getHeaderToken() {
+		return headerToken;
+	}
+	public void setHeaderToken(String headerToken) {
+		this.headerToken = headerToken;
+	}
 
 	private Token cloudToken;
 	public Token getCloudToken() {
@@ -117,12 +125,15 @@ public class OEClientReadOnly {
 
 		if (queryParameters != null) {
 			for (Map.Entry<String, String> queryParameter: queryParameters.entrySet())
-//				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue().replace("_", "_1").replace("%",  "_0"));
 				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue());
 		}
 
 		
-		return webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json").header("Authorization", getCloudTokenValue());
+		Builder builder = webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json").header("Authorization", getCloudTokenValue());
+		if (headerToken != null) {
+			builder.header("X-Api-Key", headerToken);
+		}
+		return builder;
 	}
 
 	private String modelURL = null;
@@ -149,8 +160,8 @@ public class OEClientReadOnly {
 				stringBuilder.append(token);
 				stringBuilder.append("/");
 			}
-			apiURL = stringBuilder.toString();
 
+			apiURL = stringBuilder.toString();
 			if (logger.isDebugEnabled()) logger.debug("apiURL: {}", apiURL);
 		}
 		return apiURL;
@@ -223,8 +234,9 @@ public class OEClientReadOnly {
 		logger.info("getAllTasks URL: {}", url);
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
-		queryParameters.put("properties", "meta:hasTask/(meta:graphUri|meta:displayName)");
+		queryParameters.put("properties", "semfun:hasMainTag/(meta:graphUri|meta:displayName)");
 		queryParameters.put("filters", "subject_hasTask(notExists rdf:type sem:ORTTask)");
+		logger.info("getAllTasks queryParameters: {}", queryParameters);
 
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
@@ -244,7 +256,7 @@ public class OEClientReadOnly {
 			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
 			while (jsonValueIterator.hasNext()) {
 				JsonObject modelData = jsonValueIterator.next().getAsObject();
-				JsonArray taskArray = modelData.get("meta:hasTask").getAsArray();
+				JsonArray taskArray = modelData.get("semfun:hasMainTag").getAsArray();
 				Iterator<JsonValue> jsonTaskIterator = taskArray.iterator();
 				while (jsonTaskIterator.hasNext()) {
 					tasks.add(new Task(jsonTaskIterator.next().getAsObject()));
@@ -433,10 +445,12 @@ public class OEClientReadOnly {
 		logger.info("getConceptByIdentifier entry: {}", identifier);
 
 		String url = getModelURL() + "/skos:Concept/meta:transitiveInstance";
-
+		logger.info("getConceptByIdentifier url: {}", url);
+		
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("properties", basicProperties);
 		queryParameters.put("filters", String.format("subject(exists %s \"%s\")", getWrappedUri(identifier.getUri()), identifier.getValue()));
+		logger.info("getConceptByIdentifier queryParameters: {}", queryParameters);
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
 		Date startDate = new Date();
@@ -527,7 +541,14 @@ public class OEClientReadOnly {
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("properties", getWrappedUri(metadataUri));
-		Invocation.Builder invocationBuilder = getInvocationBuilder(getResourceURL(concept.getUri()), queryParameters);
+		
+		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
+		queryParameters.put("path", path);
+		
+		logger.info("populateMetadata uri: {}", getApiURL());
+		logger.info("populateMetadata queryParameters: {}", queryParameters);
+		
+		Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
 		Date startDate = new Date();
 		logger.info("populateMetadata making call  : {}", startDate.getTime());

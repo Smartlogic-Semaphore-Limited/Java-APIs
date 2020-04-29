@@ -1,19 +1,25 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Label;
 
 public class AddConceptSchemes extends ModelManipulation {
 
-	public static void main(String[] args) throws IOException {
-		OEClientReadWrite oeClient = getOEClient(false);
+	public static void main(String args[]) throws IOException, CloudException, OEClientException {
+		runTests(new AddConceptSchemes());
+	}
+
+	@Override
+	protected void alterModel(OEClientReadWrite oeClient)  {
 
 		addConceptScheme(oeClient, "Concepts with a +");
 		addConceptScheme(oeClient, "Concepts with : problems");
@@ -31,11 +37,11 @@ public class AddConceptSchemes extends ModelManipulation {
 		addConceptScheme(oeClient, "Sometimes you just need a /");
 	}
 	
-	public static void addConceptScheme(OEClientReadWrite oeClient, String schemeName) throws UnsupportedEncodingException {
+	public static void addConceptScheme(OEClientReadWrite oeClient, String schemeName) {
 		
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", schemeName));
-		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#" + URLEncoder.encode(schemeName, "UTF-8"), labels);
+		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#" + URLEncoder.encode(schemeName, StandardCharsets.UTF_8), labels);
 
 		oeClient.createConceptScheme(conceptScheme);
 	}

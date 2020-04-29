@@ -1,19 +1,22 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
+import com.smartlogic.cloud.CloudException;
 import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
 
 public class GetConcept extends ModelManipulation {
+	public static void main(String args[]) throws IOException, CloudException, OEClientException {
+		runTests(new GetConcept());
+	}
+	
+	@Override
+	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
-	public static void main(String args[]) throws URISyntaxException, OEClientException, IOException {
-		OEClientReadWrite oeClient = getOEClient(true);
+		Concept concept = oeClient.getConcept("http://example.com/APITest#Concept%21+a+concept");
 
-		Concept concept = oeClient.getConcept("http://example.com/APITest#MySecondConcept");
-
-		System.out.println(concept.toString());
+		System.err.println(concept.toString());
 	}
 }
