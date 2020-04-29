@@ -234,8 +234,9 @@ public class OEClientReadOnly {
 		logger.info("getAllTasks URL: {}", url);
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
-		queryParameters.put("properties", "meta:hasTask/(meta:graphUri|meta:displayName)");
+		queryParameters.put("properties", "semfun:hasMainTag/(meta:graphUri|meta:displayName)");
 		queryParameters.put("filters", "subject_hasTask(notExists rdf:type sem:ORTTask)");
+		logger.info("getAllTasks queryParameters: {}", queryParameters);
 
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
@@ -255,7 +256,7 @@ public class OEClientReadOnly {
 			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
 			while (jsonValueIterator.hasNext()) {
 				JsonObject modelData = jsonValueIterator.next().getAsObject();
-				JsonArray taskArray = modelData.get("meta:hasTask").getAsArray();
+				JsonArray taskArray = modelData.get("semfun:hasMainTag").getAsArray();
 				Iterator<JsonValue> jsonTaskIterator = taskArray.iterator();
 				while (jsonTaskIterator.hasNext()) {
 					tasks.add(new Task(jsonTaskIterator.next().getAsObject()));
