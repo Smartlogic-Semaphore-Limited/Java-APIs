@@ -541,7 +541,14 @@ public class OEClientReadOnly {
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("properties", getWrappedUri(metadataUri));
-		Invocation.Builder invocationBuilder = getInvocationBuilder(getResourceURL(concept.getUri()), queryParameters);
+		
+		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
+		queryParameters.put("path", path);
+		
+		logger.info("populateMetadata uri: {}", getApiURL());
+		logger.info("populateMetadata queryParameters: {}", queryParameters);
+		
+		Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
 		Date startDate = new Date();
 		logger.info("populateMetadata making call  : {}", startDate.getTime());
