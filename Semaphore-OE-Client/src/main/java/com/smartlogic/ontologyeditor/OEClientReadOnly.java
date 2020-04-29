@@ -445,10 +445,12 @@ public class OEClientReadOnly {
 		logger.info("getConceptByIdentifier entry: {}", identifier);
 
 		String url = getModelURL() + "/skos:Concept/meta:transitiveInstance";
-
+		logger.info("getConceptByIdentifier url: {}", url);
+		
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("properties", basicProperties);
 		queryParameters.put("filters", String.format("subject(exists %s \"%s\")", getWrappedUri(identifier.getUri()), identifier.getValue()));
+		logger.info("getConceptByIdentifier queryParameters: {}", queryParameters);
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
 		Date startDate = new Date();

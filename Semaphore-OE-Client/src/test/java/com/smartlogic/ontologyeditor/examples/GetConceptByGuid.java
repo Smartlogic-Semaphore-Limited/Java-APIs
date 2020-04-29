@@ -1,19 +1,23 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
+import com.smartlogic.cloud.CloudException;
 import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
 
 public class GetConceptByGuid extends ModelManipulation {
+	public static void main(String args[]) throws IOException, CloudException, OEClientException {
+		runTests(new GetConceptByGuid());
+	}
+	
+	@Override
+	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
-	public static void main(String args[]) throws URISyntaxException, OEClientException, IOException {
-		OEClientReadWrite oeClient = getOEClient(true);
+		Concept concept = oeClient.getConcept("http://example.com/APITest#Concept%21+a+concept");
 
-		Concept concept = oeClient.getConceptByGuid("56441ea5-f0ac-44e9-a015-4627f05ae5af");
-		System.out.println("Before Change");
-		System.out.println(concept.toString());
+		Concept conceptByGuid = oeClient.getConceptByGuid(concept.getGuid());
+		System.err.println(conceptByGuid.toString());
 	}
 }
