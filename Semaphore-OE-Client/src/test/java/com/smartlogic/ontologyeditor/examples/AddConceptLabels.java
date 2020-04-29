@@ -1,6 +1,7 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,10 +46,9 @@ public class AddConceptLabels extends ModelManipulation {
 		labels.add(new Label("en", "Concept " + label));
 
 		Concept concept = new Concept(oeClient,
-				"http://example.com/APITest#Concept" + URLEncoder.encode(label, StandardCharsets.UTF_8), labels);
-
-		oeClient.createConcept(conceptScheme.getUri(), concept);
-		
+				"http://example.com/APITest#Concept" + urlEncode(label), labels);
 		return concept;
+
 	}
+	
 }
