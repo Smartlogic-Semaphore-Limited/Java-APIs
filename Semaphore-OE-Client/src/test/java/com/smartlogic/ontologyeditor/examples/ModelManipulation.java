@@ -2,6 +2,8 @@ package com.smartlogic.ontologyeditor.examples;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
@@ -65,6 +67,15 @@ public abstract class ModelManipulation {
 	}
 	
 	protected abstract void alterModel(OEClientReadWrite oeClient) throws OEClientException;
+
+	protected String urlEncode(String value) {
+		try {
+			return URLEncoder.encode(value, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			System.err.println("UnsupportedEncodingException - shouldn't get here");
+			return "INVALID LABEL";
+		}
+	}
 
 }
 

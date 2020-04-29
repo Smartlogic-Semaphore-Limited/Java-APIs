@@ -52,7 +52,7 @@ public class AddConcepts extends ModelManipulation {
 		labels.add(new Label("en", "Concept " + label));
 
 		Concept concept = new Concept(oeClient,
-				"http://example.com/APITest#Concept" + URLEncoder.encode(label, StandardCharsets.UTF_8), labels);
+				"http://example.com/APITest#Concept" + urlEncode(label), labels);
 
 		oeClient.createConcept(conceptScheme.getUri(), concept);
 	}

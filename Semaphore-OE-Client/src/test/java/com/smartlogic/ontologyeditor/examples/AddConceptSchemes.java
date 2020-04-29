@@ -37,11 +37,11 @@ public class AddConceptSchemes extends ModelManipulation {
 		addConceptScheme(oeClient, "Sometimes you just need a /");
 	}
 	
-	public static void addConceptScheme(OEClientReadWrite oeClient, String schemeName) {
+	public void addConceptScheme(OEClientReadWrite oeClient, String schemeName) {
 		
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", schemeName));
-		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#" + URLEncoder.encode(schemeName, StandardCharsets.UTF_8), labels);
+		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#" + urlEncode(schemeName), labels);
 
 		oeClient.createConceptScheme(conceptScheme);
 	}
