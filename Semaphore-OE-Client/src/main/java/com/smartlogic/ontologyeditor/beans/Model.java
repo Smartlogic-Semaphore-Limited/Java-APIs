@@ -1,12 +1,23 @@
 package com.smartlogic.ontologyeditor.beans;
 
 import org.apache.jena.atlas.json.JsonObject;
+import org.apache.jena.atlas.json.JsonValue;
 
 public class Model {
 
 	String defaultNamespace = "http://example.org/api-test#";
 	public Model(JsonObject jsonObject) {
-		label = new Label("", jsonObject.get("meta:displayName").getAsObject().get("@value").getAsString().value());
+		JsonValue displayNameValue = jsonObject.get("meta:displayName");
+		if (displayNameValue != null) {
+			JsonValue valueValue = displayNameValue.getAsObject().get("@value");
+			if (valueValue != null) {
+				label = new Label("", jsonObject.get("meta:displayName").getAsObject().get("@value").getAsString().value());
+			} else {
+				label = new Label("", "No display name found");
+			}
+		} else {
+			label = new Label("", "No display name found");
+		}
 		uri = jsonObject.get("meta:graphUri").getAsObject().get("@id").getAsString().value();
 		comment = null;
 	}
