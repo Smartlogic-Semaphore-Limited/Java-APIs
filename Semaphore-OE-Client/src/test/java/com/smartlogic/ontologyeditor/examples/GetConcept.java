@@ -15,8 +15,18 @@ public class GetConcept extends ModelManipulation {
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
-		Concept concept = oeClient.getConcept("http://example.com/APITest#Concept%21+a+concept");
-
-		System.err.println(concept.toString());
+		Concept returnedConcept = oeClient.getConcept("http://example.com/APITest#MySecondConcept");
+		oeClient.populateRelatedConceptUris("skos:related", returnedConcept);
+		System.err.println(returnedConcept.getRelatedConceptUris("skos:related"));
+		
+		oeClient.populateRelatedConceptUris("http://example.com/APITest#isSmallerThan", returnedConcept);
+		System.err.println(returnedConcept.getRelatedConceptUris("http://example.com/APITest#isSmallerThan"));
+		
+		oeClient.populateAltLabels("skosxl:altLabel", returnedConcept);
+		System.err.println(returnedConcept.getAltLabels("skosxl:altLabel"));
+		
+		oeClient.populateAltLabels("http://example.com/APITest#CodeName", returnedConcept);
+		System.err.println(returnedConcept.getAltLabels("http://example.com/APITest#CodeName"));
+			
 	}
 }

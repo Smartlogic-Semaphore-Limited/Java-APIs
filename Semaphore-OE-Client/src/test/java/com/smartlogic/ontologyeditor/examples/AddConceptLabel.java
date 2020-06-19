@@ -33,9 +33,12 @@ public class AddConceptLabel extends ModelManipulation {
 		oeClient.createConcept(conceptScheme.getUri(), concept);
 
 		String relationshipType = "skosxl:altLabel";
-
 		Label label = new Label("fr", "Concept Une");
-
 		oeClient.createLabel(concept, relationshipType, label);
+
+		String relationshipType2 = "http://example.com/APITest#CodeName";
+		Label label2 = new Label("de", "Die Code");
+		oeClient.createLabel(concept, relationshipType2, label2);
+	
 	}
 }

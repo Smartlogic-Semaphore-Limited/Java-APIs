@@ -40,6 +40,8 @@ public class CreateConceptToConceptRelationships extends ModelManipulation {
 		concept2.addIdentifier(new Identifier("sem:guid", "28"));
 		oeClient.createConcept(conceptScheme.getUri(), concept2);
 
-		oeClient.createRelationship("skos:related", concept1, concept2);
+		oeClient.createRelationship("http://example.com/APITest#isBiggerThan", concept1, concept2);
+		
+
 	}
 }

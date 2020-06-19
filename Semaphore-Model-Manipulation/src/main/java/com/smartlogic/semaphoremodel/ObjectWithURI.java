@@ -1,5 +1,7 @@
 package com.smartlogic.semaphoremodel;
 
+import java.util.Base64;
+
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -11,7 +13,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.update.UpdateAction;
 import org.apache.jena.vocabulary.RDFS;
-import org.apache.xerces.impl.dv.util.Base64;
+
 
 public abstract class ObjectWithURI {
 
@@ -194,7 +196,7 @@ public abstract class ObjectWithURI {
 	
 	
 	protected String getBase64(String value) {
-		return Base64.encode(value.getBytes());
+		return Base64.getEncoder().encodeToString(value.getBytes());
 	}
 
 }

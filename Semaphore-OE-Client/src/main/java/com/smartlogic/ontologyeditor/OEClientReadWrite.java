@@ -822,8 +822,64 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
 	}
 
+	@SuppressWarnings("unchecked")
+	public void deleteLabel(String relationshipTypeUri, Concept concept, Label label) throws OEClientException {
+		logger.info("deleteLabel entry: {} {} {} {}", relationshipTypeUri, concept.getUri(), label);
+		
+		String url = getModelURL();
+		logger.info("deleteLabel - URL: {}", url);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
+		JSONArray operationList = new JSONArray();
 
+		JSONObject testOperation1 = new JSONObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path","@graph/5");
+		JSONObject value1 = new JSONObject();
+		value1.put("@id", concept.getUri()); 
+		testOperation1.put("value", value1);
+		operationList.add(testOperation1);
 
+		String pathToRemove = "@graph/5/" + getTildered(relationshipTypeUri) + "/0";
+		JSONObject testOperation2 = new JSONObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path",pathToRemove);
+		JSONArray valueArray2 = new JSONArray();
+		JSONObject value2 = new JSONObject();
+		value2.put("@id", label.getUri()); 
+		JSONArray typeArray = new JSONArray();
+		typeArray.add("skosxl:Label");
+		value2.put("@type", typeArray); 
+		JSONArray labelArray = new JSONArray();
+		JSONObject labelObject = new JSONObject();
+		labelObject.put("@value", label.getValue());
+		labelObject.put("@language", label.getLanguageCode()); 
+		labelArray.add(labelObject);
+		value2.put("skosxl:literalForm", labelArray); 
+		valueArray2.add(value2);
+		testOperation2.put("value", valueArray2);
+		operationList.add(testOperation2);
+		
+		
+		JSONObject removeOperation3 = new JSONObject();
+		removeOperation3.put("op", "remove");
+		removeOperation3.put("path",pathToRemove);
+		operationList.add(removeOperation3);
+
+		String deleteLabelPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("deleteLabel payload: {}", deleteLabelPayload);
+		Invocation invocation = invocationBuilder.build("PATCH",
+				Entity.entity(deleteLabelPayload, "application/json-patch+json"));
+		Response response = invocation.invoke();
+
+		if (response.getStatus() == 200) {
+			return;
+		}
+		
+		logger.warn(response.readEntity(String.class));
+		throw new OEClientException(
+				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+
+	}
 
 }
