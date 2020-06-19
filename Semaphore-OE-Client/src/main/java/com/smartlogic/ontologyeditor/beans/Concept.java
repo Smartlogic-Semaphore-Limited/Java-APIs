@@ -22,6 +22,7 @@ public class Concept extends AbstractBeanFromJson {
 
 	private Collection<String> types = new HashSet<String>();
 	private Collection<Label> prefLabels = new HashSet<Label>();
+	private Map<String, Collection<Label>> altLabelsByUri = new HashMap<String, Collection<Label>>();
 	private Map<String, Map<String, Label>> prefLabelsByLanguageAndValue = new HashMap<String, Map<String, Label>>();
 
 	private Map<String, Collection<String>> relatedConceptUrisByRelationship = new HashMap<String, Collection<String>>();
@@ -90,9 +91,9 @@ public class Concept extends AbstractBeanFromJson {
 		return relatedConceptURIs;
 	}
 
-	public void populateRelatedConceptUris(String relationhipUri, JsonObject jsonObject) {
+	public void populateRelatedConceptUris(String relationhipUri, JsonValue jsonValue) {
 		Collection<String> relatedConceptURIs = new HashSet<String>();
-		JsonArray jsonRelateds = getAsArray(jsonObject, relationhipUri);
+		JsonArray jsonRelateds = jsonValue.getAsArray();
 		if (jsonRelateds != null) {
 			for (int i = 0; i < jsonRelateds.size(); i++) {
 				JsonObject jsonNarrower = jsonRelateds.get(i).getAsObject();
@@ -121,6 +122,26 @@ public class Concept extends AbstractBeanFromJson {
 			}
 		}
 		metadataValuesByMetadataTypeUri.put(metadataTypeUri, metadataValues);
+	}
+
+	public void populateAltLabels(String altLabelTypeUri, JsonValue jsonValue) {
+		Collection<Label> altLabels = new HashSet<Label>();
+		JsonArray jsonAltLabels = jsonValue.getAsArray();
+		if (jsonAltLabels != null) {
+			for (int i = 0; i < jsonAltLabels.size(); i++) {
+				String labelUri = jsonAltLabels.get(i).getAsObject().getString("@id");
+				JsonValue literalForm = jsonAltLabels.get(i).getAsObject().get("skosxl:literalForm").getAsArray().get(0).getAsObject();
+				String languageCode = literalForm.getAsObject().getString("@language");
+				String value = literalForm.getAsObject().getString("@value");
+				Label label = new Label(labelUri, languageCode, value);
+				altLabels.add(label);
+			}
+		}
+		altLabelsByUri.put(altLabelTypeUri, altLabels);
+	}
+
+	public Collection<Label> getAltLabels(String uri) {
+		return altLabelsByUri.get(uri);
 	}
 
 	public Label getPrefLabelByLanguageAndValue(String languageCode, String value) {
@@ -195,5 +216,7 @@ public class Concept extends AbstractBeanFromJson {
 	public Collection<Label> getPrefLabels() {
 		return prefLabels;
 	}
+
+
 
 }

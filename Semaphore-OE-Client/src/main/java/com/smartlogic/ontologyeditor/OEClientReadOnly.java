@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.client.Client;
@@ -24,6 +25,13 @@ import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.atlas.json.JsonValue;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.sparql.util.FmtUtils;
+import org.apache.jena.vocabulary.DC_11;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.SKOS;
+import org.apache.jena.vocabulary.SKOSXL;
+import org.apache.jena.vocabulary.XSD;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -46,6 +54,18 @@ public class OEClientReadOnly {
 
 	private final static String basicProperties = "sem:guid,skosxl:prefLabel/[]";
 
+	private final static Map<String, String> prefixMapping = new HashMap<String, String>();
+	static {
+		prefixMapping.put( "rdfs:", RDFS.getURI());
+		prefixMapping.put( "rdf:", RDF.getURI() );
+		prefixMapping.put( "dc:", DC_11.getURI() );
+		prefixMapping.put( "owl:", OWL.getURI() );
+		prefixMapping.put( "xsd:", XSD.getURI() );
+		prefixMapping.put( "skos:", SKOS.getURI() );
+		prefixMapping.put( "skosxl:", SKOSXL.getURI() );
+ 	}
+	
+	
 	private String baseURL;
 	public String getBaseURL() {
 		return baseURL;
@@ -513,29 +533,52 @@ public class OEClientReadOnly {
 
 
 	public void populateRelatedConceptUris(String relationshipUri, Concept concept) throws OEClientException {
-		logger.info("populateNarrowerConceptURIs entry: {}", concept.getUri());
+		logger.info("populateRelatedConceptUris entry: {}", concept.getUri());
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
-		queryParameters.put("properties", getWrappedUri(relationshipUri));
-		Invocation.Builder invocationBuilder = getInvocationBuilder(getResourceURL(concept.getUri()), queryParameters);
+		queryParameters.put("path", getPathParameter(concept.getUri(), relationshipUri));
+		Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
 		Date startDate = new Date();
-		logger.info("populateNarrowerConceptURIs making call  : {}", startDate.getTime());
+		logger.info("populateRelatedConceptUris making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("populateNarrowerConceptURIs call complete: {}", startDate.getTime());
+		logger.info("populateRelatedConceptUris call complete: {}", startDate.getTime());
 
-		logger.info("populateNarrowerConceptURIs - status: {}", response.getStatus());
+		logger.info("populateRelatedConceptUris - status: {}", response.getStatus());
 		if (response.getStatus() == 200) {
 			String stringResponse = response.readEntity(String.class);
-			if (logger.isDebugEnabled()) logger.debug("populateNarrowerConceptURIs: jsonResponse {}", stringResponse);
+			logger.info("populateRelatedConceptUris: jsonResponse {}", stringResponse);
 			JsonObject jsonResponse = JSON.parse(stringResponse);
-			concept.populateRelatedConceptUris(relationshipUri, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+			concept.populateRelatedConceptUris(relationshipUri, jsonResponse.get("@graph"));
 		} else {
 			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
 		}
 	}
 
-	
+	public void populateAltLabels(String altLabelTypeUri, Concept concept) throws OEClientException {
+		logger.info("populateAltLabels entry: {}", concept.getUri());
+
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("path", getPathParameter(concept.getUri(), altLabelTypeUri));
+		queryParameters.put("properties", "[]");
+		Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
+
+		Date startDate = new Date();
+		logger.info("populateAltLabels making call  : {}", startDate.getTime());
+		Response response = invocationBuilder.get();
+		logger.info("populateAltLabels call complete: {}", startDate.getTime());
+
+		logger.info("populateAltLabels - status: {}", response.getStatus());
+		if (response.getStatus() == 200) {
+			String stringResponse = response.readEntity(String.class);
+			logger.info("populateAltLabels: jsonResponse {}", stringResponse);
+			JsonObject jsonResponse = JSON.parse(stringResponse);
+			concept.populateAltLabels(altLabelTypeUri, jsonResponse.get("@graph"));
+		} else {
+			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		}
+	}
+
 	public void populateMetadata(String metadataUri, Concept concept) throws OEClientException {
 		logger.info("populateMetadata entry: {}", concept.getUri());
 
@@ -576,8 +619,11 @@ public class OEClientReadOnly {
 	}
 
 	private String getPath(String resourceUri) {
+		
 		logger.info("getPath - entry: {}", resourceUri);
-		String processedUri = FmtUtils.stringForURI(resourceUri);
+		boolean matching = prefixMapping.entrySet().stream().anyMatch(e -> resourceUri.startsWith(e.getKey()));
+		
+		String processedUri = (matching ? "" : "<") + FmtUtils.stringEsc(resourceUri) + (matching ? "" : ">");
 		String escapedUri = getEscapedUri(processedUri);
 
 		logger.info("getPath - exit: {}", escapedUri);
@@ -587,6 +633,13 @@ public class OEClientReadOnly {
 	protected String getPathParameter(String conceptUri) {
 		logger.info("getPath - entry: {}", conceptUri);
 		String pathParameter = (modelUri + "/" + getPath(conceptUri)).replaceAll("%", "%25");
+		logger.info("getPath - exit: {}", pathParameter);
+		return pathParameter;
+	}
+	
+	protected String getPathParameter(String conceptUri, String relationshipUrl) {
+		logger.info("getPath - entry: {}", conceptUri);
+		String pathParameter = (modelUri + "/" + getPath(conceptUri) + "/" + getPath(relationshipUrl)).replaceAll("%", "%25");
 		logger.info("getPath - exit: {}", pathParameter);
 		return pathParameter;
 	}
