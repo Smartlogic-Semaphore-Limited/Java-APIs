@@ -874,7 +874,9 @@ public class ClassificationClient implements AutoCloseable {
 
 	@Override
 	public void close() {
-		idleConnectionMonitorThread.shutdown();
+		if (null != idleConnectionMonitorThread) {
+			idleConnectionMonitorThread.shutdown();
+		}
 		if (httpClient != null) {
 			try {
 				httpClient.close();
