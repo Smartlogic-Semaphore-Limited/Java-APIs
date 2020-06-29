@@ -11,7 +11,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
-import org.apache.jena.sparql.util.FmtUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -316,6 +315,62 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
+	public void createConceptBelowConcept(String parentConceptUri, Concept concept) {
+		logger.info("createConceptBelowConcept entry: {} {}", parentConceptUri, concept.getUri());
+
+		Invocation.Builder invocationBuilder = getInvocationBuilder(getModelURL());
+
+		JsonArray conceptTypeList = new JsonArray();
+		conceptTypeList.add("skos:Concept");
+
+		JsonArray labelTypeList = new JsonArray();
+		labelTypeList.add("skosxl:Label");
+
+		JsonArray labelLiteralFormDataList = new JsonArray();
+		for (Label label : concept.getPrefLabels()) {
+			JsonObject labelLiteralFormData = new JsonObject();
+			labelLiteralFormData.put("@value", label.getValue());
+			labelLiteralFormData.put("@language", label.getLanguageCode());
+			labelLiteralFormDataList.add(labelLiteralFormData);
+		}
+
+		JsonObject newConceptLabelData = new JsonObject();
+		newConceptLabelData.put("@type", labelTypeList);
+		newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
+
+		JsonArray newConceptLabelDataList = new JsonArray();
+		newConceptLabelDataList.add(newConceptLabelData);
+
+		JsonObject relatedConceptSchemeData = new JsonObject();
+		relatedConceptSchemeData.put("@id", parentConceptUri);
+		JsonArray relatedConceptSchemeArray = new JsonArray();
+		relatedConceptSchemeArray.add(relatedConceptSchemeData);
+		
+		JsonObject conceptDetails = new JsonObject();
+		conceptDetails.put("@type", conceptTypeList);
+		conceptDetails.put("skosxl:prefLabel", newConceptLabelDataList);
+		conceptDetails.put("skos:broader", relatedConceptSchemeArray);
+		conceptDetails.put("@id", concept.getUri());
+		for (Identifier identifier : concept.getIdentifiers())
+			conceptDetails.put(identifier.getUri(), identifier.getValue());
+
+		String conceptSchemePayload = conceptDetails.toString();
+
+		Date startDate = new Date();
+		logger.info("createConceptBelowConcept making call  : {}", startDate.getTime());
+		Response response = invocationBuilder.post(Entity.entity(conceptSchemePayload, "application/ld+json"));
+		logger.info("createConceptBelowConcept call complete: {}", startDate.getTime());
+
+		/*
+		 * Possible response codes are: - 201 in case of success - 409 in case
+		 * of constraint violation (if e. g. concept scheme already exists)
+		 */
+		logger.info("createConceptBelowConcept status: {}", response.getStatus());
+		if (logger.isDebugEnabled()) {
+			logger.debug("createConcept response: {}", response.readEntity(String.class));
+		}
+
+	}
 	/**
 	 * createConceptScheme - create a concept as a topConcept of a Concept
 	 * Scheme
@@ -613,6 +668,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		String url = getModelURL();
 		logger.info("createMetadata - URL: {}", url);
 		
+
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
 		JSONArray operationList = new JSONArray();
@@ -652,18 +708,19 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void createMetadata(Concept concept, String metadataType, URI uri)
+	public void createMetadata(Concept concept, String metadataTypeUri, URI uri)
 			throws OEClientException {
-		logger.info("createMetadata entry: {} {} {} {}", concept.getUri(), uri.toString());
+		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, uri.toString());
 
-		String url = getResourceURL(concept.getUri());
+		String url = getModelURL();
 		logger.info("createMetadata - URL: {}", url);
+
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
 		JSONArray operationList = new JSONArray();
 		JSONObject addOperation = new JSONObject();
 		addOperation.put("op", "add");
-		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataType)));
+		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataTypeUri)));
 
 		JSONObject valueObject = new JSONObject();
 		valueObject.put("@value", uri.toString());
@@ -686,6 +743,149 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
 	}
 
+	@SuppressWarnings("unchecked")
+	public void createMetadata(Concept concept, String metadataTypeUri, boolean value) throws OEClientException {
+		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
+
+		String url = getModelURL();
+		
+		
+		logger.info("createMetadata - URL: {}", url);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
+
+		JSONArray operationList = new JSONArray();
+		
+		JSONObject testOperation = new JSONObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
+
+		JSONObject testObject = new JSONObject();
+		testObject.put("@id", concept.getUri());
+		testOperation.put("value", testObject);
+		operationList.add(testOperation);
+	
+		JSONObject addOperation = new JSONObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataTypeUri)));
+
+		JSONArray valueArray = new JSONArray();
+		valueArray.add(value);
+		addOperation.put("value", valueArray);
+
+		operationList.add(addOperation);
+
+		String createMetadataPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("createMetadata payload: {}", createMetadataPayload);
+		Invocation invocation = invocationBuilder.build("PATCH",
+				Entity.entity(createMetadataPayload, "application/json-patch+json"));
+		Response response = invocation.invoke();
+
+		if (response.getStatus() == 200) {
+			return;
+		}
+
+		throw new OEClientException(
+				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void updateMetadata(Concept concept, String metadataTypeUri, boolean oldValue, boolean newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		String url = getModelURL();
+		
+		
+		logger.info("updateMetadata - URL: {}", url);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
+
+		JSONArray operationList = new JSONArray();
+		
+		JSONObject testOperation1 = new JSONObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/1");
+
+		JSONObject testObject1 = new JSONObject();
+		testObject1.put("@id", concept.getUri());
+		testOperation1.put("value", testObject1);
+		operationList.add(testOperation1);
+	
+		JSONObject testOperation2 = new JSONObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		testOperation2.put("value", oldValue);
+		operationList.add(testOperation2);
+	
+		JSONObject removeOperation = new JSONObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		operationList.add(removeOperation);
+		
+		JSONObject addOperation = new JSONObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", String.format("@graph/1/%s/2", getTildered(metadataTypeUri)));
+		addOperation.put("value", newValue);
+		operationList.add(addOperation);
+
+		String createMetadataPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("updateMetadata payload: {}", createMetadataPayload);
+		Invocation invocation = invocationBuilder.build("PATCH",
+				Entity.entity(createMetadataPayload, "application/json-patch+json"));
+		Response response = invocation.invoke();
+
+		if (response.getStatus() == 200) {
+			return;
+		}
+
+		throw new OEClientException(
+				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void deleteMetadata(Concept concept, String metadataTypeUri, boolean oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		String url = getModelURL();
+		
+		
+		logger.info("updateMetadata - URL: {}", url);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
+
+		JSONArray operationList = new JSONArray();
+		
+		JSONObject testOperation1 = new JSONObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/1");
+
+		JSONObject testObject1 = new JSONObject();
+		testObject1.put("@id", concept.getUri());
+		testOperation1.put("value", testObject1);
+		operationList.add(testOperation1);
+	
+		JSONObject testOperation2 = new JSONObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		testOperation2.put("value", oldValue);
+		operationList.add(testOperation2);
+	
+		JSONObject removeOperation = new JSONObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		operationList.add(removeOperation);
+		
+		String createMetadataPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("updateMetadata payload: {}", createMetadataPayload);
+		Invocation invocation = invocationBuilder.build("PATCH",
+				Entity.entity(createMetadataPayload, "application/json-patch+json"));
+		Response response = invocation.invoke();
+
+		if (response.getStatus() == 200) {
+			return;
+		}
+
+		throw new OEClientException(
+				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));	
+	}
+	
 	public void deleteConcept(Concept concept) throws OEClientException {
 		logger.info("deleteConcept entry: {} {} {}", concept.getUri());
 
@@ -881,5 +1081,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
 
 	}
+
+
+
+
+
+
 
 }

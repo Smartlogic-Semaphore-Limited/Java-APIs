@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.w3c.dom.Element;
-import com.smartlogic.ses.client.Term;
 
 @XmlRootElement(name = "path")
 @XmlAccessorType(XmlAccessType.FIELD)

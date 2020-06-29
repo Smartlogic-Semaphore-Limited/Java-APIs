@@ -50,8 +50,8 @@ public class ClassifyBinaryTest extends ClassificationTestCase {
 					.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt", new Title("title"),
 							metadata)
 					.getAllClassifications();
-			assertEquals(6, binaryScores1.size(), "run2 - Category count");
-			assertEquals(2, binaryScores1.get("IPSV-Information and communication").size(), "run2 - IPSV-Information and communication");
+			assertEquals(6, binaryScores2.size(), "run2 - Category count");
+			assertEquals(2, binaryScores2.get("IPSV-Information and communication").size(), "run2 - IPSV-Information and communication");
 		}
 	}
 }

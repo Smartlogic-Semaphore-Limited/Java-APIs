@@ -6,17 +6,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
 
-import com.smartlogic.semaphoremodel.AssocativeRelationshipType;
-import com.smartlogic.semaphoremodel.CalendarMetadataType;
-import com.smartlogic.semaphoremodel.Concept;
-import com.smartlogic.semaphoremodel.ConceptScheme;
-import com.smartlogic.semaphoremodel.HasBroaderRelationshipType;
-import com.smartlogic.semaphoremodel.HasNarrowerRelationshipType;
-import com.smartlogic.semaphoremodel.Label;
-import com.smartlogic.semaphoremodel.Language;
-import com.smartlogic.semaphoremodel.ModelException;
-import com.smartlogic.semaphoremodel.SemaphoreModel;
-
 public class TestModelBuilder {
 
 	public static void main(String[] args) throws ModelException, URISyntaxException, FileNotFoundException {

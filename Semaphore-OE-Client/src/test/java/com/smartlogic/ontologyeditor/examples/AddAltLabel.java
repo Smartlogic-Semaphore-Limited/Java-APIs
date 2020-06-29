@@ -1,15 +1,11 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.smartlogic.cloud.CloudException;
 import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
-import com.smartlogic.ontologyeditor.beans.ConceptScheme;
-import com.smartlogic.ontologyeditor.beans.Label;
 
 public class AddAltLabel extends ModelManipulation {
 

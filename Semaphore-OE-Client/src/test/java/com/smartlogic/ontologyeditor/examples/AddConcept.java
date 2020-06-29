@@ -26,11 +26,17 @@ public class AddConcept extends ModelManipulation {
 				csLabels);
 		oeClient.createConceptScheme(conceptScheme);
 		
-		List<Label> cLabels = new ArrayList<Label>();
-		cLabels.add(new Label("en", "My Added concept"));
-		Concept concept = new Concept(oeClient, "http://example.com/APITest#MyAddedConcept", cLabels);
+		List<Label> cLabels1 = new ArrayList<Label>();
+		cLabels1.add(new Label("en", "My Added concept"));
+		Concept concept1 = new Concept(oeClient, "http://example.com/APITest#MyAddedConcept", cLabels1);
 
-		oeClient.createConcept(conceptScheme.getUri(), concept);
+		oeClient.createConcept(conceptScheme.getUri(), concept1);
+		
+		List<Label> cLabels2 = new ArrayList<Label>();
+		cLabels2.add(new Label("en", "My child concept"));
+		Concept concept2 = new Concept(oeClient, "http://example.com/APITest#MyChildConcept", cLabels2);
+
+		oeClient.createConceptBelowConcept(concept1.getUri(), concept2);
 	}
 
 }
