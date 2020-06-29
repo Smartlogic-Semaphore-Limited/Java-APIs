@@ -27,6 +27,12 @@ public class GetConcept extends ModelManipulation {
 		
 		oeClient.populateAltLabels("http://example.com/APITest#CodeName", returnedConcept);
 		System.err.println(returnedConcept.getAltLabels("http://example.com/APITest#CodeName"));
+		
+		oeClient.populateRelatedConceptUris("skos:broader", returnedConcept);
+		System.err.println(returnedConcept.getBroaderConceptUris());
+			
+		oeClient.populateRelatedConceptUris("skos:narrower", returnedConcept);
+		System.err.println(returnedConcept.getNarrowerConceptUris());
 			
 	}
 }

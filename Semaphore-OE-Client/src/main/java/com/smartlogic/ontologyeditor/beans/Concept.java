@@ -27,6 +27,7 @@ public class Concept extends AbstractBeanFromJson {
 
 	private Map<String, Collection<String>> relatedConceptUrisByRelationship = new HashMap<String, Collection<String>>();
 	private Map<String, Collection<MetadataValue>> metadataValuesByMetadataTypeUri = new HashMap<String, Collection<MetadataValue>>();
+	private Map<String, BooleanMetadataValue> booleanMetadataValuesByMetadataTypeUri = new HashMap<String, BooleanMetadataValue>();
 
 
 	public Concept(OEClientReadOnly oeClient, JsonObject jsonObject) {
@@ -105,23 +106,31 @@ public class Concept extends AbstractBeanFromJson {
 
 	public Collection<MetadataValue> getMetadata(String metadataTypeUri) throws OEClientException {
 		Collection<MetadataValue> metadata = metadataValuesByMetadataTypeUri.get(metadataTypeUri);
-		if (metadataTypeUri == null) {
-			oeClient.populateMetadata(metadataTypeUri, this);
-			metadata = metadataValuesByMetadataTypeUri.get(metadataTypeUri);
-		}
+		return metadata;
+		
+	}
+	public BooleanMetadataValue getBooleanMetadata(String metadataTypeUri) throws OEClientException {
+		BooleanMetadataValue metadata = booleanMetadataValuesByMetadataTypeUri.get(metadataTypeUri);
 		return metadata;
 		
 	}
 	public void populateMetadata(String metadataTypeUri, JsonObject jsonObject) {
 		Collection<MetadataValue> metadataValues = new HashSet<MetadataValue>();
-		JsonArray jsonRelateds = getAsArray(jsonObject, metadataTypeUri);
-		if (jsonRelateds != null) {
-			for (int i = 0; i < jsonRelateds.size(); i++) {
-				JsonObject jsonMetadata = jsonRelateds.get(i).getAsObject();
+		JsonArray jsonValues = getAsArray(jsonObject, metadataTypeUri);
+		if (jsonValues != null) {
+			for (int i = 0; i < jsonValues.size(); i++) {
+				JsonObject jsonMetadata = jsonValues.get(i).getAsObject();
 				metadataValues.add(new MetadataValue(getAsString(jsonMetadata, "@language"), getAsString(jsonMetadata, "@value")));
 			}
 		}
 		metadataValuesByMetadataTypeUri.put(metadataTypeUri, metadataValues);
+	}
+
+	public void populateBooleanMetadata(String metadataTypeUri, JsonObject jsonObject) {
+		JsonArray jsonValues = getAsArray(jsonObject, metadataTypeUri);
+		if ((jsonValues != null) && (jsonValues.size() > 0)) {
+				booleanMetadataValuesByMetadataTypeUri.put(metadataTypeUri, new BooleanMetadataValue(jsonValues.get(0).getAsBoolean().value()));
+		}
 	}
 
 	public void populateAltLabels(String altLabelTypeUri, JsonValue jsonValue) {

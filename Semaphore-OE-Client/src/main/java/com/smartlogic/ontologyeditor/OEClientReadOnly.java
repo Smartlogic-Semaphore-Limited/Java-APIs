@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.client.Client;
@@ -583,7 +582,7 @@ public class OEClientReadOnly {
 		logger.info("populateMetadata entry: {}", concept.getUri());
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
-		queryParameters.put("properties", getWrappedUri(metadataUri));
+		queryParameters.put("properties", getEscapedUri(getWrappedUri(metadataUri)));
 		
 		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
 		queryParameters.put("path", path);
@@ -601,9 +600,39 @@ public class OEClientReadOnly {
 		logger.info("populateMetadata - status: {}", response.getStatus());
 		if (response.getStatus() == 200) {
 			String stringResponse = response.readEntity(String.class);
-			if (logger.isDebugEnabled()) logger.debug("populateNarrowerConceptURIs: jsonResponse {}", stringResponse);
+			if (logger.isDebugEnabled()) logger.debug("populateMetadata: jsonResponse {}", stringResponse);
 			JsonObject jsonResponse = JSON.parse(stringResponse);
 			concept.populateMetadata(metadataUri, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+		} else {
+			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		}
+	}
+	
+	public void populateBooleanMetadata(String metadataUri, Concept concept) throws OEClientException {
+		logger.info("populateBooleanMetadata entry: {}", concept.getUri());
+
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("properties", getEscapedUri(getWrappedUri(metadataUri)));
+		
+		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
+		queryParameters.put("path", path);
+		
+		logger.info("populateMetadata uri: {}", getApiURL());
+		logger.info("populateMetadata queryParameters: {}", queryParameters);
+		
+		Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
+
+		Date startDate = new Date();
+		logger.info("populateMetadata making call  : {}", startDate.getTime());
+		Response response = invocationBuilder.get();
+		logger.info("populateMetadata call complete: {}", startDate.getTime());
+
+		logger.info("populateMetadata - status: {}", response.getStatus());
+		if (response.getStatus() == 200) {
+			String stringResponse = response.readEntity(String.class);
+			if (logger.isDebugEnabled()) logger.debug("populateBooleanMetadata: jsonResponse {}", stringResponse);
+			JsonObject jsonResponse = JSON.parse(stringResponse);
+			concept.populateBooleanMetadata(metadataUri, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
 		} else {
 			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
 		}

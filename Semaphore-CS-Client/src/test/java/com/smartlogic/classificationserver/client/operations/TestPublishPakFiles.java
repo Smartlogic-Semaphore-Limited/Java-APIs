@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.testng.annotations.Test;
-
 import com.smartlogic.classificationserver.client.ClassificationException;
 import com.smartlogic.classificationserver.client.ClassificationTestCase;
 

@@ -1,19 +1,20 @@
 package com.smartlogic.tools;
 
-import org.apache.commons.lang3.text.WordUtils;
-import org.apache.jena.ext.com.google.common.base.CharMatcher;
-import org.apache.jena.ext.com.google.common.base.Strings;
-import org.apache.jena.ext.com.google.common.collect.ImmutableMap;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.text.WordUtils;
+import org.apache.jena.ext.com.google.common.base.CharMatcher;
+import org.apache.jena.ext.com.google.common.base.Strings;
+import org.apache.jena.ext.com.google.common.collect.ImmutableMap;
+
 /**
  * Utilities for converting labels to part of prefLabel and altLabel URIs.
  */
+@SuppressWarnings("deprecation")
 public class LabelForUriManglator {
 
 	private static final CharMatcher SPECIAL_ASCII_MATCHER = CharMatcher.ascii()

@@ -1,8 +1,6 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
