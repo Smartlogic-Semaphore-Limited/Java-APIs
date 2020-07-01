@@ -12,6 +12,7 @@ import org.apache.jena.atlas.json.JsonValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.jsonldjava.shaded.com.google.common.collect.ImmutableSet;
 import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadOnly;
 
@@ -29,7 +30,8 @@ public class Concept extends AbstractBeanFromJson {
 	private Map<String, Collection<MetadataValue>> metadataValuesByMetadataTypeUri = new HashMap<String, Collection<MetadataValue>>();
 	private Map<String, BooleanMetadataValue> booleanMetadataValuesByMetadataTypeUri = new HashMap<String, BooleanMetadataValue>();
 
-
+	private Collection<String> classUris = new HashSet<String>();
+	
 	public Concept(OEClientReadOnly oeClient, JsonObject jsonObject) {
 		logger.debug("Concept - entry: {}", jsonObject);
 		this.uri = getAsString(jsonObject, "@id");
@@ -226,6 +228,31 @@ public class Concept extends AbstractBeanFromJson {
 		return prefLabels;
 	}
 
+	public void addClass(String classUri) {
+		classUris.add(classUri);
+	}
+	public void addClasses(Collection<String> classUris) {
+		classUris.addAll(classUris);
+	}
+	public void removeClass(String classUri) {
+		classUris.remove(classUri);
+	}
+	public void removeClasses(Collection<String> classUris) {
+		classUris.removeAll(classUris);
+	}
+	public Collection<String> getClassUris() {
+		return classUris;
+	}
 
+	public void populateClasses(JsonObject jsonObject) {
+		classUris.clear();
+		
+		JsonArray jsonTypes = jsonObject.get("@type").getAsArray();
+		if (jsonTypes != null) {
+			for (int i = 0; i < jsonTypes.size(); i++) {
+				classUris.add(jsonTypes.get(i).getAsString().value());
+			}
+		}
+	}
 
 }
