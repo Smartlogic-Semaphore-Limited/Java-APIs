@@ -617,17 +617,17 @@ public class OEClientReadOnly {
 		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
 		queryParameters.put("path", path);
 		
-		logger.info("populateMetadata uri: {}", getApiURL());
-		logger.info("populateMetadata queryParameters: {}", queryParameters);
+		logger.info("populateBooleanMetadata uri: {}", getApiURL());
+		logger.info("populateBooleanMetadata queryParameters: {}", queryParameters);
 		
 		Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
 		Date startDate = new Date();
-		logger.info("populateMetadata making call  : {}", startDate.getTime());
+		logger.info("populateBooleanMetadata making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("populateMetadata call complete: {}", startDate.getTime());
+		logger.info("populateBooleanMetadata call complete: {}", startDate.getTime());
 
-		logger.info("populateMetadata - status: {}", response.getStatus());
+		logger.info("populateBooleanMetadata - status: {}", response.getStatus());
 		if (response.getStatus() == 200) {
 			String stringResponse = response.readEntity(String.class);
 			if (logger.isDebugEnabled()) logger.debug("populateBooleanMetadata: jsonResponse {}", stringResponse);
@@ -638,6 +638,35 @@ public class OEClientReadOnly {
 		}
 	}
 	
+	public void populateClasses(Concept concept) throws OEClientException {
+		logger.info("populateClasses entry: {}", concept.getUri());
+
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("properties", getEscapedUri(getWrappedUri("rdf:type")));
+		
+		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
+		queryParameters.put("path", path);
+		
+		logger.info("populateClasses uri: {}", getApiURL());
+		logger.info("populateClasses queryParameters: {}", queryParameters);
+		
+		Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
+
+		Date startDate = new Date();
+		logger.info("populateClasses making call  : {}", startDate.getTime());
+		Response response = invocationBuilder.get();
+		logger.info("populateClasses call complete: {}", startDate.getTime());
+
+		logger.info("populateClasses - status: {}", response.getStatus());
+		if (response.getStatus() == 200) {
+			String stringResponse = response.readEntity(String.class);
+			if (logger.isDebugEnabled()) logger.debug("populateClasses: jsonResponse {}", stringResponse);
+			JsonObject jsonResponse = JSON.parse(stringResponse);
+			concept.populateClasses(jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+		} else {
+			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		}		
+	}
 
 	// Concept uri needs to be encoded to be used in path
 	protected String getResourceURL(String resourceUri) {

@@ -846,7 +846,6 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String url = getModelURL();
 		
-		
 		logger.info("updateMetadata - URL: {}", url);
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
@@ -1080,6 +1079,110 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		throw new OEClientException(
 				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
 
+	}
+
+	@SuppressWarnings("unchecked")
+	public void addClass(Concept concept, String classUri) throws OEClientException {
+		logger.info("addClass entry: {} {}", classUri, concept.getUri());
+		populateClasses(concept);
+		
+		String url = getApiURL();
+		
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
+		queryParameters.put("path", path);
+		
+		logger.info("addClass - URL: {}", url);
+		logger.info("addClass - parameters: {}", queryParameters);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
+		
+		JSONArray operationList = new JSONArray();
+		if (concept.getClassUris().contains("skos:Concept")) {
+			JSONObject testOperation = new JSONObject();
+			testOperation.put("op", "test");
+			testOperation.put("path","@graph/0/@type/0");
+			testOperation.put("value", "skos:Concept");
+			operationList.add(testOperation);
+
+			JSONObject removeOperation = new JSONObject();
+			removeOperation.put("op", "remove");
+			removeOperation.put("path","@graph/0/@type/0");
+			operationList.add(removeOperation);
+		}
+		JSONObject addOperation = new JSONObject();
+		addOperation.put("op", "add");
+		addOperation.put("path","@graph/0/@type/1");
+		addOperation.put("value", classUri);
+		operationList.add(addOperation);
+		
+		String addClassPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("addClass payload: {}", addClassPayload);
+		Invocation invocation = invocationBuilder.build("PATCH",
+				Entity.entity(addClassPayload, "application/json-patch+json"));
+		Response response = invocation.invoke();
+
+		if (response.getStatus() == 200) {
+			return;
+		}
+		
+		logger.warn(response.readEntity(String.class));
+		throw new OEClientException(
+				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public void removeClass(Concept concept, String classUri) throws OEClientException {
+		logger.info("removeClass entry: {} {}", classUri, concept.getUri());
+		populateClasses(concept);
+		
+		if (!concept.getClassUris().contains(classUri)) {
+			throw new OEClientException(String.format("Attempting to remove class (%s) that doesn't exist on this concept (%s)", classUri, concept.getUri()));
+		}
+		
+		String url = getApiURL();
+		
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
+		queryParameters.put("path", path);
+		
+		logger.info("addClass - URL: {}", url);
+		logger.info("addClass - parameters: {}", queryParameters);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
+		
+		JSONArray operationList = new JSONArray();
+		JSONObject testOperation = new JSONObject();
+		testOperation.put("op", "test");
+		testOperation.put("path","@graph/0/@type/0");
+		testOperation.put("value", classUri);
+		operationList.add(testOperation);
+		
+		JSONObject removeOperation = new JSONObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path","@graph/0/@type/0");
+		operationList.add(removeOperation);
+		
+		if (concept.getClassUris().size() == 1) {
+			JSONObject addOperation = new JSONObject();
+			addOperation.put("op", "add");
+			addOperation.put("path","@graph/0/@type/1");
+			addOperation.put("value", "skos:Concept");
+			operationList.add(addOperation);
+		}
+		
+		String removeClassPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		logger.info("removeClass payload: {}", removeClassPayload);
+		Invocation invocation = invocationBuilder.build("PATCH",
+				Entity.entity(removeClassPayload, "application/json-patch+json"));
+		Response response = invocation.invoke();
+
+		if (response.getStatus() == 200) {
+			return;
+		}
+		
+		logger.warn(response.readEntity(String.class));
+		throw new OEClientException(
+				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
 	}
 
 
