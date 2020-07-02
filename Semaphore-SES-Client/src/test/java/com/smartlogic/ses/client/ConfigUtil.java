@@ -11,6 +11,7 @@ public class ConfigUtil {
 	private static SESClient sesClient = getSESClient();
 	protected static Map<String, Object> config;
 
+	@SuppressWarnings("unchecked")
 	public static void initConfig() {
 		if (config != null)
 			return;
