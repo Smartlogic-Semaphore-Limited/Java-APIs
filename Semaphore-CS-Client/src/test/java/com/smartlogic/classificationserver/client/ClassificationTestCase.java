@@ -11,6 +11,7 @@ public abstract class ClassificationTestCase {
 	protected static ClassificationClient classificationClient;
 	protected static Map<String, Object> config;
 
+	@SuppressWarnings("unchecked")
 	public void initConfig() {
 		if (config != null)
 			return;
