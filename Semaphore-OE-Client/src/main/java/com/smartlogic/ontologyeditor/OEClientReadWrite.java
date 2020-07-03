@@ -27,8 +27,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * addListener - create a task within the current model
 	 * @param listenerUri - the identifier (within the model) for the listener being added
 	 * @param listenerUrl - where the listener is to be found 
+	 * @throws OEClientException 
 	 */
-	public void addListener(String listenerUri, String listenerUrl) {
+	public void addListener(String listenerUri, String listenerUrl) throws OEClientException {
 		logger.info("addListener entry: {} {}", listenerUri, listenerUrl);
 
 		String url = getModelSysURL();
@@ -60,16 +61,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("addListener making call  : {} {}", payload, startDate.getTime());
 		Response response = invocation.invoke();
-		logger.info("addListener call complete: {}", startDate.getTime());
 
-		/*
-		 * Possible response codes are: - 201 in case of success - 409 in case
-		 * of constraint violation (if e. g. concept scheme already exists)
-		 */
-		logger.info("addListener status: {}", response.getStatus());
-		if (logger.isDebugEnabled()) {
-			logger.debug("addListener response: {}", response.readEntity(String.class));
-		}
+		checkResponseStatus("addListener", response);
 		
 	}
 		
@@ -106,26 +99,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("createModel making call  : {} {}", modelPayload, startDate.getTime());
 		Response response = invocationBuilder.post(Entity.entity(modelPayload, "application/ld+json"));
-		logger.info("createModel call complete: {}", startDate.getTime());
 
-		/*
-		 * Possible response codes are: - 201 in case of success - 409 in case
-		 * of constraint violation (if e. g. concept scheme already exists)
-		 */
-		int status = response.getStatus();
-		logger.info("createModel response status: {}", status);
-
-		if (status != 201) {
-			throw new OEClientException("Status: %d return creating model at URL: %s. \n%s", status, url, response.readEntity(String.class));
-		}
-		
-		String modelUri = response.getHeaderString("X-Location-Uri");
-		logger.info("model URI: {}", modelUri);
-		model.setUri(modelUri);
-				
-		if (logger.isDebugEnabled()) {
-			logger.debug("createModel response: {}", status);
-		}
+		checkResponseStatus("createModel", response);
 		
 	}
 
@@ -145,20 +120,16 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Response response = invocationBuilder.delete();
 		logger.info("deleteModel - call returned");
 
-		int status = response.getStatus();
-		logger.info("deleteModel response status: {}", status);
-
-		if (status != 200) {
-			throw new OEClientException("Status: %d return deleting model at URL: %s. \n%s", status, url, response.readEntity(String.class));
-		}
+		checkResponseStatus("deleteModel", response);
 	}
 
 	/**
 	 * createTask - create a task within the current model
 	 * @param task 
 	 *          - the task to be created
+	 * @throws OEClientException 
 	 */
-	public void createTask(Task task) {
+	public void createTask(Task task) throws OEClientException {
 		logger.info("createTask entry: {}", task.getLabel());
 
 		String url = getModelSysURL() + "/meta:hasTask";
@@ -181,26 +152,17 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("createTask making call  : {} {}", taskPayload, startDate.getTime());
 		Response response = invocationBuilder.post(Entity.entity(taskPayload, "application/ld+json"));
-		logger.info("createTask call complete: {}", startDate.getTime());
-
-		/*
-		 * Possible response codes are: - 201 in case of success - 409 in case
-		 * of constraint violation (if e. g. concept scheme already exists)
-		 */
-		logger.info("createTask status: {}", response.getStatus());
-		if (logger.isDebugEnabled()) {
-			logger.debug("createTask response: {}", response.readEntity(String.class));
-		}
+		checkResponseStatus("createTask", response);
 		
 	}
 
-	public void commitTask(Task task) {
+	public void commitTask(Task task) throws OEClientException {
 		Label label = new Label("en", "Commit added via API");
 		String comment = "No comment supplied";
 		commitTask(task, label, comment);
 	}
 	
-	public void commitTask(Task task, Label label, String comment) {
+	public void commitTask(Task task, Label label, String comment) throws OEClientException {
 		logger.info("commitTask entry: {}", task);
 
 		String url = getTaskSysURL(task) + "/teamwork:Change/rdf:instance";
@@ -236,16 +198,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("commitTask making call  : {} {}", taskPayload, startDate.getTime());
 		Response response = invocationBuilder.post(Entity.entity(taskPayload, "application/ld+json"));
-		logger.info("commitTask call complete: {}", startDate.getTime());
 
-		/*
-		 * Possible response codes are: - 204 in case of success - 409 in case
-		 * of constraint violation (if e. g. concept scheme already exists)
-		 */
-		logger.info("commitTask status: {}", response.getStatus());
-		if (logger.isDebugEnabled()) {
-			logger.debug("commitTask response: {}", response.readEntity(String.class));
-		}
+		checkResponseStatus("commitTask", response);
 		
 	}
 
@@ -259,8 +213,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param concept
 	 *            - the concept to create. The preferred labels and class of
 	 *            this concept will be added
+	 * @throws OEClientException 
 	 */
-	public void createConcept(String conceptSchemeUri, Concept concept) {
+	public void createConcept(String conceptSchemeUri, Concept concept) throws OEClientException {
 		logger.info("createConcept entry: {} {}", conceptSchemeUri, concept.getUri());
 
 		Invocation.Builder invocationBuilder = getInvocationBuilder(getModelURL());
@@ -302,20 +257,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("createConcept making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.post(Entity.entity(conceptSchemePayload, "application/ld+json"));
-		logger.info("createConcept call complete: {}", startDate.getTime());
 
-		/*
-		 * Possible response codes are: - 201 in case of success - 409 in case
-		 * of constraint violation (if e. g. concept scheme already exists)
-		 */
-		logger.info("createConcept status: {}", response.getStatus());
-		if (logger.isDebugEnabled()) {
-			logger.debug("createConcept response: {}", response.readEntity(String.class));
-		}
+		checkResponseStatus("createConcept", response);
 
 	}
 
-	public void createConceptBelowConcept(String parentConceptUri, Concept concept) {
+	public void createConceptBelowConcept(String parentConceptUri, Concept concept) throws OEClientException {
 		logger.info("createConceptBelowConcept entry: {} {}", parentConceptUri, concept.getUri());
 
 		Invocation.Builder invocationBuilder = getInvocationBuilder(getModelURL());
@@ -356,21 +303,23 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String conceptSchemePayload = conceptDetails.toString();
 
-		Date startDate = new Date();
-		logger.info("createConceptBelowConcept making call  : {}", startDate.getTime());
+		logger.info("createConceptBelowConcept making call with payload: {}", conceptSchemePayload);
 		Response response = invocationBuilder.post(Entity.entity(conceptSchemePayload, "application/ld+json"));
-		logger.info("createConceptBelowConcept call complete: {}", startDate.getTime());
 
-		/*
-		 * Possible response codes are: - 201 in case of success - 409 in case
-		 * of constraint violation (if e. g. concept scheme already exists)
-		 */
-		logger.info("createConceptBelowConcept status: {}", response.getStatus());
-		if (logger.isDebugEnabled()) {
-			logger.debug("createConcept response: {}", response.readEntity(String.class));
-		}
+		checkResponseStatus("createConceptBelowConcept", response);
 
 	}
+	private void checkResponseStatus(String callingMethod, Response response) throws OEClientException {
+		if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+			logger.info("{} call completed successfully: {}", callingMethod);
+		} else {
+			String message = String.format("%s call returned error %s: %s", 
+					callingMethod, response.getStatus(), response.readEntity(String.class));
+			logger.warn(message);
+			throw new OEClientException(message);
+		}
+	}
+
 	/**
 	 * createConceptScheme - create a concept as a topConcept of a Concept
 	 * Scheme
@@ -378,8 +327,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param conceptScheme
 	 *            - the concept scheme to create, the labels of this concept
 	 *            will be created
+	 * @throws OEClientException 
 	 */
-	public void createConceptScheme(ConceptScheme conceptScheme) {
+	public void createConceptScheme(ConceptScheme conceptScheme) throws OEClientException {
 		logger.info("createConceptScheme entry: {}", conceptScheme.getUri());
 
 		Invocation.Builder invocationBuilder = getInvocationBuilder(getModelURL());
@@ -406,16 +356,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("createConceptScheme making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.post(Entity.entity(conceptSchemePayload, "application/ld+json"));
-		logger.info("createConceptScheme call complete: {}", startDate.getTime());
 
-		/*
-		 * Possible response codes are: - 201 in case of success - 409 in case
-		 * of constraint violation (if e. g. concept scheme already exists)
-		 */
-		logger.info("createConceptScheme status: {}", response.getStatus());
-		if (logger.isDebugEnabled()) {
-			logger.debug("createConceptScheme response: {}", response.readEntity(String.class));
-		}
+		checkResponseStatus("createConceptScheme", response);
 	}
 
 
@@ -489,12 +431,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(updateLabelPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-		
-		logger.warn(response.readEntity(String.class));
-		throw new OEClientException("Unable to update label");
+		checkResponseStatus("updateLabel", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -546,16 +483,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		graphObject.put("@graph", dataArray);
 
 		String createLabelsPayload = graphObject.toJSONString().replaceAll("\\/", "/");
-		logger.info("createLabelsPayload payload: {}", createLabelsPayload);
+		logger.info("createLabels payload: {}", createLabelsPayload);
 		Response response = invocationBuilder.post(Entity.entity(createLabelsPayload, "application/ld+json"));
 
-		if (response.getStatus() == 201) {
-			return;
-		}
-
-		String responseString = response.readEntity(String.class);
-		logger.warn(responseString);
-		throw new OEClientException(String.format("%s Response received\n%s", response.getStatus(), responseString));
+		checkResponseStatus("createLabels", response);
 
 	}
 
@@ -606,12 +537,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(createLabelPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("createLabel", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -652,12 +578,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(createRelationshipPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("createRelationship", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -699,12 +620,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(createMetadataPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("createMetadata (String)", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -735,12 +651,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(createMetadataPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("createMetadata (URI)", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -780,12 +691,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(createMetadataPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("createMetadata (boolean)", response);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -832,12 +738,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(createMetadataPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("updateMetadata", response);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -846,7 +747,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String url = getModelURL();
 		
-		logger.info("updateMetadata - URL: {}", url);
+		logger.info("deleteMetadata - URL: {}", url);
 		Invocation.Builder invocationBuilder = getInvocationBuilder(url);
 
 		JSONArray operationList = new JSONArray();
@@ -872,17 +773,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		operationList.add(removeOperation);
 		
 		String createMetadataPayload = operationList.toJSONString().replaceAll("\\/", "/");
-		logger.info("updateMetadata payload: {}", createMetadataPayload);
+		logger.info("deleteMetadata payload: {}", createMetadataPayload);
 		Invocation invocation = invocationBuilder.build("PATCH",
 				Entity.entity(createMetadataPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));	
+		checkResponseStatus("deleteMetadata (Boolean)", response);
 	}
 	
 	public void deleteConcept(Concept concept) throws OEClientException {
@@ -906,14 +802,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		Response response = invocationBuilder.delete();
 
-		logger.info("deleteConcept response status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			return;
-		}
-
-		logger.warn(response.readEntity(String.class));
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("deleteConcept", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -959,13 +848,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(deleteRelationshipPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-		
-		logger.warn(response.readEntity(String.class));
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("deleteRelationship", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1012,13 +895,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(deleteRelationshipPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-		
-		logger.warn(response.readEntity(String.class));
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("deleteMetadata (String)", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1071,14 +948,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(deleteLabelPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-		
-		logger.warn(response.readEntity(String.class));
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
-
+		checkResponseStatus("deleteLabel", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1121,14 +991,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(addClassPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-		
-		logger.warn(response.readEntity(String.class));
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
-
+		checkResponseStatus("addClass", response);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1176,19 +1039,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				Entity.entity(removeClassPayload, "application/json-patch+json"));
 		Response response = invocation.invoke();
 
-		if (response.getStatus() == 200) {
-			return;
-		}
-		
-		logger.warn(response.readEntity(String.class));
-		throw new OEClientException(
-				String.format("%s Response received\n%s", response.getStatus(), response.getEntity().toString()));
+		checkResponseStatus("deleteRelationship", response);
 	}
-
-
-
-
-
-
 
 }

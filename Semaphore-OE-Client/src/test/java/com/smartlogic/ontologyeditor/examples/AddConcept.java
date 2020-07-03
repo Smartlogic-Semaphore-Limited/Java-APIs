@@ -18,7 +18,7 @@ public class AddConcept extends ModelManipulation {
 	}
 	
 	@Override
-	protected void alterModel(OEClientReadWrite oeClient) {
+	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
 		List<Label> csLabels = new ArrayList<Label>();
 		csLabels.add(new Label("en", "Concept Scheme for Add Concept"));

@@ -17,7 +17,7 @@ public class AddConceptScheme extends ModelManipulation {
 	}
 
 	@Override
-	protected void alterModel(OEClientReadWrite oeClient) {
+	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", "My concept scheme 2"));

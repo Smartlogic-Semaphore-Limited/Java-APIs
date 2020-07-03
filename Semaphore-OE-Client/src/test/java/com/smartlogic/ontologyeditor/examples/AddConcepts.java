@@ -44,7 +44,7 @@ public class AddConcepts extends ModelManipulation {
 
 	}
 
-	private void addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) {
+	private void addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {
 
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", "Concept " + label));
