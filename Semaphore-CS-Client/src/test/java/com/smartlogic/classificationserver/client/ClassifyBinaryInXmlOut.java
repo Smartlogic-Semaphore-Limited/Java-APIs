@@ -82,7 +82,7 @@ public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 	@Test
 	public void testBodyTitleMetaInBytesOut() throws IOException, ClassificationException {
 		Properties props = new Properties();
-		File file = new File("src/test/resources/data/testBodyTestInBytesOut.txt");
+		File file = new File("src/test/resources/data/testInBytesOut.txt");
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 			props.load(fileInputStream);
 			byte[] xmlb = classificationClient.getClassifiedBytes(new Body(props.getProperty("body")),
@@ -95,7 +95,7 @@ public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 	@Test
 	public void testUrlTitleMetaInBytesOut() throws IOException, ClassificationException {
 		Properties props = new Properties();
-		File file = new File("src/test/resources/data/testBodyTestInBytesOut.txt");
+		File file = new File("src/test/resources/data/testInBytesOut.txt");
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
 			props.load(fileInputStream);
 			byte[] xmlb = classificationClient.getClassifiedBytes(new URL(props.getProperty("url")),
