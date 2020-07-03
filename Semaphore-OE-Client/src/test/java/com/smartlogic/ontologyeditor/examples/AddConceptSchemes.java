@@ -17,7 +17,7 @@ public class AddConceptSchemes extends ModelManipulation {
 	}
 
 	@Override
-	protected void alterModel(OEClientReadWrite oeClient)  {
+	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException  {
 
 		addConceptScheme(oeClient, "Concepts with a +");
 		addConceptScheme(oeClient, "Concepts with : problems");
@@ -35,7 +35,7 @@ public class AddConceptSchemes extends ModelManipulation {
 		addConceptScheme(oeClient, "Sometimes you just need a /");
 	}
 	
-	public void addConceptScheme(OEClientReadWrite oeClient, String schemeName) {
+	public void addConceptScheme(OEClientReadWrite oeClient, String schemeName) throws OEClientException {
 		
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", schemeName));

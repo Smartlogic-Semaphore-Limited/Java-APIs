@@ -224,21 +224,16 @@ public class OEClientReadOnly {
 
 		logger.info("getAllModels - status: {}", response.getStatus());
 
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isInfoEnabled()) logger.info("getAllModels: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
-			Collection<Model> models = new ArrayList<Model>();
-			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
-			while (jsonValueIterator.hasNext()) {
-				JsonObject modelObject = jsonValueIterator.next().getAsObject();
-				models.add(new Model(modelObject));
-			}
-			return models;
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		JsonObject jsonResponse = getJsonResponse("getAllModels", response);
+		
+		JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+		Collection<Model> models = new ArrayList<Model>();
+		Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+		while (jsonValueIterator.hasNext()) {
+			JsonObject modelObject = jsonValueIterator.next().getAsObject();
+			models.add(new Model(modelObject));
 		}
+		return models;
 	}
 
 	/**
@@ -262,70 +257,53 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("getAllTasks making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("getAllTasks call complete: {}", startDate.getTime());
 
-		logger.info("getAllTasks - status: {}", response.getStatus());
-
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isInfoEnabled()) logger.info("getAllTasks: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
-			Collection<Task> tasks = new ArrayList<Task>();
-			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
-			while (jsonValueIterator.hasNext()) {
-				JsonObject modelData = jsonValueIterator.next().getAsObject();
-				JsonArray taskArray = modelData.get("semfun:hasMainTag").getAsArray();
-				Iterator<JsonValue> jsonTaskIterator = taskArray.iterator();
-				while (jsonTaskIterator.hasNext()) {
-					tasks.add(new Task(jsonTaskIterator.next().getAsObject()));
-				}
+		JsonObject jsonResponse = getJsonResponse("getAllTasks", response);
+		JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+		Collection<Task> tasks = new ArrayList<Task>();
+		Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+		while (jsonValueIterator.hasNext()) {
+			JsonObject modelData = jsonValueIterator.next().getAsObject();
+			JsonArray taskArray = modelData.get("semfun:hasMainTag").getAsArray();
+			Iterator<JsonValue> jsonTaskIterator = taskArray.iterator();
+			while (jsonTaskIterator.hasNext()) {
+				tasks.add(new Task(jsonTaskIterator.next().getAsObject()));
 			}
-			return tasks;
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
 		}
+		return tasks;
 		
 	}
 
 	public Collection<ChangeRecord> getChangesSince(Date date) throws OEClientException {
 
-			StringBuilder stringBuilder = new StringBuilder(getApiURL());
-			stringBuilder.append("tch");
-			stringBuilder.append(modelUri);
-			stringBuilder.append("/teamwork:Change/rdf:instance");
+		StringBuilder stringBuilder = new StringBuilder(getApiURL());
+		stringBuilder.append("tch");
+		stringBuilder.append(modelUri);
+		stringBuilder.append("/teamwork:Change/rdf:instance");
 			
-			String url = stringBuilder.toString();
-			logger.debug("getChangesSince: '{}'", url);
-
-			Map<String, String> queryParameters = new HashMap<String, String>();
-			queryParameters.put("properties", "?triple/(teamwork:subject|teamwork:predicate|teamwork:object),sem:committed");
-			queryParameters.put("filters", String.format("subject(sem:committed >= \"%s\"^^xsd:dateTime)", date.toInstant().toString()));
-			queryParameters.put("sort", "sem:committed");
+		String url = stringBuilder.toString();
+		logger.debug("getChangesSince: '{}'", url);
+		
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("properties", "?triple/(teamwork:subject|teamwork:predicate|teamwork:object),sem:committed");
+		queryParameters.put("filters", String.format("subject(sem:committed >= \"%s\"^^xsd:dateTime)", date.toInstant().toString()));
+		queryParameters.put("sort", "sem:committed");
 			
-			Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
+		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
-			Date startDate = new Date();
-			logger.info("getChangesSince making call  : {}", startDate.getTime());
-			Response response = invocationBuilder.get();
-			logger.info("getChangesSince call complete: {}", startDate.getTime());
+		Date startDate = new Date();
+		logger.info("getChangesSince making call  : {}", startDate.getTime());
+		Response response = invocationBuilder.get();
 
-			logger.info("getChangesSince - status: {}", response.getStatus());
+		JsonObject jsonResponse = getJsonResponse("getChangesSince", response);
+		JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+		Collection<ChangeRecord> changeRecords = new ArrayList<ChangeRecord>();
+		Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+		while (jsonValueIterator.hasNext()) {
+			changeRecords.add(new ChangeRecord(this, jsonValueIterator.next().getAsObject()));
+		}
+		return changeRecords;
 
- 			if (response.getStatus() == 200) {
- 				String stringResponse = response.readEntity(String.class);
- 				if (logger.isInfoEnabled()) logger.info("getChangesSince: jsonResponse {}", stringResponse);
- 				JsonObject jsonResponse = JSON.parse(stringResponse);
- 				JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
- 				Collection<ChangeRecord> changeRecords = new ArrayList<ChangeRecord>();
- 				Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
- 				while (jsonValueIterator.hasNext()) {
- 					changeRecords.add(new ChangeRecord(this, jsonValueIterator.next().getAsObject()));
- 				}
- 				return changeRecords;
- 			} else {
- 				throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
- 			}
 	}
 	
 	public Collection<ConceptClass> getConceptClasses() throws OEClientException {
@@ -342,23 +320,16 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("getRelationshipTypes making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("getRelationshipTypes call complete: {}", startDate.getTime());
-
-		logger.info("getRelationshipTypes - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isInfoEnabled()) logger.info("getConceptClasses: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
-			Collection<RelationshipType> relationshipTypes = new HashSet<RelationshipType>();
-			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
-			while (jsonValueIterator.hasNext()) {
-				relationshipTypes.add(new RelationshipType(this, jsonValueIterator.next().getAsObject()));
-			}
-			return relationshipTypes;
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		
+		JsonObject jsonResponse = getJsonResponse("getRelationshipTypes", response);
+		JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+		Collection<RelationshipType> relationshipTypes = new HashSet<RelationshipType>();
+		Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+		while (jsonValueIterator.hasNext()) {
+			relationshipTypes.add(new RelationshipType(this, jsonValueIterator.next().getAsObject()));
 		}
+		return relationshipTypes;
+
 	}
 
 	/**
@@ -395,23 +366,16 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("getConceptClasses making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("getConceptClasses call complete: {}", startDate.getTime());
-
-		logger.info("getConceptClasses - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isInfoEnabled()) logger.info("getConceptClasses: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
-			Collection<ConceptClass> conceptClasses = new HashSet<ConceptClass>();
-			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
-			while (jsonValueIterator.hasNext()) {
-				conceptClasses.add(new ConceptClass(this, jsonValueIterator.next().getAsObject()));
-			}
-			return conceptClasses;
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		
+		JsonObject jsonResponse = getJsonResponse("getConceptClasses", response);
+		JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+		Collection<ConceptClass> conceptClasses = new HashSet<ConceptClass>();
+		Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+		while (jsonValueIterator.hasNext()) {
+			conceptClasses.add(new ConceptClass(this, jsonValueIterator.next().getAsObject()));
 		}
+		return conceptClasses;
+
 	}
 
 	/**
@@ -431,17 +395,9 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("getConcept making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("getConcept call complete: {}", startDate.getTime());
 
-		logger.info("getConceptDetails - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isDebugEnabled()) logger.debug("getConceptDetails: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
-		}
+		JsonObject jsonResponse = getJsonResponse("getConcept", response);
+		return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
 	}
 
 	/**
@@ -475,17 +431,9 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("getConceptByIdentifier making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("getConceptByIdentifier call complete: {}", startDate.getTime());
 
-		logger.info("getConceptByIdentifier - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isDebugEnabled()) logger.debug("getConceptByIdentifier: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
-		}
+		JsonObject jsonResponse = getJsonResponse("getConceptByIdentifier", response);
+		return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
 	}
 
 	
@@ -508,26 +456,15 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("getFilteredConcepts making call  : {} {}", startDate.getTime(), url);
 		Response response = invocationBuilder.get();
-		logger.info("getFilteredConcepts call complete: {}", startDate.getTime());
+		JsonObject jsonResponse = getJsonResponse("getFilteredConcepts", response);
 
-		logger.info("getFilteredConcepts - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isDebugEnabled()) logger.debug("getFilteredConcepts: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-
-			JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
-			Collection<Concept> concepts = new HashSet<Concept>();
-			Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
-			while (jsonValueIterator.hasNext()) {
-				concepts.add(new Concept(this, jsonValueIterator.next().getAsObject()));
-			}
-			return concepts;
-		} else {
-			String stringResponse = response.readEntity(String.class);
-			logger.info("getFilteredConcepts: jsonResponse {}", stringResponse);
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
+		JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+		Collection<Concept> concepts = new HashSet<Concept>();
+		Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+		while (jsonValueIterator.hasNext()) {
+			concepts.add(new Concept(this, jsonValueIterator.next().getAsObject()));
 		}
+		return concepts;
 	}
 
 
@@ -543,16 +480,11 @@ public class OEClientReadOnly {
 		Response response = invocationBuilder.get();
 		logger.info("populateRelatedConceptUris call complete: {}", startDate.getTime());
 
-		logger.info("populateRelatedConceptUris - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			logger.info("populateRelatedConceptUris: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			concept.populateRelatedConceptUris(relationshipUri, jsonResponse.get("@graph"));
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
-		}
+		JsonObject jsonResponse = getJsonResponse("populateRelatedConceptUris", response);
+		concept.populateRelatedConceptUris(relationshipUri, jsonResponse.get("@graph"));
 	}
+
+
 
 	public void populateAltLabels(String altLabelTypeUri, Concept concept) throws OEClientException {
 		logger.info("populateAltLabels entry: {}", concept.getUri());
@@ -565,17 +497,9 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("populateAltLabels making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("populateAltLabels call complete: {}", startDate.getTime());
 
-		logger.info("populateAltLabels - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			logger.info("populateAltLabels: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			concept.populateAltLabels(altLabelTypeUri, jsonResponse.get("@graph"));
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
-		}
+		JsonObject jsonResponse = getJsonResponse("populateAltLabels", response);
+		concept.populateAltLabels(altLabelTypeUri, jsonResponse.get("@graph"));
 	}
 
 	public void populateMetadata(String metadataUri, Concept concept) throws OEClientException {
@@ -595,17 +519,9 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("populateMetadata making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("populateMetadata call complete: {}", startDate.getTime());
-
-		logger.info("populateMetadata - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isDebugEnabled()) logger.debug("populateMetadata: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			concept.populateMetadata(metadataUri, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
-		}
+		
+		JsonObject jsonResponse = getJsonResponse("populateMetadata", response);
+		concept.populateMetadata(metadataUri, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
 	}
 	
 	public void populateBooleanMetadata(String metadataUri, Concept concept) throws OEClientException {
@@ -625,17 +541,10 @@ public class OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("populateBooleanMetadata making call  : {}", startDate.getTime());
 		Response response = invocationBuilder.get();
-		logger.info("populateBooleanMetadata call complete: {}", startDate.getTime());
 
-		logger.info("populateBooleanMetadata - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
-			String stringResponse = response.readEntity(String.class);
-			if (logger.isDebugEnabled()) logger.debug("populateBooleanMetadata: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			concept.populateBooleanMetadata(metadataUri, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
-		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
-		}
+		JsonObject jsonResponse = getJsonResponse("populateBooleanMetadata", response);
+		concept.populateBooleanMetadata(metadataUri, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+
 	}
 	
 	public void populateClasses(Concept concept) throws OEClientException {
@@ -657,15 +566,22 @@ public class OEClientReadOnly {
 		Response response = invocationBuilder.get();
 		logger.info("populateClasses call complete: {}", startDate.getTime());
 
-		logger.info("populateClasses - status: {}", response.getStatus());
-		if (response.getStatus() == 200) {
+		JsonObject jsonResponse = getJsonResponse("populateClasses", response);
+		concept.populateClasses(jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+
+	}
+
+	private JsonObject getJsonResponse(String callingMethod, Response response) throws OEClientException {
+		if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
 			String stringResponse = response.readEntity(String.class);
-			if (logger.isDebugEnabled()) logger.debug("populateClasses: jsonResponse {}", stringResponse);
-			JsonObject jsonResponse = JSON.parse(stringResponse);
-			concept.populateClasses(jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+			logger.info("{}: jsonResponse {}", callingMethod, stringResponse);
+			return JSON.parse(stringResponse);
 		} else {
-			throw new OEClientException(String.format("Error(%d) %s from server", response.getStatus(), response.getStatusInfo().toString()));
-		}		
+			String message = String.format("%s call returned error %s: %s", 
+					callingMethod, response.getStatus(), response.readEntity(String.class));
+			logger.warn(message);
+			throw new OEClientException(message);
+		}
 	}
 
 	// Concept uri needs to be encoded to be used in path
