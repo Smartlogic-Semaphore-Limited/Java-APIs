@@ -117,7 +117,15 @@ public class OEClientReadOnly {
 	public void setProxyAddress(String proxyAddress) {
 		this.proxyAddress = proxyAddress;
 	}
-
+	
+	private boolean warningsAccepted = false;
+	public boolean isWarningsAccepted() {
+		return warningsAccepted;
+	}
+	public void setWarningsAccepted(boolean warningsAccepted) {
+		this.warningsAccepted = warningsAccepted;
+	}
+	
 	protected String getWrappedUri(String uriString) throws OEClientException {
 		try {
 			URI uri = new URI(uriString);
@@ -142,9 +150,13 @@ public class OEClientReadOnly {
 		client.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
 		WebTarget webTarget = client.target(url);
 
+
 		if (queryParameters != null) {
 			for (Map.Entry<String, String> queryParameter: queryParameters.entrySet())
 				webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue());
+		}
+		if (warningsAccepted) {
+			webTarget = webTarget.queryParam("warningsAccepted", "true");
 		}
 
 		
