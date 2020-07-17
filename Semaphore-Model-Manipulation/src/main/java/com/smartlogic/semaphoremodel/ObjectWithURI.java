@@ -1,5 +1,6 @@
 package com.smartlogic.semaphoremodel;
 
+import java.net.URI;
 import java.util.Base64;
 
 import org.apache.jena.query.ParameterizedSparqlString;
@@ -32,8 +33,17 @@ public abstract class ObjectWithURI {
 	protected Resource getResource() {
 		return resource;
 	}
-	
 
+
+	/**
+	 * Returns the URI for this object.
+	 * @return the URI for this object.
+	 */
+	public URI getURI() {
+		if (resource == null)
+			return null;
+		return URI.create(resource.getURI());
+	}
 	/**
 	 * Return the label for this object in the selected language
 	 * @param language - the language for which the label is requested
