@@ -25,19 +25,24 @@ public class UpdateConceptLabel extends ModelManipulation {
 		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#ConceptSchemeForUpdateConceptLabel",
 				csLabels);
 		oeClient.createConceptScheme(conceptScheme);
-		
-		List<Label> cLabels = new ArrayList<Label>();
-		cLabels.add(new Label("en", "My concept to be updated"));
-		Concept concept = new Concept(oeClient, "http://example.com/APITest#MyConceptForUpdateConceptLabel", cLabels);
+		oeClient.setWarningsAccepted(true);
+		List<Label> cLabels1 = new ArrayList<Label>();
+		cLabels1.add(new Label("en", "My first concept"));
+		Concept concept1 = new Concept(oeClient, "http://example.com/APITest#MyFirstConcept", cLabels1);
+		oeClient.createConcept(conceptScheme.getUri(), concept1);
 
-		oeClient.createConcept(conceptScheme.getUri(), concept);
+		List<Label> cLabels2 = new ArrayList<Label>();
+		cLabels2.add(new Label("en", "My second concept"));
+		Concept concept2 = new Concept(oeClient, "http://example.com/APITest#MySecondConcept", cLabels2);
+		oeClient.createConcept(conceptScheme.getUri(), concept2);
+
 
 
 		String languageCode = "en";
-		String oldLabelValue = "My concept to be updated";
-		String newLabelValue = "My updated concept label";
+		String oldLabelValue = "My first concept";
+		String newLabelValue = "My second concept";
 
-		Concept conceptToUpdate = oeClient.getConcept(concept.getUri());
+		Concept conceptToUpdate = oeClient.getConcept(concept1.getUri());
 		Label label = conceptToUpdate.getPrefLabelByLanguageAndValue(languageCode, oldLabelValue);
 		if (label == null) {
 			System.err.println("Unable to retrieve added label");
