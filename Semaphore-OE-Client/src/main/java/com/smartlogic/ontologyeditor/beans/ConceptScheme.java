@@ -13,62 +13,70 @@ import org.slf4j.LoggerFactory;
 import com.smartlogic.ontologyeditor.OEClientReadOnly;
 
 public class ConceptScheme extends AbstractBeanFromJson {
-	protected final static Logger logger = LoggerFactory.getLogger(ConceptScheme.class);
+  protected final static Logger logger = LoggerFactory.getLogger(ConceptScheme.class);
 
-	private Collection<String> types = new HashSet<String>();
-	private Collection<Label> prefLabels = new HashSet<Label>();
+  private Collection<String> types = new HashSet<>();
+  private Collection<Label> prefLabels = new HashSet<>();
+  private Collection<String> topConceptUris = new HashSet<>();
 
-	public ConceptScheme(OEClientReadOnly oeClient, JsonObject jsonObject) {
-		logger.debug("Concept - entry: {}", jsonObject);
-		this.uri = jsonObject.get("@id").getAsString().value();
+  public ConceptScheme(OEClientReadOnly oeClient, JsonObject jsonObject) {
+    logger.debug("ConceptScheme - entry: {}", jsonObject);
+    this.uri = jsonObject.get("@id").getAsString().value();
 
-		JsonValue jsonValue = jsonObject.get("@type");
-		if (jsonValue != null) {
-			JsonArray jsonTypes = jsonValue.getAsArray();
-			for (int i = 0; i < jsonTypes.size(); i++) {
-				this.types.add(jsonTypes.get(i).getAsString().value());
-			}
-		}
+    JsonArray jsonLabels = jsonObject.get("rdfs:label").getAsArray();
+    for (JsonValue jsonLabel : jsonLabels) {
+      JsonObject jsonLiteral = jsonLabel.getAsObject();
 
-		JsonArray jsonPrefLabels = jsonObject.get("skosxl:prefLabel").getAsArray();
-		for (int i = 0; i < jsonPrefLabels.size(); i++) {
-			JsonObject jsonPrefLabel = jsonPrefLabels.get(i).getAsObject();
+      String prefLabelValue = getAsString(jsonLiteral, "@value");
+      String prefLabelLangCode = getAsString(jsonLiteral, "@language");
 
-			String prefLabelUri = jsonPrefLabel.get("@id").getAsString().value();
-			JsonObject jsonLiteral = jsonPrefLabel.get("meta:displayName").getAsObject();
-			String prefLabelValue = jsonLiteral.get("@value").getAsString().value();
-			String prefLabelLangCode = jsonLiteral.get("@language").getAsString().value();
+      prefLabels.add(new Label(null, prefLabelLangCode, prefLabelValue));
+    }
 
-			prefLabels.add(new Label(prefLabelUri, prefLabelLangCode, prefLabelValue));
-		}
-		logger.info("Concept - exit: {}", this.uri);
+    topConceptUris = new HashSet<>();
+    JsonValue topConceptsValue = jsonObject.get("skos:hasTopConcept");
+    if (topConceptsValue != null) {
+      JsonArray topConcepts = topConceptsValue.getAsArray();
+      for (JsonValue topConcept : topConcepts) {
+        JsonObject topConceptObject = topConcept.getAsObject();
+        String topConceptUri = topConceptObject.get("@id").getAsString().value();
 
-	}
+        topConceptUris.add(topConceptUri);
+      }
+    }
 
-	public ConceptScheme(OEClientReadOnly oeClient, String uri, List<Label> labelList) {
-		this.oeClient = oeClient;
-		this.uri = uri;
-		prefLabels.addAll(labelList);
-	}
+    logger.info("ConceptScheme - exit: {}", this.uri);
 
-	@Override
-	public String toString() {
-		StringBuilder stringBuilder = new StringBuilder("Concept:");
-		stringBuilder.append(this.uri).append(" [");
-		String sep = "";
-		for (String type: types) {
-			stringBuilder.append(sep).append(type);
-			sep = ", ";
-		}
-		stringBuilder.append("] ");
-		for (Label prefLabel: prefLabels) {
-			stringBuilder.append(" \"").append(prefLabel.toString()).append("\"");
-		}
-		return stringBuilder.toString();
-	}
+  }
 
+  public ConceptScheme(OEClientReadOnly oeClient, String uri, List<Label> labelList) {
+    this.oeClient = oeClient;
+    this.uri = uri;
+    prefLabels.addAll(labelList);
+  }
 
-	public Collection<Label> getPrefLabels() {
-		return prefLabels;
-	}
+  @Override
+  public String toString() {
+    StringBuilder stringBuilder = new StringBuilder("Concept:");
+    stringBuilder.append(this.uri).append(" [");
+    String sep = "";
+    for (String type : types) {
+      stringBuilder.append(sep).append(type);
+      sep = ", ";
+    }
+    stringBuilder.append("] - [");
+    for (Label prefLabel : prefLabels) {
+      stringBuilder.append(" \"").append(prefLabel.toString()).append("\"");
+    }
+    stringBuilder.append("] - [ ");
+    for (String topConceptUri : topConceptUris) {
+      stringBuilder.append(" \"").append(topConceptUri).append("\"");
+    }
+    stringBuilder.append("] ");
+    return stringBuilder.toString();
+  }
+
+  public Collection<Label> getPrefLabels() {
+    return prefLabels;
+  }
 }
