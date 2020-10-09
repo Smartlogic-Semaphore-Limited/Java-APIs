@@ -1,19 +1,13 @@
 package com.smartlogic.semaphoremodel;
 
-import java.net.URI;
-import java.util.Base64;
-
-import org.apache.jena.query.ParameterizedSparqlString;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
+import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.update.UpdateAction;
 import org.apache.jena.vocabulary.RDFS;
+
+import java.net.URI;
+import java.util.Base64;
 
 
 public abstract class ObjectWithURI {
@@ -55,7 +49,8 @@ public abstract class ObjectWithURI {
 		ParameterizedSparqlString parameterizedSparql = new ParameterizedSparqlString(model);
 		parameterizedSparql.setCommandText(sparql);
 		parameterizedSparql.setParam("objectURI", resource);
-		parameterizedSparql.setParam("labelLanguage", model.createLiteral(language.getCode(), ""));
+		parameterizedSparql.setParam("labelLanguage",
+				(language == null ? model.createLiteral("") : model.createLiteral(language.getCode(), "")));
 		
 		Query query = QueryFactory.create(parameterizedSparql.asQuery());
 

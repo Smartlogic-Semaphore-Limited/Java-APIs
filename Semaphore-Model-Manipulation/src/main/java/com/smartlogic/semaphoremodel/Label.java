@@ -1,10 +1,10 @@
 package com.smartlogic.semaphoremodel;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Label {
 
@@ -58,6 +58,6 @@ public class Label {
 	}
 
 	public String getLanguageCode() {
-		return language.getCode();
+		return language == null ? null : language.getCode();
 	}
 }
