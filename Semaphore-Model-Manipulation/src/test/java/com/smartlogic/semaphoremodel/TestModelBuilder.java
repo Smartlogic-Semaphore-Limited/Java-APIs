@@ -48,7 +48,7 @@ public class TestModelBuilder {
 
 		semaphoreModel.createAssociativeRelationshipType(new URI("http://kma.com/RT1"), new Label("RT1", english), new URI("http://kma.com/iRT1"), new Label("iRT1", english));
 		semaphoreModel.createAssociativeRelationshipType(new URI("http://kma.com/RT2"), new Label("RT2", english), new URI("http://kma.com/iRT2"), new Label("iRT2", english), conceptClass1, conceptClass2);
-		semaphoreModel.write(new File("C:/temp/model.ttl"));
+		semaphoreModel.write(new File("src/test/resources/temp/model.ttl"));
 	}
 
 }

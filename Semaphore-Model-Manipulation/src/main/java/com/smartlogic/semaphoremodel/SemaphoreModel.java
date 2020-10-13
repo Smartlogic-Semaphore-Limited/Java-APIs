@@ -1,6 +1,7 @@
 package com.smartlogic.semaphoremodel;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.tdb.TDBFactory;
@@ -82,14 +83,18 @@ public class SemaphoreModel {
 	}
 
 	/**
-	 * Construct and return Jena Literal object from the spefified Jena model using the specified
-	 * label.
+	 * Construct and return Jena Literal object from the specified Jena model using the specified
+	 * label. The language code in the label can be null, indicating no language code for the literal.
 	 * @param model the Jena model to use to construct the Resource object.
 	 * @param prefLabel the label object from which to construct the Jena Literal object.
 	 * @return the Jena Literal object.
 	 */
 	protected static Literal getAsLiteral(Model model, Label prefLabel) {
-		return model.createLiteral(prefLabel.getValue(), prefLabel.getLanguageCode()).asLiteral();
+		if (Strings.isNullOrEmpty(prefLabel.getLanguageCode())) {
+			return model.createLiteral(prefLabel.getValue());
+		} else {
+			return model.createLiteral(prefLabel.getValue(), prefLabel.getLanguageCode());
+		}
 	}
 
 	/**

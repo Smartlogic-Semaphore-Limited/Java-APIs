@@ -1,18 +1,19 @@
 package com.smartlogic.semaphoremodel;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.fail;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.SKOS;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.UUID;
 
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+import static org.testng.Assert.*;
 
 public class TestConceptScheme extends AbstractTest {
 
@@ -63,22 +64,66 @@ public class TestConceptScheme extends AbstractTest {
 		ConceptScheme conceptSchemeExists = semaphoreModel.getConceptScheme(new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyFirstConceptScheme"));
 		try {
 			conceptSchemeExists.addLabel(new Label("Illegal label", english));
-			fail("We shouldn't get here - createding a duplicate label");
+			fail("We shouldn't get here - creating a duplicate label");
 		} catch (ModelException e) {
 			assertEquals(e.getMessage(), "Attempting to create label for 'http://example.com/ConceptSchemeTest#ConceptScheme/MyFirstConceptScheme'. This already has a label in language 'en'");
 		}
 	}
 
 	@Test
-	public void testAddingConceptScheme() throws URISyntaxException, ModelException {
-		semaphoreModel.createConceptScheme(new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyCreatedConceptScheme"), new Label("hello", english), null);
+	public void testAddLiteralsToConceptScheme() throws URISyntaxException, ModelException {
+		final String langNeutralLabel = "Lang Neutral Label";
+		final String englishLabel = "English Label";
+		final String italianLabel = "Labeli Italiano";
+		ConceptScheme s = semaphoreModel.createConceptScheme(
+				new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyConceptSchemeWithLangNeutralLit"),
+				new Label(langNeutralLabel, null), null);
+		s.addLabel(new Label(englishLabel, english));
+		s.addLabel(new Label(italianLabel, italian));
 
-		ConceptScheme createdConceptScheme = semaphoreModel.getConceptScheme(new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyCreatedConceptScheme"));
+		Label langNeutralLab = s.getLabel(null);
+		assertNotNull(langNeutralLab, "Lang neutral label is not null");
+		assertEquals(langNeutralLab.getValue(), langNeutralLabel, "Label value is correct");
+
+		Label engLab = s.getLabel(english);
+		assertNotNull(engLab, "Eng neutral label is not null");
+		assertEquals(engLab.getValue(), englishLabel, "ENG Label value is correct");
+
+		Label itaLab = s.getLabel(italian);
+		assertNotNull(itaLab, "Eng neutral label is not null");
+		assertEquals(itaLab.getValue(), italianLabel, "ITA Label value is correct");
+
+	}
+
+	@Test
+	public void testAddingConceptSchemeWithGuid() throws URISyntaxException, ModelException {
+		UUID mySchemeUUID = UUID.randomUUID();
+		ConceptScheme s = semaphoreModel.createConceptScheme(
+				new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyConceptSchemeWithGuid"),
+				new Label("schemeWithGuid", null), mySchemeUUID);
+
+		assertEquals(mySchemeUUID.toString(), s.getGuid());
+	}
+
+	@Test
+	public void testAddingConceptScheme() throws URISyntaxException, ModelException {
+		semaphoreModel.createConceptScheme(
+				new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyCreatedConceptScheme"),
+				new Label("hello", english), null);
+
+		ConceptScheme createdConceptScheme = semaphoreModel.getConceptScheme(
+				new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyCreatedConceptScheme"));
 		assertNotNull(createdConceptScheme, "Concept Scheme has been created");
 		
 		Label labelEn = createdConceptScheme.getLabel(english); 
 		assertEquals(labelEn.getValue(), "hello", "Created label Value");
-		
+
+		assertNotNull(createdConceptScheme.getGuid(),"GUID was created");
+
+		Resource conceptSchemeRes = createdConceptScheme.getResource();
+		assertEquals(conceptSchemeRes.getProperty(RDF.type).getObject().asResource(), SKOS.ConceptScheme,
+				"Check concept scheme class is correct");
+
 		createdConceptScheme.updateLabel(new Label("goodbye", english));
 		Label updatedLabelEn = createdConceptScheme.getLabel(english); 
 		assertEquals(updatedLabelEn.getValue(), "goodbye", "Updated label Value (en)");
@@ -86,15 +131,18 @@ public class TestConceptScheme extends AbstractTest {
 		createdConceptScheme.setLabel(new Label("ciao", italian));
 		Label setLabelIt = createdConceptScheme.getLabel(italian); 
 		assertEquals(setLabelIt.getValue(), "ciao", "Set label Value (it)");
+		assertEquals(createdConceptScheme.getLabel(english).getValue(), "goodbye",
+				"English label Value not affected (en)");
 
 		createdConceptScheme.setLabel(new Label("adios", italian));
 		Label setLabelIt2 = createdConceptScheme.getLabel(italian); 
 		assertEquals(setLabelIt2.getValue(), "adios", "Set(2) label Value (it)");
-
+		assertEquals(createdConceptScheme.getLabel(english).getValue(), "goodbye",
+				"English label Value not affected (en)");
 		
 		try {
 			createdConceptScheme.deleteLabel(new Label("swizzle", english));
-			fail("Delete label should have thrown an exception");
+			fail("Delete undefined label should have thrown an exception");
 		} catch (ModelException e) {
 			assertEquals(e.getMessage(), "Attempting to delete label \"swizzle\"en for 'http://example.com/ConceptSchemeTest#ConceptScheme/MyCreatedConceptScheme'. This label does not exist");
 		}
@@ -104,7 +152,7 @@ public class TestConceptScheme extends AbstractTest {
 		assertNull(deletedLabelEn, "Deleted label Value (en)");
 
 		
-		// We are "removing" a label that doesn't exist. This will do nothing
+		// We are "removing" a label that doesn't exist. This will do nothing if not english
 		createdConceptScheme.removeLabel(new Label("goodbye", italian));
 		Label removedLabelIt = createdConceptScheme.getLabel(italian); 
 		assertEquals(removedLabelIt.getValue(), "adios", "Remove(1) label Value (it)");
@@ -113,7 +161,6 @@ public class TestConceptScheme extends AbstractTest {
 		createdConceptScheme.removeLabel(new Label("adios", italian));
 		Label removedLabelIt2 = createdConceptScheme.getLabel(italian); 
 		assertNull(removedLabelIt2, "Remove(2) label Value (it)");
-		
 	}
 
 }
