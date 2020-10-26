@@ -1,0 +1,74 @@
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix sem:   <http://www.smartlogic.com/2014/08/semaphore-core#> .
+@prefix skosxl: <http://www.w3.org/2008/05/skos-xl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix model: <http://example.com/ConceptTestModel#> .
+
+<http://example.com/ConceptTestModel#ConceptScheme/MyConceptScheme>
+        a                   skos:ConceptScheme ;
+        rdfs:label          "My Concept Scheme"@en ;
+        sem:guid            "470acdd8-933c-4044-9f94-d79983b482de" ;
+        skos:hasTopConcept  <http://example.com/ConceptTestModel#MyTopConcept> .
+
+<http://example.com/ConceptTestModel#MyTopConcept>
+        a                 skos:Concept ;
+        sem:guid          "85af7503-ccbb-425e-8833-3e7b9fb32013" ;
+        skosxl:prefLabel  <http://example.com/ConceptTestModel#MyTopConcept/MeineUeberConzept_de> , <http://example.com/ConceptTestModel#MyTopConcept/MioConceptoTutti_it> , <http://example.com/ConceptTestModel#MyTopConcept/MonConceptPremier_fr> , <http://example.com/ConceptTestModel#MyTopConcept/MyTopConcept_en> , <http://example.com/ConceptTestModel#MyTopConcept/MyTopConcept_en0> .
+
+<http://example.com/ConceptTestModel#MyTopConcept/MeineUeberConzept_de>
+        a                   skosxl:Label ;
+        skosxl:literalForm  "Meine Ueber Conzept"@de .
+
+<http://example.com/ConceptTestModel#MyTopConcept/MioConceptoTutti_it>
+        a                   skosxl:Label ;
+        skosxl:literalForm  "Mio Concepto Tutti"@it .
+
+<http://example.com/ConceptTestModel#MyTopConcept/MonConceptPremier_fr>
+        a                   skosxl:Label ;
+        skosxl:literalForm  "Mon Concept Premier"@fr .
+
+<http://example.com/ConceptTestModel#MyTopConcept/MyTopConcept_en>
+        a                   skosxl:Label ;
+        skosxl:literalForm  "My Top Concept" .
+
+<http://example.com/ConceptTestModel#MyTopConcept/MyTopConcept_en0>
+        a                   skosxl:Label ;
+        skosxl:literalForm  "My Top Concept"@en .
+
+<http://example.com/ConceptTestModel#booleanVal>
+        a            owl:DatatypeProperty ;
+        rdfs:domain  skos:Concept ;
+        rdfs:label   "booleanVal" ;
+        rdfs:range   xsd:boolean .
+
+<http://example.com/ConceptTestModel#dateVal>
+        a            owl:DatatypeProperty ;
+        rdfs:domain  skos:Concept ;
+        rdfs:label   "dateVal" ;
+        rdfs:range   xsd:date .
+
+<http://example.com/ConceptTestModel#intVal>
+        a            owl:DatatypeProperty ;
+        rdfs:domain  skos:Concept ;
+        rdfs:label   "intVal" ;
+        rdfs:range   xsd:integer .
+
+<http://example.com/ConceptTestModel#stringVal>
+        a            owl:DatatypeProperty ;
+        rdfs:domain  skos:Concept ;
+        rdfs:label   "stringVal" ;
+        rdfs:range   xsd:string .
+
+<http://example.com/ConceptTestModel#uriVal>
+        a            owl:DatatypeProperty ;
+        rdfs:domain  skos:Concept ;
+        rdfs:label   "uriVal" ;
+        rdfs:range   xsd:anyURI .
+
+skos:Concept  rdfs:subClassOf  [ a                   owl:Restriction ;
+                                 owl:maxCardinality  1 ;
+                                 owl:onProperty      <http://example.com/ConceptTestModel#booleanVal>
+                               ] .
