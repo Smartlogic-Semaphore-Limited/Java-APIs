@@ -14,7 +14,7 @@ public class Label {
 		this.value = value;
 		this.language = language;
 	}
-	
+
 	protected Label(Resource resource, String value, Language language) throws ModelException {
 		try {
 			this.resource = resource;
@@ -25,7 +25,18 @@ public class Label {
 			throw new ModelException("Unable to generate URI from resource: '%s'", resource.toString());
 		}
 	}
-	
+
+	protected Label(Resource resource, Literal literal) throws ModelException {
+		try {
+			this.resource = resource;
+			this.uri = new URI(resource.getURI());
+			this.value = literal.getString();
+			this.language = Language.getLanguage(literal.getLanguage());
+		} catch (URISyntaxException e) {
+			throw new ModelException("Unable to generate URI from resource: '%s'", resource.toString());
+		}
+	}
+
 	protected Label(Literal literal) {
 		this.resource = null;
 		this.uri = null;

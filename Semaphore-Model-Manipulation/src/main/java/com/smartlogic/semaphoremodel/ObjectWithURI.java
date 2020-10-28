@@ -12,19 +12,22 @@ import java.net.URI;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 
+/**
+ * Abstract object representing a resource. Also includes methods to manipulate rdfs:label literals
+ * for convenience.
+ */
 public abstract class ObjectWithURI {
 
 	protected final Model model;
 	protected final Resource resource;
-	
+
 	protected ObjectWithURI(Model model, Resource resource) {
 		this.model = model;
 		this.resource = resource;
 	}
-	
+
 	/**
 	 * Make this protected - users of the library shouldn't use this. 
 	 * @return The resource containing the URI for this object
@@ -43,8 +46,10 @@ public abstract class ObjectWithURI {
 			return null;
 		return URI.create(resource.getURI());
 	}
+
 	/**
-	 * Return the label for this object in the selected language
+	 * Return the rdfs:label for this object in the selected language
+	 *
 	 * @param language - the language for which the label is requested
 	 * @return - the label in the requested language.
 	 * @throws ModelException - thrown if there are multiple labels present for this object in this language
@@ -56,38 +61,37 @@ public abstract class ObjectWithURI {
 		parameterizedSparql.setParam("objectURI", resource);
 		parameterizedSparql.setParam("labelLanguage",
 				(language == null ? model.createLiteral("") : model.createLiteral(language.getCode(), "")));
-		
+
 		Query query = QueryFactory.create(parameterizedSparql.asQuery());
 
 		QueryExecution qexec = QueryExecutionFactory.create(query, model);
 		ResultSet resultSet = qexec.execSelect();
-		
+
 		if (!resultSet.hasNext()) return null;
-		
+
 		QuerySolution querySolution = resultSet.next();
 		Label label = new Label(querySolution.getLiteral("label"));
-		
+
 		if (!resultSet.hasNext()) return label;
-		
+
 		throw new ModelException("%s has more than one label in language '%s'", resource.getURI(), language.getCode());
 	}
 
 
 	/**
 	 * addLabel
-	 * Adds the label - if there is already a label of this language an exception is thrown.
+	 * Adds the rdfs:label - if there is already a label of this language an exception is thrown.
 	 * @param label - the label to be added to the object
 	 * @throws ModelException - thrown if some model constraint would be broken by this action 
 	 */
 	public void addLabel(Label label) throws ModelException {
 		checkLabelDoesntExistInLanguage(label);
-		
 		addLabelPostCheck(label);
 	}
-	
+
 	/**
 	 * setLabel
-	 * After this operation, the object will have this label and no other in this language.
+	 * After this operation, the object will have this rdfs:label and no other in this language.
 	 * It does not matter whether there already was a label of this language present.
 	 * @param label - the label to be added to the object
 	 * @throws ModelException - thrown if some model constraint would be broken by this action 
@@ -99,7 +103,7 @@ public abstract class ObjectWithURI {
 
 	/**
 	 * updateLabel
-	 * Delete the current label in this language and replace it with the supplied one
+	 * Delete the current rdfs:label in this language and replace it with the supplied one
 	 * If there was no label in this language, then throw an exception
 	 * @param label - the label to be updated for the object
 	 * @throws ModelException - thrown if some model constraint would be broken by this action 
@@ -110,51 +114,51 @@ public abstract class ObjectWithURI {
 		deleteLabelForLanguagePostCheck(label);
 		addLabelPostCheck(label);
 	}
-	
+
 	/**
-	 * Delete the supplied label from this object.
+	 * Delete the supplied rdfs:label from this object.
 	 * If the label is not present on the object then an exception will be thrown.
 	 * @param label - the label to be deleted from the object
 	 * @throws ModelException - thrown if some model constraint would be broken by this action 
 	 */
 	public void deleteLabel(Label label) throws ModelException {
 		checkLabelExists(label);
-		
+
 		deleteLabelPostCheck(label);
 	}
-	
+
 	/**
-	 * Delete the supplied label from this object.
+	 * Delete the supplied rdfs:label from this object.
 	 * This doesn't care whether the label originally existed
 	 * @param label - the label to be removed from the object
 	 * @throws ModelException - thrown if some model constraint would be broken by this action 
 	 */
 	public void removeLabel(Label label) throws ModelException {
-		
+
 		deleteLabelPostCheck(label);
 	}
-	
+
 	private void deleteLabelForLanguagePostCheck(Label label) {
 		String sparql =  "DELETE { ?objectURI rdfs:label ?labelValue } WHERE { ?objectURI rdfs:label ?labelValue . FILTER(LANG(?labelValue) = STR(?labelLanguage)) }";
 		ParameterizedSparqlString parameterizedSparql = new ParameterizedSparqlString(model);
 		parameterizedSparql.setCommandText(sparql);
 		parameterizedSparql.setParam("objectURI", resource);
 		parameterizedSparql.setParam("labelLanguage", model.createLiteral(label.getLanguageCode(), ""));
-		
+
 		UpdateAction.execute(parameterizedSparql.asUpdate(), model);
 	}
-	
+
 	private void deleteLabelPostCheck(Label label) {
 		String sparql = "DELETE { ?objectURI rdfs:label ?labelValue } WHERE { ?objectURI rdfs:label ?labelValue . FILTER (?labelValue = ?suppliedLabel) }";
 		ParameterizedSparqlString parameterizedSparql = new ParameterizedSparqlString(model);
 		parameterizedSparql.setCommandText(sparql);
 		parameterizedSparql.setParam("objectURI", resource);
 		parameterizedSparql.setParam("suppliedLabel", model.createLiteral(label.getValue(), label.getLanguageCode()));
-		
+
 		UpdateAction.execute(parameterizedSparql.asUpdate(), model);
 	}
 
-	
+
 	private void addLabelPostCheck(Label label) {
 		this.getResource().addProperty(RDFS.label, SemaphoreModel.getAsLiteral(model, label));
 	}
@@ -173,7 +177,7 @@ public abstract class ObjectWithURI {
 		parameterizedSparql.setCommandText(sparql);
 		parameterizedSparql.setParam("objectURI", resource);
 		parameterizedSparql.setParam("labelLanguage", model.createLiteral(label.getLanguageCode(), ""));
-		
+
 		Query query = QueryFactory.create(parameterizedSparql.asQuery());
 
 		try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
@@ -196,7 +200,7 @@ public abstract class ObjectWithURI {
 		parameterizedSparql.setCommandText(sparql);
 		parameterizedSparql.setParam("objectURI", resource);
 		parameterizedSparql.setParam("label", model.createLiteral(label.getValue(), label.getLanguageCode()));
-		
+
 		Query query = QueryFactory.create(parameterizedSparql.asQuery());
 
 		try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
@@ -210,116 +214,12 @@ public abstract class ObjectWithURI {
 	}
 
 	/**
-	 * Return the guid of this object
-	 *
-	 * @return - the guid of the object
+	 * Returns true if the specified Literal is associated to this object via the specified property type, false
+	 * otherwise.
+	 * @param property
+	 * @param literal
+	 * @return
 	 */
-	public String getGuid() {
-		return selectPropertyLiteralString(SEM.guid);
-	}
-
-	/**
-	 * Set the guid of the concept object to this value.
-	 *
-	 * @param uuid - the UUID to be set on the model
-	 */
-	public void setGuid(UUID uuid) {
-		deletePropertyLiterals(SEM.guid);
-		insertPropertyLiteral(SEM.guid, createLiteralFromUUID(uuid));
-	}
-
-	/**
-	 * Add this guid to the concept object.
-	 * If a guid is already present then a ModelException is thrown
-	 *
-	 * @param uuid - the UUID that is to be added to the model
-	 * @throws ModelException - if there is already a guid present
-	 */
-	public void addGuid(UUID uuid) throws ModelException {
-		if (propertyLiteralExists(SEM.guid, createLiteralFromUUID(uuid)))
-			throw new ModelException("Attempted to add the same GUID to the resource");
-		insertPropertyLiteral(SEM.guid, createLiteralFromUUID(uuid));
-	}
-
-	/**
-	 * Update the guid to the supplied value. Inserts value if no guid specified.
-	 *
-	 * @param uuid - the new value for the UUID
-	 */
-	public void updateGuid(UUID uuid) {
-		deletePropertyLiterals(SEM.guid);
-		insertPropertyLiteral(SEM.guid, createLiteralFromUUID(uuid));
-	}
-
-	/**
-	 * Remove the supplied guid fom the concept object.
-	 *
-	 * @param uuid - the UUID to be removed
-	 */
-	public void removeGuid(UUID uuid) {
-		deletePropertyLiteral(SEM.guid, createLiteralFromUUID(uuid));
-	}
-
-	/**
-	 * Remote the supplied guid from the concept object.
-	 *
-	 * @param uuid - the UUID to be removed
-	 */
-	public void deleteGuid(UUID uuid) throws ModelException {
-		if (!propertyLiteralExists(SEM.guid, createLiteralFromUUID(uuid)))
-			throw new ModelException("Attempted to delete a GUID that does not exist for this resource.");
-		deletePropertyLiteral(SEM.guid, createLiteralFromUUID(uuid));
-	}
-
-	/**
-	 * Clear any guid from the concept object
-	 * We don't care about the state of the guid before the operation
-	 */
-	public void clearGuid() {
-		deletePropertyLiterals(SEM.guid);
-	}
-
-	public String getIdentifier(Property identifierProperty) {
-		return selectPropertyLiteralString(identifierProperty);
-	}
-
-	public void addIdentifier(Property identifierProperty, Literal literal) throws ModelException {
-		if (resource.hasProperty(identifierProperty))
-			throw new ModelException("Concept %s already has an identifier present", resource.getURI());
-		resource.addProperty(identifierProperty, literal);
-	}
-
-	/**
-	 * set the identifier to the supplied value
-	 *
-	 * @param identifierProperty - the identifier property to use
-	 * @param literal            - the new value for this identifier
-	 */
-	public void setIdentifier(Property identifierProperty, Literal literal) {
-		resource.removeAll(identifierProperty);
-		resource.addProperty(identifierProperty, literal);
-	}
-
-	public void updateIdentifier(Property identifierProperty, Literal literal) throws ModelException {
-		if (!resource.hasProperty(identifierProperty))
-			throw new ModelException("Attempting to update non-existent identifier of %s", resource.getURI());
-		setIdentifier(identifierProperty, literal);
-	}
-
-	protected void deleteIdentifier(Property identifierProperty, Literal literal) throws ModelException {
-		if (!resource.hasProperty(identifierProperty, literal))
-			throw new ModelException("Attempting to delete non-existent identifier '%s' of %s", literal.getString(), resource.getURI());
-		clearIdentifier(identifierProperty);
-	}
-
-	protected void clearIdentifier(Property identifierProperty) {
-		resource.removeAll(identifierProperty);
-	}
-
-	protected Literal createLiteralFromUUID(UUID uuid) {
-		return model.createLiteral(uuid.toString(), "");
-	}
-
 	public boolean propertyLiteralExists(Property property, Literal literal) {
 		StmtIterator it = model.listStatements(resource, property, (RDFNode) null);
 		while (it.hasNext()) {

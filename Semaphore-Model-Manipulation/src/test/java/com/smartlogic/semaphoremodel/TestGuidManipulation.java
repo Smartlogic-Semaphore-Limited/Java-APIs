@@ -35,14 +35,7 @@ public class TestGuidManipulation extends AbstractTest {
 		UUID uuid1 = Utils.generateUuid("This is a seed string");
 		conceptScheme.updateGuid(uuid1);
 		assertEquals(conceptScheme.getGuid(), uuid1.toString(), "Updated Guid");
-		
-		try {
-			conceptScheme.addGuid(uuid1);
-			fail("This GUID addition should be rejected");
-		} catch (ModelException e) {
-			// ok
-		}
-		
+
 		UUID uuid2 = Utils.generateUuid("This is another seed string");
 		conceptScheme.setGuid(uuid2);
 		assertEquals(conceptScheme.getGuid(), uuid2.toString(), "Set Guid");
@@ -54,10 +47,10 @@ public class TestGuidManipulation extends AbstractTest {
 			//ok
 		}
 
-		conceptScheme.removeGuid(uuid2);
-		assertNull(conceptScheme.getGuid(), "Removed Guid");
+		conceptScheme.deleteGuid(uuid2);
+		assertNull(conceptScheme.getGuid(), "Deleted Guid");
 
-		conceptScheme.addGuid(uuid1);
+		conceptScheme.setGuid(uuid1);
 		assertEquals(conceptScheme.getGuid(), uuid1.toString(), "Updated Guid");
 
 		conceptScheme.deleteGuid(uuid1);
