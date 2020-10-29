@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.testng.Assert.*;
@@ -35,12 +36,25 @@ public class TestConceptScheme extends AbstractTest {
 	public void testExistingConceptScheme() throws URISyntaxException, ModelException {
 		ConceptScheme conceptSchemeExists = semaphoreModel.getConceptScheme(new URI("http://example.com/ConceptSchemeTest#ConceptScheme/MyFirstConceptScheme"));
 		assertNotNull(conceptSchemeExists, "Concept Scheme exists");
-		
-		Label labelEn = conceptSchemeExists.getLabel(english); 
+
+		Label labelEn = conceptSchemeExists.getLabel(english);
 		assertEquals(labelEn.getValue(), "My first concept scheme", "Label Value");
 
-		Label labelIt = conceptSchemeExists.getLabel(italian); 
-		assertNull(labelIt,  "No Italian version available");
+		Label labelIt = conceptSchemeExists.getLabel(italian);
+		assertNull(labelIt, "No Italian version available");
+
+		Set<Concept> topConcepts = conceptSchemeExists.getTopConcepts();
+		assertEquals(topConcepts.size(), 0, "Size of top concepts start");
+
+		Concept tc1 = semaphoreModel.createConcept(URI.create("urn:foo:bar:tc1"), new Label("TC1", english));
+		conceptSchemeExists.addTopConcept(tc1);
+		assertEquals(conceptSchemeExists.getTopConcepts().size(), 1, "Size of top concepts after adding 1");
+
+		Concept tc2 = semaphoreModel.createConcept(URI.create("urn:foo:bar:tc2"), new Label("TC2", english));
+		conceptSchemeExists.addTopConcept(tc2);
+		assertEquals(conceptSchemeExists.getTopConcepts().size(), 2, "Size of top concepts after adding 1");
+
+
 	}
 	
 	@Test

@@ -541,8 +541,21 @@ public class SemaphoreModel {
 	}
 
 	/**
+	 * Construct a Jena resource with the specified URI.
+	 *
+	 * @param uri
+	 * @return
+	 */
+	public Resource createResource(String uri) {
+		if (Strings.isNullOrEmpty(uri))
+			return null;
+		return model.createResource(uri);
+	}
+
+	/**
 	 * Construct a ConceptClass object from the query solution.
 	 * Required parameter names: cc_uri and cc_label_lit.
+	 *
 	 * @param qs the query solution from which to build the ConceptClass.
 	 * @return the ConceptClass object.
 	 * @throws ModelException ModelException

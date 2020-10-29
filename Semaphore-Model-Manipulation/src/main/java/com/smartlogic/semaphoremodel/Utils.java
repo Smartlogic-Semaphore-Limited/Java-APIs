@@ -1,25 +1,16 @@
 package com.smartlogic.semaphoremodel;
 
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import org.apache.jena.query.ParameterizedSparqlString;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.SKOSXL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class Utils {
 	
@@ -109,13 +100,31 @@ public class Utils {
 				String errorString = String.format("The alternate label %s is already included in this map.  Skipping.", label);
 				if(throwOnDuplicate) throw new ModelException(errorString);
 				logger.warn(errorString);
-			}
-			else if(label.getLanguage().compareTo(language) == 0){
-				
+			} else if (label.getLanguage().compareTo(language) == 0) {
+
 				Resource conceptResource = querySolution.getResource("?conceptUri");
 				labels.put(label.getString(), conceptResource);
 			}
 		}
 		return labels;
+	}
+
+	/**
+	 * Encode a string to be put into a URI. This is a bit custom: first
+	 * convert all space sequences to a single "_" character, then use the
+	 * Java URLEncoder to finish the job.
+	 *
+	 * @param value
+	 * @return
+	 */
+	public static String encodeStringForURI(String value) {
+		if (value == null)
+			return null;
+		value = value.replaceAll("[ ]+", "_");
+		try {
+			return URLEncoder.encode(value, "utf-8");
+		} catch (UnsupportedEncodingException uee) {
+			throw new RuntimeException("Unsupported encoding exception while encoding string for uri", uee);
+		}
 	}
 }
