@@ -39,7 +39,7 @@ public class ConfigUtil {
 
 		client.setOntology((String)config.get("ses.ontology"));
 		client.setHost((String)config.get("ses.host"));
-		client.setPort(8983);
+		client.setPort((int)config.get("ses.port"));
 		client.setPath((String)config.get("ses.path"));
 
 		if (config.containsKey("ses.proxyHost")) {
