@@ -1,14 +1,12 @@
 package com.smartlogic.ses.client;
 
-import junit.framework.TestCase;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public abstract class PrintingTestCase extends TestCase {
+public abstract class PrintingTestCase extends SESServerMockTestCase {
 	@SuppressWarnings({ "rawtypes" })
 	public void print(Object object) {
 		
