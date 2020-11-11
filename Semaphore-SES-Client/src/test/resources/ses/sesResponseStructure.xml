@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<SEMAPHORE>
+    <PARAMETERS>
+        <PARAMETER NAME="template">service.xml</PARAMETER>
+        <PARAMETER NAME="q">content_type:om_structure_xml</PARAMETER>
+        <PARAMETER NAME="service">structure</PARAMETER>
+        <PARAMETER NAME="language">en</PARAMETER>
+        <PARAMETER NAME="tbdb">IPSV</PARAMETER>
+        <PARAMETER NAME="tbdb">IPSV</PARAMETER>
+        <PARAMETER NAME="version">1</PARAMETER>
+        <PARAMETER NAME="wt">sesOmStructureXML</PARAMETER>
+        <PARAMETER NAME="structure">XML</PARAMETER>
+        <PARAMETER NAME="command">structure</PARAMETER>
+    </PARAMETERS>
+    <OM_STRUCTURE>
+        <TERM_CLASSES>
+            <TERM_CLASS ID="http://www.w3.org/2004/02/skos/core#Concept" PARENT_ID="0">Concept</TERM_CLASS>
+            <TERM_CLASS ID="http://www.w3.org/2004/02/skos/core#ConceptScheme" PARENT_ID="0">Concept Scheme</TERM_CLASS>
+        </TERM_CLASSES>
+        <TERM_FACETS>
+            <FIELD ID="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO758">Information and communication
+            </FIELD>
+            <FIELD ID="6d13260c-642e-4ec2-9294-e5cbcefc3369" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO642">Life in the community
+            </FIELD>
+            <FIELD ID="30b6deb0-bd17-4dec-ae5e-9935a16a84a3" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO981">Employment, jobs and careers
+            </FIELD>
+            <FIELD ID="321eeb1e-b211-4e8e-8bee-4f8381b6f36e" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO439">Education and skills
+            </FIELD>
+            <FIELD ID="6b7db970-af6c-4a2e-9256-ae06211edc4b" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO564">Public order, justice and rights
+            </FIELD>
+            <FIELD ID="e41d67e2-48bb-42bf-ba46-df7065ed0285" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO652">Science, technology and innovation
+            </FIELD>
+            <FIELD ID="715a57f8-d84e-472d-9c02-ef2bbce0b9ef" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO616">Leisure and culture
+            </FIELD>
+            <FIELD ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO760">Government, politics and public administration
+            </FIELD>
+            <FIELD ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO557">Health, well-being and care
+            </FIELD>
+            <FIELD ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO6999">People and organisations
+            </FIELD>
+            <FIELD ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO692">Business and industry
+            </FIELD>
+            <FIELD ID="1be8ca5e-cc5a-4eef-ba7b-9966cada9905" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO460">Housing
+            </FIELD>
+            <FIELD ID="6acfdac2-7486-4e6b-83c8-b91908d6f45c" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO521">Transport and infrastructure
+            </FIELD>
+            <FIELD ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO499">Environment
+            </FIELD>
+            <FIELD ID="776f8bac-c573-4d2e-9bf0-903326fc6eb5" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO911">International affairs and defence
+            </FIELD>
+            <FIELD ID="a9b4fe02-746a-438a-9e7c-2c95da345f1a" NAME="term"
+                   URI="http://smartlogic.com/conceptScheme#OMITERMO726">Economics and finance
+            </FIELD>
+        </TERM_FACETS>
+        <TERM_ATTRIBUTES>
+            <TERM_ATTRIBUTE ID="http://smartlogic.com/attributeType#Internal_no_class" NAME="Internal"/>
+        </TERM_ATTRIBUTES>
+        <TERM_NOTES>
+            <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#URI" NAME="URI"/>
+            <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#editorialNote" NAME="editorial note"/>
+            <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#historyNote" NAME="history note"/>
+            <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#scopeNote" NAME="scope note"/>
+            <TERM_NOTE ID="http://www.w3.org/2000/01/rdf-schema#comment" NAME="comment"/>
+            <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#definition" NAME="definition"/>
+            <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#note" NAME="note"/>
+        </TERM_NOTES>
+        <TERM_METADATA/>
+        <EQUIVALENCE_RELATIONS>
+            <RELATION_DEF ABRV="UF" FWD_DISP_NAME="alternative label" ID="http://www.w3.org/2008/05/skos-xl#altLabel"
+                          NAME="Use For" REV_ABRV="UF" REV_DISP_NAME="alternative label" REV_NAME="Use For"
+                          SCOPE_NOTE="" SYMMETRIC="true"/>
+        </EQUIVALENCE_RELATIONS>
+        <HIERARCHICAL_RELATIONS>
+            <RELATION_DEF ABRV="NT" FWD_DISP_NAME="has narrower" ID="http://www.w3.org/2004/02/skos/core#broader"
+                          NAME="Narrower Term" REV_ABRV="BT" REV_DISP_NAME="has broader" REV_NAME="Broader Term"
+                          SCOPE_NOTE="" SYMMETRIC="false"/>
+            <RELATION_DEF ABRV="HAS NARROWER MATCH" FWD_DISP_NAME="has narrower match"
+                          ID="http://www.w3.org/2004/02/skos/core#broadMatch" NAME="has narrower match"
+                          REV_ABRV="HAS BROADER MATCH" REV_DISP_NAME="has broader match" REV_NAME="has broader match"
+                          SCOPE_NOTE="" SYMMETRIC="false"/>
+        </HIERARCHICAL_RELATIONS>
+        <ASSOCIATIVE_RELATIONS>
+            <RELATION_DEF ABRV="RT" FWD_DISP_NAME="has related" ID="http://www.w3.org/2004/02/skos/core#related"
+                          NAME="Related To" REV_ABRV="RT" REV_DISP_NAME="has related" REV_NAME="Related To"
+                          SCOPE_NOTE="" SYMMETRIC="true"/>
+            <RELATION_DEF ABRV="HAS RELATED MATCH" FWD_DISP_NAME="has related match"
+                          ID="http://www.w3.org/2004/02/skos/core#relatedMatch" NAME="has related match"
+                          REV_ABRV="HAS RELATED MATCH" REV_DISP_NAME="has related match" REV_NAME="has related match"
+                          SCOPE_NOTE="" SYMMETRIC="true"/>
+        </ASSOCIATIVE_RELATIONS>
+        <INDEX_METADATA>
+            <PUBLISH_DATE>2020-11-02T18:25:53.64Z</PUBLISH_DATE>
+        </INDEX_METADATA>
+    </OM_STRUCTURE>
+    <MODELS>
+        <MODEL>
+            <NAME>IPSV</NAME>
+        </MODEL>
+    </MODELS>
+</SEMAPHORE>

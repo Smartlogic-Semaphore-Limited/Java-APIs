@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<SEMAPHORE>
+    <STATS indexes="1" requests="3">
+        <Indexes>
+            <NoIndex readAt="2020-10-29T17:05:09.929Z" startAt="2020-10-29T17:01:55.958Z">
+                <Requests requests="3">
+                    <Languages>
+                        <Language code="" requests="3"/>
+                    </Languages>
+                    <Commands>
+                        <Command code="versions" requests="1">
+                            <Performance>
+                                <InProgress count="0" longAverage="0" longCount="0" longest="0" longestUrl=""/>
+                                <Completed average="0" count="0" inLast="5" maximum="0" minimum="0" peakCount="0.0"/>
+                                <Completed average="0" count="0" inLast="60" maximum="0" minimum="0" peakCount="0.0"/>
+                                <Completed average="91.3" count="1" inLast="600" maximum="91" minimum="91"
+                                           peakCount="0.3"/>
+                                <Completed average="91.3" count="1" inLast="3600" maximum="91" minimum="91"
+                                           peakCount="0.3"/>
+                                <Completed average="91.3" count="1" inLast="86400" maximum="91" minimum="91"
+                                           peakCount="0.3"/>
+                            </Performance>
+                        </Command>
+                        <Command code="stats" requests="2">
+                            <Performance>
+                                <InProgress count="1" longAverage="0" longCount="0" longest="98" longestUrl=""/>
+                                <Completed average="0" count="0" inLast="5" maximum="0" minimum="0" peakCount="0.0"/>
+                                <Completed average="0" count="0" inLast="60" maximum="0" minimum="0" peakCount="0.0"/>
+                                <Completed average="64.8" count="1" inLast="600" maximum="65" minimum="65"
+                                           peakCount="0.3"/>
+                                <Completed average="64.8" count="1" inLast="3600" maximum="65" minimum="65"
+                                           peakCount="0.3"/>
+                                <Completed average="64.8" count="1" inLast="86400" maximum="65" minimum="65"
+                                           peakCount="0.3"/>
+                            </Performance>
+                        </Command>
+                    </Commands>
+                </Requests>
+            </NoIndex>
+            <Index name="IPSV" readAt="2020-10-29T17:05:09.929Z">
+                <Labels>
+                    <ConceptSchemes>
+                        <Language code="en" name="en">
+                            <Label count="16" type="label"/>
+                        </Language>
+                    </ConceptSchemes>
+                    <Concepts count="3064">
+                        <Language code="en" name="en">
+                            <Label count="3064" type="preferred label"
+                                   uri="http://www.w3.org/2008/05/skos-xl#prefLabel"/>
+                            <Label count="4837" type="alternative label"
+                                   uri="http://www.w3.org/2008/05/skos-xl#altLabel"/>
+                        </Language>
+                    </Concepts>
+                </Labels>
+            </Index>
+        </Indexes>
+    </STATS>
+</SEMAPHORE>

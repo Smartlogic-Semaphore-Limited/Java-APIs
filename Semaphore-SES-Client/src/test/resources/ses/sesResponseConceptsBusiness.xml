@@ -1,0 +1,2127 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<SEMAPHORE>
+    <PARAMETERS>
+        <PARAMETER NAME="template">service.xml</PARAMETER>
+        <PARAMETER NAME="fl">* score [child limit=10000 parentFilter="(content_type:concept OR
+            content_type:concept_scheme)" childFilter=content_type:related_concept] [child limit=10000
+            parentFilter="(content_type:concept OR content_type:concept_scheme)"
+            childFilter=content_type:ordered_related_concept] [child limit=10000 parentFilter="(content_type:concept OR
+            content_type:concept_scheme)" childFilter=content_type:related_concept_scheme] [child limit=10000
+            parentFilter="(content_type:concept OR content_type:concept_scheme)" childFilter=content_type:facet] [child
+            limit=10000 parentFilter="(content_type:concept OR content_type:concept_scheme)"
+            childFilter=content_type:path_element] prefLabelCount:termfreq(conceptmap_en_plf, "business")
+            altLabelCount:termfreq(conceptmap_en_f, "business")
+        </PARAMETER>
+        <PARAMETER NAME="language">en</PARAMETER>
+        <PARAMETER NAME="language">en</PARAMETER>
+        <PARAMETER NAME="language">en</PARAMETER>
+        <PARAMETER NAME="sort">score desc, name_en_pl asc</PARAMETER>
+        <PARAMETER NAME="fq">content_type:concept_scheme content_type:concept</PARAMETER>
+        <PARAMETER NAME="rows">1000</PARAMETER>
+        <PARAMETER NAME="version">1</PARAMETER>
+        <PARAMETER NAME="structure">XML</PARAMETER>
+        <PARAMETER NAME="command">conceptmap</PARAMETER>
+        <PARAMETER NAME="q">conceptmap_en_plf:business^1000.0 conceptmap_en_f:business^100.0
+            conceptmap_en_pl:business^10.0 conceptmap_en:business^1.0
+        </PARAMETER>
+        <PARAMETER NAME="service">conceptmap</PARAMETER>
+        <PARAMETER NAME="stop_cm_after_stage">2</PARAMETER>
+        <PARAMETER NAME="tbdb">IPSV</PARAMETER>
+        <PARAMETER NAME="wt">sesConceptsXML</PARAMETER>
+    </PARAMETERS>
+    <TERMS count="49">
+        <TERM SCORE="49.68297" SRC="3" URI="http://smartlogic.com/conceptScheme#OMITERMO692">
+            <NAME>Business and industry</NAME>
+            <ID>729c064f-166c-4924-b1b7-ffe38484142d</ID>
+            <DISPLAY_NAME>Business and industry</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept Scheme</CLASS>
+            </CLASSES>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="NT" QTY="7" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="bb9e5c3b-73fa-554c-a325-e694c89a8258" NAME="term">Business sectors</FIELD>
+                <FIELD FREQ="0" ID="c1cbff96-d58f-5b18-a6bd-05febf8ec776" NAME="term">Companies</FIELD>
+                <FIELD FREQ="0" ID="be64d246-a89a-53ea-b765-0232fd6d896c" NAME="term">Consumer affairs</FIELD>
+                <FIELD FREQ="0" ID="51791b36-4325-545a-9e1d-917bd4055eb9" NAME="term">Energy and fuel</FIELD>
+                <FIELD FREQ="0" ID="cf11bb18-8f7c-5d0a-a8c7-7abf37829817" NAME="term">International trade</FIELD>
+            </HIERARCHY>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/conceptScheme#OMITERMO692</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="49.68297" SRC="3" URI="http://smartlogic.com/term#OMITERMO5968">
+            <NAME>Business parks</NAME>
+            <ID>31cdc631-bb03-54e3-aa47-445d848f7fb5</ID>
+            <DISPLAY_NAME>Business parks</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <FACETS>
+                <FACET ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="Environment"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="9e7a7c94-c125-540d-a915-b90243ef704a" NAME="term">Business premises</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="term">Environment</FIELD>
+                <FIELD FREQ="0" ID="b4beb2c2-8c55-554c-a6a0-44472e4a1adb" NAME="term">Land and premises</FIELD>
+                <FIELD FREQ="0" ID="a86d1a8b-bae4-58bd-8421-03d9b348636a" NAME="term">Non-residential property</FIELD>
+                <FIELD FREQ="0" ID="9e7a7c94-c125-540d-a915-b90243ef704a" NAME="term">Business premises</FIELD>
+                <FIELD FREQ="0" ID="31cdc631-bb03-54e3-aa47-445d848f7fb5" NAME="term">Business parks</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO5968</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="49.68297" SRC="3" URI="http://smartlogic.com/term#OMITERMO6024">
+            <NAME>Business people</NAME>
+            <ID>36e55ef5-9273-52ef-a6a3-2e7be720f550</ID>
+            <DISPLAY_NAME>Business people</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <FACETS>
+                <FACET ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="People and organisations"/>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="2" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="53f50e0b-5a1f-5969-bfbb-451623b0ba03" NAME="term">People</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="8" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="89288655-a8e8-5645-af5d-0fbfc3e7a393" NAME="term">Business men</FIELD>
+                <FIELD FREQ="0" ID="4b98f444-f14b-5fde-b2d0-7d79f8e5adb5" NAME="term">Business women</FIELD>
+                <FIELD FREQ="0" ID="802f98de-177b-544c-8409-da40df45e400" NAME="term">Directors</FIELD>
+                <FIELD FREQ="0" ID="a1065271-a980-516c-9af6-dfc12b17881d" NAME="term">Employees</FIELD>
+                <FIELD FREQ="0" ID="20b355ab-4fba-5a25-b84b-b97c152c345d" NAME="term">Employers</FIELD>
+                <FIELD FREQ="0" ID="cb63cc7d-ded1-5b9a-aa52-e0d5f82889a3" NAME="term">Managers</FIELD>
+                <FIELD FREQ="0" ID="12ffd068-f6ce-5515-bced-5c3c6b374969" NAME="term">Professional people</FIELD>
+                <FIELD FREQ="0" ID="c1fe4d3b-958e-5312-aa44-56440124ade9" NAME="term">Trustees</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term">People and organisations</FIELD>
+                <FIELD FREQ="0" ID="53f50e0b-5a1f-5969-bfbb-451623b0ba03" NAME="term">People</FIELD>
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6024</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="49.68297" SRC="3" URI="http://smartlogic.com/term#OMITERMO5949">
+            <NAME>Business promotion</NAME>
+            <ID>1ed8d3ae-0fc1-5048-92c7-1a87fcad9f17</ID>
+            <DISPLAY_NAME>Business promotion</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+                <FIELD FREQ="0" ID="1ed8d3ae-0fc1-5048-92c7-1a87fcad9f17" NAME="term">Business promotion</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO5949</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="49.68297" SRC="3" URI="http://smartlogic.com/term#OMITERMO2082">
+            <NAME>Business studies</NAME>
+            <ID>ad2b0a65-0158-5a72-a233-9d5b3f9efe9d</ID>
+            <DISPLAY_NAME>Business studies</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="92178cde-f678-5ff7-b134-96fd5a95b7d2" NAME="term">Business skills</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="ad2b0a65-0158-5a72-a233-9d5b3f9efe9d" NAME="term">Business studies</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO2082</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="49.68297" SRC="3" URI="http://smartlogic.com/term#OMITERMO6026">
+            <NAME>Business women</NAME>
+            <ID>4b98f444-f14b-5fde-b2d0-7d79f8e5adb5</ID>
+            <DISPLAY_NAME>Business women</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <FACETS>
+                <FACET ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="People and organisations"/>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="2" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+                <FIELD FREQ="0" ID="95468fa1-111e-54e2-a7a8-25a614d31129" NAME="term">Women</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="e7888ff2-f211-51a6-9b07-a256a5fc0103" NAME="term">Women's groups</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+                <FIELD FREQ="0" ID="4b98f444-f14b-5fde-b2d0-7d79f8e5adb5" NAME="term">Business women</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term">People and organisations</FIELD>
+                <FIELD FREQ="0" ID="53f50e0b-5a1f-5969-bfbb-451623b0ba03" NAME="term">People</FIELD>
+                <FIELD FREQ="0" ID="95468fa1-111e-54e2-a7a8-25a614d31129" NAME="term">Women</FIELD>
+                <FIELD FREQ="0" ID="4b98f444-f14b-5fde-b2d0-7d79f8e5adb5" NAME="term">Business women</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term">People and organisations</FIELD>
+                <FIELD FREQ="0" ID="53f50e0b-5a1f-5969-bfbb-451623b0ba03" NAME="term">People</FIELD>
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+                <FIELD FREQ="0" ID="4b98f444-f14b-5fde-b2d0-7d79f8e5adb5" NAME="term">Business women</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6026</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="49.065548" SRC="3" URI="http://smartlogic.com/term#OMITERMO696">
+            <NAME>Business crime</NAME>
+            <ID>9de8f676-edfa-5e4a-a33e-7d4477fbbe2b</ID>
+            <DISPLAY_NAME>Business crime</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Overcharging</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="6b7db970-af6c-4a2e-9256-ae06211edc4b" NAME="Public order, justice and rights"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="d0631af8-055e-5aba-81f9-8a4ac91efcbe" NAME="term">Crime</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="1" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="1f9520e5-bc3f-5245-b139-a8455bf0861e" NAME="term">Fraud</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="292eab1a-1d6a-56ae-bf8c-8e6ec71ad7e1" NAME="term">Data security</FIELD>
+                <FIELD FREQ="0" ID="634fcb27-9878-5b3c-b079-cc63192813b4" NAME="term">Regulation and deregulation
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="6b7db970-af6c-4a2e-9256-ae06211edc4b" NAME="term">Public order, justice and rights
+                </FIELD>
+                <FIELD FREQ="0" ID="8a51a9bc-2912-59fe-b3f3-404f85855163" NAME="term">Crime and law enforcement</FIELD>
+                <FIELD FREQ="0" ID="d0631af8-055e-5aba-81f9-8a4ac91efcbe" NAME="term">Crime</FIELD>
+                <FIELD FREQ="0" ID="9de8f676-edfa-5e4a-a33e-7d4477fbbe2b" NAME="term">Business crime</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO696</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="49.065548" SRC="3" URI="http://smartlogic.com/term#OMITERMO6025">
+            <NAME>Business men</NAME>
+            <ID>89288655-a8e8-5645-af5d-0fbfc3e7a393</ID>
+            <DISPLAY_NAME>Business men</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Businessmen</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="People and organisations"/>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+                <FIELD FREQ="0" ID="89288655-a8e8-5645-af5d-0fbfc3e7a393" NAME="term">Business men</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term">People and organisations</FIELD>
+                <FIELD FREQ="0" ID="53f50e0b-5a1f-5969-bfbb-451623b0ba03" NAME="term">People</FIELD>
+                <FIELD FREQ="0" ID="36e55ef5-9273-52ef-a6a3-2e7be720f550" NAME="term">Business people</FIELD>
+                <FIELD FREQ="0" ID="89288655-a8e8-5645-af5d-0fbfc3e7a393" NAME="term">Business men</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6025</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="48.58293" SRC="3" URI="http://smartlogic.com/term#OMITERMO37">
+            <NAME>Business development</NAME>
+            <ID>1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd</ID>
+            <DISPLAY_NAME>Business development</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>development (businesses)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="6" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="f1dbdef1-ffcd-59c0-8136-adc060b91650" NAME="term">Business awards and grants</FIELD>
+                <FIELD FREQ="0" ID="290cef3b-e308-53f9-b62d-5a3a3d31c06d" NAME="term">Business opportunities</FIELD>
+                <FIELD FREQ="0" ID="1ed8d3ae-0fc1-5048-92c7-1a87fcad9f17" NAME="term">Business promotion</FIELD>
+                <FIELD FREQ="0" ID="6afffc79-c05b-5565-849a-a51e3b479d1b" NAME="term">Business start-ups</FIELD>
+                <FIELD FREQ="0" ID="48d80e5f-2f0d-538a-b8c0-970a50f209ff" NAME="term">Job creation</FIELD>
+                <FIELD FREQ="0" ID="1b8e7623-4358-570f-a763-d71075559b4f" NAME="term">Youth enterprise development
+                </FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="3" TYPE="Related To">
+                <FIELD FREQ="0" ID="462b1c14-e9c0-5b27-9411-98194e23bc8c" NAME="term">Economic development</FIELD>
+                <FIELD FREQ="0" ID="12063262-07e8-5200-ac06-7d4b3b8459d4" NAME="term">Enterprise agencies</FIELD>
+                <FIELD FREQ="0" ID="301caaa2-33c1-510c-9311-07bf671f940a" NAME="term">Regeneration</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO37</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="48.58293" SRC="3" URI="http://smartlogic.com/term#OMITERMO5925">
+            <NAME>Business finance</NAME>
+            <ID>ffc35cf2-51bb-5c70-a31b-bebe2bc56717</ID>
+            <DISPLAY_NAME>Business finance</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>financing a business</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="edb5ccc6-2bec-59a8-95e4-7ae88c4040eb" NAME="term">Credit</FIELD>
+                <FIELD FREQ="0" ID="5f856f9a-4977-5c50-a9c5-80733a8f13af" NAME="term">Tax</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+                <FIELD FREQ="0" ID="ffc35cf2-51bb-5c70-a31b-bebe2bc56717" NAME="term">Business finance</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+                <FIELD FREQ="0" ID="ffc35cf2-51bb-5c70-a31b-bebe2bc56717" NAME="term">Business finance</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO5925</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="48.58293" SRC="3" URI="http://smartlogic.com/term#OMITERMO6078">
+            <NAME>Business opportunities</NAME>
+            <ID>290cef3b-e308-53f9-b62d-5a3a3d31c06d</ID>
+            <DISPLAY_NAME>Business opportunities</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Opportunities for businesses</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="1" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="ec8e2f6e-289e-5f0c-b106-3cf65a376a7a" NAME="term">Council opportunities</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+                <FIELD FREQ="0" ID="290cef3b-e308-53f9-b62d-5a3a3d31c06d" NAME="term">Business opportunities</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6078</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="48.58293" SRC="3" URI="http://smartlogic.com/term#OMITERMO6001">
+            <NAME>Business services</NAME>
+            <ID>529b6586-4dac-56a6-bec7-e1fb11475f8f</ID>
+            <DISPLAY_NAME>Business services</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Recruitment agencies</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="f00dc09e-3f15-5c56-a6ec-c4e2684cd54c" NAME="term">Distribution and service
+                    industries
+                </FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="5" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="3826242b-609d-51d6-afd5-6527c4790f0e" NAME="term">Consultancy services</FIELD>
+                <FIELD FREQ="0" ID="d2f5d849-9eeb-5c89-a3a4-87f7aef4c0c0" NAME="term">ICT services</FIELD>
+                <FIELD FREQ="0" ID="2e0af881-b8e1-5613-ad15-48a5cfad2f5e" NAME="term">Printing and copying services
+                </FIELD>
+                <FIELD FREQ="0" ID="dda03959-af74-510d-ab41-c17bbc5a931b" NAME="term">Secretarial services</FIELD>
+                <FIELD FREQ="0" ID="a696507e-6d2e-5937-8e45-a350ca149b91" NAME="term">Typing services</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="3" TYPE="Related To">
+                <FIELD FREQ="0" ID="682a0cfa-7cbf-59a6-8ad1-e71f6080e160" NAME="term">Business information services
+                </FIELD>
+                <FIELD FREQ="0" ID="09b0f9a3-597b-5378-9197-3b68492613ff" NAME="term">Graphic design</FIELD>
+                <FIELD FREQ="0" ID="573eb6f3-221c-5f57-8ad4-99f9d0c1b38b" NAME="term">Users</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="bb9e5c3b-73fa-554c-a325-e694c89a8258" NAME="term">Business sectors</FIELD>
+                <FIELD FREQ="0" ID="f00dc09e-3f15-5c56-a6ec-c4e2684cd54c" NAME="term">Distribution and service
+                    industries
+                </FIELD>
+                <FIELD FREQ="0" ID="529b6586-4dac-56a6-bec7-e1fb11475f8f" NAME="term">Business services</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6001</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="48.58293" SRC="3" URI="http://smartlogic.com/term#OMITERMO2081">
+            <NAME>Business skills</NAME>
+            <ID>92178cde-f678-5ff7-b134-96fd5a95b7d2</ID>
+            <DISPLAY_NAME>Business skills</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business training</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="321eeb1e-b211-4e8e-8bee-4f8381b6f36e" NAME="Education and skills"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="2a0a5a04-2844-570f-92bc-1c32cb3ac721" NAME="term">Skills and competences</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="3" TYPE="Related To">
+                <FIELD FREQ="0" ID="ad2b0a65-0158-5a72-a233-9d5b3f9efe9d" NAME="term">Business studies</FIELD>
+                <FIELD FREQ="0" ID="d2ba2a7a-1fcc-56ea-8f79-efff98d23641" NAME="term">Management skills</FIELD>
+                <FIELD FREQ="0" ID="65355741-ed07-59a2-a26b-ab149a49f019" NAME="term">Workplace training and
+                    development
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="321eeb1e-b211-4e8e-8bee-4f8381b6f36e" NAME="term">Education and skills</FIELD>
+                <FIELD FREQ="0" ID="2a0a5a04-2844-570f-92bc-1c32cb3ac721" NAME="term">Skills and competences</FIELD>
+                <FIELD FREQ="0" ID="92178cde-f678-5ff7-b134-96fd5a95b7d2" NAME="term">Business skills</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO2081</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="48.19532" SRC="3" URI="http://smartlogic.com/term#OMITERMO685">
+            <NAME>Business sectors</NAME>
+            <ID>bb9e5c3b-73fa-554c-a325-e694c89a8258</ID>
+            <DISPLAY_NAME>Business sectors</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business sectors and services</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="5" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="2b27f4a6-e305-524a-8e2f-9f89900677e8" NAME="term">Building and construction</FIELD>
+                <FIELD FREQ="0" ID="947b129f-f8ca-5323-8dd5-f2152e4817d2" NAME="term">Communications industries</FIELD>
+                <FIELD FREQ="0" ID="f00dc09e-3f15-5c56-a6ec-c4e2684cd54c" NAME="term">Distribution and service
+                    industries
+                </FIELD>
+                <FIELD FREQ="0" ID="e7a4d936-3acb-5504-b8ea-4553ada012d0" NAME="term">Manufacturing</FIELD>
+                <FIELD FREQ="0" ID="91de9813-6d95-562b-8bbd-f109bbc587dc" NAME="term">Mineral extraction, mining,
+                    quarrying
+                </FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="4" TYPE="Related To">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="9b6b3b41-be70-564f-a64e-72de39c90f6c" NAME="term">Farming</FIELD>
+                <FIELD FREQ="0" ID="62cbb977-e565-55c7-a3c3-6b09b5c8fe3b" NAME="term">Fisheries and aquaculture</FIELD>
+                <FIELD FREQ="0" ID="73867abf-862e-573b-b531-c3af2e222fec" NAME="term">Forestry</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="bb9e5c3b-73fa-554c-a325-e694c89a8258" NAME="term">Business sectors</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO685</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="47.87717" SRC="3" URI="http://smartlogic.com/term#OMITERMO6048">
+            <NAME>Business associations</NAME>
+            <ID>c1708993-51f6-5f8e-b357-1359d66547b3</ID>
+            <DISPLAY_NAME>Business associations</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business Clubs</SYNONYM>
+                <SYNONYM>Trade associations</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="People and organisations"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="4424a12e-9352-5e4d-b7f5-ea0a07aa1da9" NAME="term">Organisations</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="2" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="ccaaaafc-8bf0-5791-900b-212a3a071be3" NAME="term">Chambers of trade and commerce
+                </FIELD>
+                <FIELD FREQ="0" ID="87f6f420-7fbb-5f16-9825-d729db085171" NAME="term">Guilds</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term">People and organisations</FIELD>
+                <FIELD FREQ="0" ID="4424a12e-9352-5e4d-b7f5-ea0a07aa1da9" NAME="term">Organisations</FIELD>
+                <FIELD FREQ="0" ID="c1708993-51f6-5f8e-b357-1359d66547b3" NAME="term">Business associations</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6048</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="47.611347" SRC="3" URI="http://smartlogic.com/term#OMITERMO7805">
+            <NAME>Business travel</NAME>
+            <ID>c1ba1464-89e5-5801-ab5b-af9365cd7420</ID>
+            <DISPLAY_NAME>Business travel</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business trips</SYNONYM>
+                <SYNONYM>Travel (business purposes)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="ac3da7d7-cb6e-52ea-94d1-6245193cb525" NAME="term">Expenses claims</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="c1ba1464-89e5-5801-ab5b-af9365cd7420" NAME="term">Business travel</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO7805</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="47.024292" SRC="3" URI="http://smartlogic.com/term#OMITERMO6291">
+            <NAME>Business licences</NAME>
+            <ID>00b0aafd-bb88-5f48-b244-e8a8e0cf508c</ID>
+            <DISPLAY_NAME>Business licences</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Licences (business)</SYNONYM>
+                <SYNONYM>Retail licences</SYNONYM>
+                <SYNONYM>civic licences</SYNONYM>
+                <SYNONYM>licensing of businesses</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="634fcb27-9878-5b3c-b079-cc63192813b4" NAME="term">Regulation and deregulation
+                </FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="21" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="d2307a66-4b5e-5d13-92ec-d7f8e6ce645d" NAME="term">Adventure activities licences
+                </FIELD>
+                <FIELD FREQ="0" ID="28d449f7-afa0-58b6-91cb-1ae938c1c7da" NAME="term">Animal licences</FIELD>
+                <FIELD FREQ="0" ID="de3ab101-61cd-508f-ab5a-c644e5e9728a" NAME="term">Caravan and camp site licences
+                </FIELD>
+                <FIELD FREQ="0" ID="c5f4b28f-a47d-5d28-a5b5-15220ba44b40" NAME="term">Combustion processes licences
+                </FIELD>
+                <FIELD FREQ="0" ID="137828a9-2e5d-5a4d-bdc2-02ee285f2626" NAME="term">Credit licences</FIELD>
+                <FIELD FREQ="0" ID="c2b53b63-c04a-5f8d-b52a-bf189236cff2" NAME="term">Entertainment licences</FIELD>
+                <FIELD FREQ="0" ID="4f8d26bd-a9be-532a-9cd5-d83414074e4e" NAME="term">Explosives licences</FIELD>
+                <FIELD FREQ="0" ID="a1e0d45a-7ae5-5b5a-bd63-8b0de4ed6768" NAME="term">Food related licences</FIELD>
+                <FIELD FREQ="0" ID="4a79fe6f-11ab-5e00-a14d-045b6d279e7b" NAME="term">Game licences</FIELD>
+                <FIELD FREQ="0" ID="11fb326d-250e-555a-b345-2cd6c836874d" NAME="term">Highway projection licences
+                </FIELD>
+                <FIELD FREQ="0" ID="691844e8-0e90-5fa0-b85d-d7e1dd6d192b" NAME="term">Manufacturing licences</FIELD>
+                <FIELD FREQ="0" ID="788b9887-c773-5b60-94fb-33c1d98dc618" NAME="term">Massage and special treatment
+                    licences
+                </FIELD>
+                <FIELD FREQ="0" ID="e20e0a0f-385a-5805-bf60-795821bd7588" NAME="term">Non-medicinal poisons licences
+                </FIELD>
+                <FIELD FREQ="0" ID="9d2c73ef-9f51-5cff-b060-e39e640808f4" NAME="term">Petrol storage licences</FIELD>
+                <FIELD FREQ="0" ID="add4ab34-359a-5fc2-bc0e-6305e0b5fd1f" NAME="term">Scaffolding licences</FIELD>
+                <FIELD FREQ="0" ID="863aa3d5-2124-5c55-8310-a86565a3f9cb" NAME="term">Scrap metal licences</FIELD>
+                <FIELD FREQ="0" ID="e97470fe-aef7-5e33-9924-a2bf22119809" NAME="term">Sex establishments licences
+                </FIELD>
+                <FIELD FREQ="0" ID="ac9efba0-1ea3-5325-876e-b1be0cd28dfa" NAME="term">Skip licences</FIELD>
+                <FIELD FREQ="0" ID="77f3ecb7-6e18-55b9-a41f-cccf199822b2" NAME="term">Street trading licences</FIELD>
+                <FIELD FREQ="0" ID="0bfda205-820a-5970-8262-8cb269c01667" NAME="term">Taxi and minicab licences</FIELD>
+                <FIELD FREQ="0" ID="f1440e42-2020-5650-9eb8-5a25cfe100e5" NAME="term">Water abstraction licences</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="51274565-e8c3-5756-891c-6ffa2160db6f" NAME="term">Building materials licences
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="634fcb27-9878-5b3c-b079-cc63192813b4" NAME="term">Regulation and deregulation
+                </FIELD>
+                <FIELD FREQ="0" ID="00b0aafd-bb88-5f48-b244-e8a8e0cf508c" NAME="term">Business licences</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6291</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="47.024292" SRC="3" URI="http://smartlogic.com/term#OMITERMO474">
+            <NAME>Business management</NAME>
+            <ID>e2f2dd5a-8353-508e-b172-ddc797fbaa9b</ID>
+            <DISPLAY_NAME>Business management</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business Administration</SYNONYM>
+                <SYNONYM>Corporate management</SYNONYM>
+                <SYNONYM>Management (business)</SYNONYM>
+                <SYNONYM>administration (business)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="2" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="15" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="fd2d21af-5ffb-56b4-867a-52217cd9bab0" NAME="term">Business planning</FIELD>
+                <FIELD FREQ="0" ID="007a8b32-7a02-503d-9926-6cabdf18ec1a" NAME="term">Cooperation</FIELD>
+                <FIELD FREQ="0" ID="fd90eced-c3da-570d-9cd4-940b24b35305" NAME="term">Decision making</FIELD>
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+                <FIELD FREQ="0" ID="ee7859e7-6944-5624-aceb-17f3aab9200d" NAME="term">Human resource management</FIELD>
+                <FIELD FREQ="0" ID="55b0a8f1-52e5-5110-aea9-ce92ca3145c7" NAME="term">Information management</FIELD>
+                <FIELD FREQ="0" ID="ab890b26-ee58-5a7e-ab02-9a541a2ff511" NAME="term">Knowledge management</FIELD>
+                <FIELD FREQ="0" ID="4517bacd-be65-5ffb-abc4-6ca62c24fec9" NAME="term">Management control</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="18fa4117-357c-59c3-8497-8b45abd2488a" NAME="term">Performance management</FIELD>
+                <FIELD FREQ="0" ID="e6686086-1811-51b0-97cb-80e1ec695858" NAME="term">Programme management</FIELD>
+                <FIELD FREQ="0" ID="65365ae7-c6ee-5914-83df-6e984ee17891" NAME="term">Project management</FIELD>
+                <FIELD FREQ="0" ID="79d967dc-56d6-5f65-b25b-d919c6476d16" NAME="term">Public relations</FIELD>
+                <FIELD FREQ="0" ID="df202a91-d1ff-5363-8069-7e1d9c089dbf" NAME="term">Resource management</FIELD>
+                <FIELD FREQ="0" ID="03db55f4-e4a0-5f63-a75c-fe577b1c2d64" NAME="term">Risk management</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="3" TYPE="Related To">
+                <FIELD FREQ="0" ID="d2ba2a7a-1fcc-56ea-8f79-efff98d23641" NAME="term">Management skills</FIELD>
+                <FIELD FREQ="0" ID="cb63cc7d-ded1-5b9a-aa52-e0d5f82889a3" NAME="term">Managers</FIELD>
+                <FIELD FREQ="0" ID="7e161d56-de21-5ade-9418-d5f8bc5f8f61" NAME="term">Marketing</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO474</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="46.746956" SRC="3" URI="http://smartlogic.com/term#OMITERMO6072">
+            <NAME>Business planning</NAME>
+            <ID>fd2d21af-5ffb-56b4-867a-52217cd9bab0</ID>
+            <DISPLAY_NAME>Business planning</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Action plans</SYNONYM>
+                <SYNONYM>Business plans</SYNONYM>
+                <SYNONYM>Forward Plans</SYNONYM>
+                <SYNONYM>Strategic planning</SYNONYM>
+                <SYNONYM>planning (business)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="3" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="0c7b5f1c-6660-504c-99f3-a61265d09da4" NAME="term">Corporate policy</FIELD>
+                <FIELD FREQ="0" ID="24a41c54-1a89-584e-842f-73ab9b8a27cc" NAME="term">Feasibility studies</FIELD>
+                <FIELD FREQ="0" ID="54ddeb58-663b-5ced-b50d-596023106683" NAME="term">Prioritising</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="3" TYPE="Related To">
+                <FIELD FREQ="0" ID="0eea7764-0c36-5ffb-9be9-ba8ea90f65ea" NAME="term">Business continuity planning
+                </FIELD>
+                <FIELD FREQ="0" ID="c08c0c77-dadd-572b-ba16-602a9021216a" NAME="term">Council policies and plans</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="fd2d21af-5ffb-56b4-867a-52217cd9bab0" NAME="term">Business planning</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="fd2d21af-5ffb-56b4-867a-52217cd9bab0" NAME="term">Business planning</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6072</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="46.52752" SRC="3" URI="http://smartlogic.com/term#OMITERMO695">
+            <NAME>Small businesses</NAME>
+            <ID>113e3698-614b-501e-a500-db8da32511a6</ID>
+            <DISPLAY_NAME>Small businesses</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Medium sized enterprises</SYNONYM>
+                <SYNONYM>SMEs (Small/medium enterprises)</SYNONYM>
+                <SYNONYM>Small and medium enterprises</SYNONYM>
+                <SYNONYM>Small firms</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="People and organisations"/>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="c1cbff96-d58f-5b18-a6bd-05febf8ec776" NAME="term">Companies</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="c1cbff96-d58f-5b18-a6bd-05febf8ec776" NAME="term">Companies</FIELD>
+                <FIELD FREQ="0" ID="113e3698-614b-501e-a500-db8da32511a6" NAME="term">Small businesses</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term">People and organisations</FIELD>
+                <FIELD FREQ="0" ID="4424a12e-9352-5e4d-b7f5-ea0a07aa1da9" NAME="term">Organisations</FIELD>
+                <FIELD FREQ="0" ID="c1cbff96-d58f-5b18-a6bd-05febf8ec776" NAME="term">Companies</FIELD>
+                <FIELD FREQ="0" ID="113e3698-614b-501e-a500-db8da32511a6" NAME="term">Small businesses</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO695</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="45.70077" SRC="3" URI="http://smartlogic.com/term#OMITERMO5955">
+            <NAME>Business premises</NAME>
+            <ID>9e7a7c94-c125-540d-a915-b90243ef704a</ID>
+            <DISPLAY_NAME>Business premises</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business property (land and buildings)</SYNONYM>
+                <SYNONYM>Business sites</SYNONYM>
+                <SYNONYM>Business units (premises)</SYNONYM>
+                <SYNONYM>Commercial Properties</SYNONYM>
+                <SYNONYM>Commercial property</SYNONYM>
+                <SYNONYM>Commercial real estate</SYNONYM>
+                <SYNONYM>Office premises</SYNONYM>
+                <SYNONYM>Offices (buildings)</SYNONYM>
+                <SYNONYM>Register of available commercial property</SYNONYM>
+                <SYNONYM>Vacant commercial property</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="Environment"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="a86d1a8b-bae4-58bd-8421-03d9b348636a" NAME="term">Non-residential property</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="6" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="31cdc631-bb03-54e3-aa47-445d848f7fb5" NAME="term">Business parks</FIELD>
+                <FIELD FREQ="0" ID="2bc45631-a3fe-5bc9-bbfb-40becc90c113" NAME="term">Commercial property for sale
+                </FIELD>
+                <FIELD FREQ="0" ID="08c64ca2-2d29-5726-8562-bffd53edf315" NAME="term">Industrial properties</FIELD>
+                <FIELD FREQ="0" ID="15760bb8-d35f-5611-9f2f-65c0b60bccf0" NAME="term">Premises to let</FIELD>
+                <FIELD FREQ="0" ID="8b97c790-06cc-56c9-b894-461d14f48e10" NAME="term">Shops</FIELD>
+                <FIELD FREQ="0" ID="4828caed-69ba-523e-9100-c0975f360e63" NAME="term">Warehousing</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="49bd25ba-e196-5098-a62c-0f609a0dfdbb" NAME="term">Working conditions and
+                    environment
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="term">Environment</FIELD>
+                <FIELD FREQ="0" ID="b4beb2c2-8c55-554c-a6a0-44472e4a1adb" NAME="term">Land and premises</FIELD>
+                <FIELD FREQ="0" ID="a86d1a8b-bae4-58bd-8421-03d9b348636a" NAME="term">Non-residential property</FIELD>
+                <FIELD FREQ="0" ID="9e7a7c94-c125-540d-a915-b90243ef704a" NAME="term">Business premises</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO5955</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="45.642365" SRC="3" URI="http://smartlogic.com/term#OMITERMO5932">
+            <NAME>Business rates</NAME>
+            <ID>cab96160-1d1b-5cc4-8fa4-2e145fb82893</ID>
+            <DISPLAY_NAME>Business rates</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business Charges (local tax)</SYNONYM>
+                <SYNONYM>Business tax (local)</SYNONYM>
+                <SYNONYM>NNDR (National non-domestic rates)</SYNONYM>
+                <SYNONYM>National non domestic rates</SYNONYM>
+                <SYNONYM>National non-domestic rates</SYNONYM>
+                <SYNONYM>Rates (local tax for businesses)</SYNONYM>
+                <SYNONYM>Rates relief</SYNONYM>
+                <SYNONYM>Uniform business rates</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="a9b4fe02-746a-438a-9e7c-2c95da345f1a" NAME="Economics and finance"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="f3b63c6e-6964-5659-9625-4450953a14a8" NAME="term">Local taxes</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="a9b4fe02-746a-438a-9e7c-2c95da345f1a" NAME="term">Economics and finance</FIELD>
+                <FIELD FREQ="0" ID="5f856f9a-4977-5c50-a9c5-80733a8f13af" NAME="term">Tax</FIELD>
+                <FIELD FREQ="0" ID="f3b63c6e-6964-5659-9625-4450953a14a8" NAME="term">Local taxes</FIELD>
+                <FIELD FREQ="0" ID="cab96160-1d1b-5cc4-8fa4-2e145fb82893" NAME="term">Business rates</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO5932</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="41.310833" SRC="3" URI="http://smartlogic.com/term#OMITERMO5734">
+            <NAME>Business information services</NAME>
+            <ID>682a0cfa-7cbf-59a6-8ad1-e71f6080e160</ID>
+            <DISPLAY_NAME>Business information services</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <FACETS>
+                <FACET ID="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" NAME="Information and communication"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="4230eea3-0d54-5b23-b4d0-bbaddeab3e39" NAME="term">Library and information services
+                </FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="6faa5062-d077-51cf-8895-e5c25f728901" NAME="term">Business advice services</FIELD>
+                <FIELD FREQ="0" ID="529b6586-4dac-56a6-bec7-e1fb11475f8f" NAME="term">Business services</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" NAME="term">Information and communication
+                </FIELD>
+                <FIELD FREQ="0" ID="4230eea3-0d54-5b23-b4d0-bbaddeab3e39" NAME="term">Library and information services
+                </FIELD>
+                <FIELD FREQ="0" ID="682a0cfa-7cbf-59a6-8ad1-e71f6080e160" NAME="term">Business information services
+                </FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO5734</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="41.310833" SRC="3" URI="http://smartlogic.com/term#OMITERMO6084">
+            <NAME>Ethical business practices</NAME>
+            <ID>340a652a-c2ee-5287-b704-d0f7a072aa4d</ID>
+            <DISPLAY_NAME>Ethical business practices</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="1" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="0f125915-296a-5860-b6fd-cbc093d9fb0e" NAME="term">Fair trade</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="4" TYPE="Related To">
+                <FIELD FREQ="0" ID="755210d8-fd0a-5a9b-be72-71e6897bfebb" NAME="term">Corporate social responsibility
+                </FIELD>
+                <FIELD FREQ="0" ID="10edcba3-82f8-5ee9-8bec-7527b7f9af82" NAME="term">Ethical issues</FIELD>
+                <FIELD FREQ="0" ID="6af134bf-8dbe-505f-a496-46df261ebf67" NAME="term">Ethical policies</FIELD>
+                <FIELD FREQ="0" ID="5f620e9a-6720-5ade-b3ef-2726a28d4ffc" NAME="term">Fair trading</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="340a652a-c2ee-5287-b704-d0f7a072aa4d" NAME="term">Ethical business practices</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6084</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="40.440605" SRC="3" URI="http://smartlogic.com/term#OMITERMO488">
+            <NAME>Business practice and regulation</NAME>
+            <ID>736e1f31-3996-51a7-9c9c-48866552d50b</ID>
+            <DISPLAY_NAME>Business practice and regulation</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Company Law</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="12" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="6faa5062-d077-51cf-8895-e5c25f728901" NAME="term">Business advice services</FIELD>
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="ad2b0a65-0158-5a72-a233-9d5b3f9efe9d" NAME="term">Business studies</FIELD>
+                <FIELD FREQ="0" ID="c1ba1464-89e5-5801-ab5b-af9365cd7420" NAME="term">Business travel</FIELD>
+                <FIELD FREQ="0" ID="340a652a-c2ee-5287-b704-d0f7a072aa4d" NAME="term">Ethical business practices</FIELD>
+                <FIELD FREQ="0" ID="5f620e9a-6720-5ade-b3ef-2726a28d4ffc" NAME="term">Fair trading</FIELD>
+                <FIELD FREQ="0" ID="082c062d-e3a8-51d0-a1b1-d5c6bda4914c" NAME="term">Health and safety at work</FIELD>
+                <FIELD FREQ="0" ID="2c7acdc2-d682-5288-8e44-f603eafb9d58" NAME="term">Insolvency</FIELD>
+                <FIELD FREQ="0" ID="7e161d56-de21-5ade-9418-d5f8bc5f8f61" NAME="term">Marketing</FIELD>
+                <FIELD FREQ="0" ID="634fcb27-9878-5b3c-b079-cc63192813b4" NAME="term">Regulation and deregulation
+                </FIELD>
+                <FIELD FREQ="0" ID="c03c3940-97e4-5e0f-9e91-e58f1f79453a" NAME="term">e-Commerce</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="bb9e5c3b-73fa-554c-a325-e694c89a8258" NAME="term">Business sectors</FIELD>
+                <FIELD FREQ="0" ID="a289b279-8656-5f20-9ca3-d67f85bfc8de" NAME="term">Standards and specifications
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO488</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="39.856632" SRC="3" URI="http://smartlogic.com/term#OMITERMO7628">
+            <NAME>Business Improvement Districts</NAME>
+            <ID>fb9645d1-7760-59a0-a32c-ecbd876a6a4d</ID>
+            <DISPLAY_NAME>Business Improvement Districts</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>BIDs (Business Improvement Districts)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="People and organisations"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="81c5cebd-4ff8-5732-8a7d-41c48c7f2c33" NAME="term">Partnerships</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="301caaa2-33c1-510c-9311-07bf671f940a" NAME="term">Regeneration</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term">People and organisations</FIELD>
+                <FIELD FREQ="0" ID="81c5cebd-4ff8-5732-8a7d-41c48c7f2c33" NAME="term">Partnerships</FIELD>
+                <FIELD FREQ="0" ID="fb9645d1-7760-59a0-a32c-ecbd876a6a4d" NAME="term">Business Improvement Districts
+                </FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO7628</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="39.269577" SRC="3" URI="http://smartlogic.com/term#OMITERMO6067">
+            <NAME>Business advice services</NAME>
+            <ID>6faa5062-d077-51cf-8895-e5c25f728901</ID>
+            <DISPLAY_NAME>Business advice services</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Small business advice services</SYNONYM>
+                <SYNONYM>advice services (business)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="c139dd4c-f8bb-54aa-938f-bc960d562d63" NAME="term">Advice agencies</FIELD>
+                <FIELD FREQ="0" ID="682a0cfa-7cbf-59a6-8ad1-e71f6080e160" NAME="term">Business information services
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="6faa5062-d077-51cf-8895-e5c25f728901" NAME="term">Business advice services</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6067</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="38.87648" SRC="3" URI="http://smartlogic.com/term#OMITERMO6062">
+            <NAME>Business awards and grants</NAME>
+            <ID>f1dbdef1-ffcd-59c0-8136-adc060b91650</ID>
+            <DISPLAY_NAME>Business awards and grants</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business Support schemes</SYNONYM>
+                <SYNONYM>Business grants</SYNONYM>
+                <SYNONYM>Grants for businesses</SYNONYM>
+                <SYNONYM>Support schemes (business)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="a9b4fe02-746a-438a-9e7c-2c95da345f1a" NAME="Economics and finance"/>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="2" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+                <FIELD FREQ="0" ID="84d8f29a-6d0b-528b-a3c1-95a2cf895f02" NAME="term">Public funding</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+                <FIELD FREQ="0" ID="f1dbdef1-ffcd-59c0-8136-adc060b91650" NAME="term">Business awards and grants</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="a9b4fe02-746a-438a-9e7c-2c95da345f1a" NAME="term">Economics and finance</FIELD>
+                <FIELD FREQ="0" ID="2984e64c-aaf8-53e1-bff4-a780095db7bc" NAME="term">Public finance</FIELD>
+                <FIELD FREQ="0" ID="84d8f29a-6d0b-528b-a3c1-95a2cf895f02" NAME="term">Public funding</FIELD>
+                <FIELD FREQ="0" ID="f1dbdef1-ffcd-59c0-8136-adc060b91650" NAME="term">Business awards and grants</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6062</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="38.87648" SRC="3" URI="http://smartlogic.com/term#OMITERMO1654">
+            <NAME>Business continuity planning</NAME>
+            <ID>0eea7764-0c36-5ffb-9be9-ba8ea90f65ea</ID>
+            <DISPLAY_NAME>Business continuity planning</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Contingency planning (businesses)</SYNONYM>
+                <SYNONYM>Disaster recovery planning</SYNONYM>
+                <SYNONYM>Emergency planning (business contingencies)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="03db55f4-e4a0-5f63-a75c-fe577b1c2d64" NAME="term">Risk management</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="fd2d21af-5ffb-56b4-867a-52217cd9bab0" NAME="term">Business planning</FIELD>
+                <FIELD FREQ="0" ID="c65b05c1-47dd-5f3a-b3b1-75ae9a822811" NAME="term">Emergency response</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="03db55f4-e4a0-5f63-a75c-fe577b1c2d64" NAME="term">Risk management</FIELD>
+                <FIELD FREQ="0" ID="0eea7764-0c36-5ffb-9be9-ba8ea90f65ea" NAME="term">Business continuity planning
+                </FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="03db55f4-e4a0-5f63-a75c-fe577b1c2d64" NAME="term">Risk management</FIELD>
+                <FIELD FREQ="0" ID="0eea7764-0c36-5ffb-9be9-ba8ea90f65ea" NAME="term">Business continuity planning
+                </FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO1654</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="38.87648" SRC="3" URI="http://smartlogic.com/term#OMITERMO6004">
+            <NAME>Business start-ups</NAME>
+            <ID>6afffc79-c05b-5565-849a-a51e3b479d1b</ID>
+            <DISPLAY_NAME>Business start-ups</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business startups</SYNONYM>
+                <SYNONYM>Setting up a business</SYNONYM>
+                <SYNONYM>Start-ups (business)</SYNONYM>
+                <SYNONYM>Starting a business</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="1801dcc4-da9b-50c2-9e61-3e9ae6a6cccd" NAME="term">Business development</FIELD>
+                <FIELD FREQ="0" ID="6afffc79-c05b-5565-849a-a51e3b479d1b" NAME="term">Business start-ups</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6004</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="38.32381" SRC="3" URI="http://smartlogic.com/term#OMITERMO7598">
+            <NAME>Business process review</NAME>
+            <ID>aef8a46e-b887-5ddf-ad38-3b29c2068411</ID>
+            <DISPLAY_NAME>Business process review</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>BPR (business process reengineering)</SYNONYM>
+                <SYNONYM>Business improvement (processes)</SYNONYM>
+                <SYNONYM>Business process improvement</SYNONYM>
+                <SYNONYM>Business process re-engineering</SYNONYM>
+                <SYNONYM>Business process reengineering</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="5f823454-7cda-56e7-b3d5-8d45e06ae759" NAME="term">Downsizing</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="aef8a46e-b887-5ddf-ad38-3b29c2068411" NAME="term">Business process review</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="aef8a46e-b887-5ddf-ad38-3b29c2068411" NAME="term">Business process review</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO7598</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="29.261522" SRC="3" URI="http://smartlogic.com/term#OMITERMO1638">
+            <NAME>School links with home, community and business</NAME>
+            <ID>06672ccb-30bb-5b9a-9ac7-630f548de597</ID>
+            <DISPLAY_NAME>School links with home, community and business</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business links with schools</SYNONYM>
+                <SYNONYM>Parent links with schools</SYNONYM>
+                <SYNONYM>community links with schools</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="321eeb1e-b211-4e8e-8bee-4f8381b6f36e" NAME="Education and skills"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="7afe2486-7c74-57f7-84a4-f1d97667ff6c" NAME="term">Schools</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="1" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="6a5853c9-e1be-5486-b293-b90e84b94dee" NAME="term">Parent staff associations</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="7bd89c22-fd86-5a7d-8e9e-83eaccb7b387" NAME="term">Work experience</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="321eeb1e-b211-4e8e-8bee-4f8381b6f36e" NAME="term">Education and skills</FIELD>
+                <FIELD FREQ="0" ID="7afe2486-7c74-57f7-84a4-f1d97667ff6c" NAME="term">Schools</FIELD>
+                <FIELD FREQ="0" ID="06672ccb-30bb-5b9a-9ac7-630f548de597" NAME="term">School links with home, community
+                    and business
+                </FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO1638</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="4.4208136" SRC="3" URI="http://smartlogic.com/term#OMITERMO7596">
+            <NAME>Efficiency</NAME>
+            <ID>4607c0d2-c4c5-5891-88b9-465652195112</ID>
+            <DISPLAY_NAME>Efficiency</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business efficiency</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="7a2c5c6c-a510-55ba-9e56-c9b5b1c21b6a" NAME="term">Performance measurement</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="18fa4117-357c-59c3-8497-8b45abd2488a" NAME="term">Performance management</FIELD>
+                <FIELD FREQ="0" ID="7a2c5c6c-a510-55ba-9e56-c9b5b1c21b6a" NAME="term">Performance measurement</FIELD>
+                <FIELD FREQ="0" ID="4607c0d2-c4c5-5891-88b9-465652195112" NAME="term">Efficiency</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="18fa4117-357c-59c3-8497-8b45abd2488a" NAME="term">Performance management</FIELD>
+                <FIELD FREQ="0" ID="7a2c5c6c-a510-55ba-9e56-c9b5b1c21b6a" NAME="term">Performance measurement</FIELD>
+                <FIELD FREQ="0" ID="4607c0d2-c4c5-5891-88b9-465652195112" NAME="term">Efficiency</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO7596</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="4.4208136" SRC="3" URI="http://smartlogic.com/term#OMITERMO7482">
+            <NAME>Income</NAME>
+            <ID>5be29271-3231-52a1-8652-4161d5e6cd3b</ID>
+            <DISPLAY_NAME>Income</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Income (businesses)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="21792a4e-848e-5824-af6c-915da86f993d" NAME="term">Donations</FIELD>
+                <FIELD FREQ="0" ID="9019170e-471e-50c4-87ec-606cb0f9230f" NAME="term">Living standards and income
+                    levels
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+                <FIELD FREQ="0" ID="5be29271-3231-52a1-8652-4161d5e6cd3b" NAME="term">Income</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+                <FIELD FREQ="0" ID="5be29271-3231-52a1-8652-4161d5e6cd3b" NAME="term">Income</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO7482</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="3.550586" SRC="3" URI="http://smartlogic.com/term#OMITERMO886">
+            <NAME>Security</NAME>
+            <ID>c35cdbed-0a48-5668-a7b7-494291a155cb</ID>
+            <DISPLAY_NAME>Security</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>International Security</SYNONYM>
+                <SYNONYM>business security</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="6b7db970-af6c-4a2e-9256-ae06211edc4b" NAME="Public order, justice and rights"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="6b7db970-af6c-4a2e-9256-ae06211edc4b" NAME="term">Public order, justice and rights
+                </FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="6" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="b896b5ba-9824-5e9b-83b8-d135aaa16994" NAME="term">CCTV surveillance</FIELD>
+                <FIELD FREQ="0" ID="292eab1a-1d6a-56ae-bf8c-8e6ec71ad7e1" NAME="term">Data security</FIELD>
+                <FIELD FREQ="0" ID="0b748a89-c743-5aaf-aa88-985db9fbc415" NAME="term">National security</FIELD>
+                <FIELD FREQ="0" ID="22ef12ba-8ceb-5617-8e32-011cc76c3a7f" NAME="term">Personal security</FIELD>
+                <FIELD FREQ="0" ID="9e4bea3c-8b29-5376-b324-a617eebc7f41" NAME="term">Security equipment</FIELD>
+                <FIELD FREQ="0" ID="08599dfe-e765-5b35-9256-170f94016334" NAME="term">Security of property</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="d0631af8-055e-5aba-81f9-8a4ac91efcbe" NAME="term">Crime</FIELD>
+                <FIELD FREQ="0" ID="99bcb4a4-17d2-5b3e-a7bb-1891a39ed58e" NAME="term">Safety</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="6b7db970-af6c-4a2e-9256-ae06211edc4b" NAME="term">Public order, justice and rights
+                </FIELD>
+                <FIELD FREQ="0" ID="c35cdbed-0a48-5668-a7b7-494291a155cb" NAME="term">Security</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO886</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="3.2324371" SRC="3" URI="http://smartlogic.com/term#OMITERMO7604">
+            <NAME>Company acquisitions</NAME>
+            <ID>65cf438a-fbb6-53e0-affe-df81328175ff</ID>
+            <DISPLAY_NAME>Company acquisitions</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Acquisitions (business)</SYNONYM>
+                <SYNONYM>Acquisitions (companies)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="65cf438a-fbb6-53e0-affe-df81328175ff" NAME="term">Company acquisitions</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="65cf438a-fbb6-53e0-affe-df81328175ff" NAME="term">Company acquisitions</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO7604</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.9666147" SRC="3" URI="http://smartlogic.com/term#OMITERMO1858">
+            <NAME>BTEC courses</NAME>
+            <ID>ca75915c-1189-52c5-b2fe-6d2048cbf433</ID>
+            <DISPLAY_NAME>BTEC courses</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business and Technology Education Council courses</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="321eeb1e-b211-4e8e-8bee-4f8381b6f36e" NAME="Education and skills"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="19d7bf0e-2204-5fa2-b1a7-9e458e8440e6" NAME="term">Studies and qualifications
+                    (post-16)
+                </FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="321eeb1e-b211-4e8e-8bee-4f8381b6f36e" NAME="term">Education and skills</FIELD>
+                <FIELD FREQ="0" ID="f09dcdb3-9d39-5ab5-8622-f1135e24bfca" NAME="term">Further and higher education
+                </FIELD>
+                <FIELD FREQ="0" ID="19d7bf0e-2204-5fa2-b1a7-9e458e8440e6" NAME="term">Studies and qualifications
+                    (post-16)
+                </FIELD>
+                <FIELD FREQ="0" ID="ca75915c-1189-52c5-b2fe-6d2048cbf433" NAME="term">BTEC courses</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="321eeb1e-b211-4e8e-8bee-4f8381b6f36e" NAME="term">Education and skills</FIELD>
+                <FIELD FREQ="0" ID="7afe2486-7c74-57f7-84a4-f1d97667ff6c" NAME="term">Schools</FIELD>
+                <FIELD FREQ="0" ID="19d7bf0e-2204-5fa2-b1a7-9e458e8440e6" NAME="term">Studies and qualifications
+                    (post-16)
+                </FIELD>
+                <FIELD FREQ="0" ID="ca75915c-1189-52c5-b2fe-6d2048cbf433" NAME="term">BTEC courses</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO1858</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.9666147" SRC="3" URI="http://smartlogic.com/term#OMITERMO1419">
+            <NAME>Security of property</NAME>
+            <ID>08599dfe-e765-5b35-9256-170f94016334</ID>
+            <DISPLAY_NAME>Security of property</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business Security (property)</SYNONYM>
+                <SYNONYM>Property security</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="6b7db970-af6c-4a2e-9256-ae06211edc4b" NAME="Public order, justice and rights"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="c35cdbed-0a48-5668-a7b7-494291a155cb" NAME="term">Security</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="4" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="4c288ac8-3d1a-5973-9232-16dd4e00c7cd" NAME="term">Home security</FIELD>
+                <FIELD FREQ="0" ID="43446010-6db9-5a44-8acd-fae8b44f1b48" NAME="term">Key holders</FIELD>
+                <FIELD FREQ="0" ID="6385f44f-976d-5e53-88a8-f084282ad046" NAME="term">Locksmithing</FIELD>
+                <FIELD FREQ="0" ID="a3c2e73a-778d-5d02-826f-ad3d91f3d9b9" NAME="term">Neighbourhood watch</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="3" TYPE="Related To">
+                <FIELD FREQ="0" ID="229c73b7-f684-5510-a501-6a7e02215c37" NAME="term">Microchipping</FIELD>
+                <FIELD FREQ="0" ID="df202a91-d1ff-5363-8069-7e1d9c089dbf" NAME="term">Resource management</FIELD>
+                <FIELD FREQ="0" ID="3d3a756e-4cf9-5601-b4de-c3d49c93453f" NAME="term">Theft and burglary</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="6b7db970-af6c-4a2e-9256-ae06211edc4b" NAME="term">Public order, justice and rights
+                </FIELD>
+                <FIELD FREQ="0" ID="c35cdbed-0a48-5668-a7b7-494291a155cb" NAME="term">Security</FIELD>
+                <FIELD FREQ="0" ID="08599dfe-e765-5b35-9256-170f94016334" NAME="term">Security of property</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO1419</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.7411904" SRC="3" URI="http://smartlogic.com/term#OMITERMO51">
+            <NAME>Companies</NAME>
+            <ID>c1cbff96-d58f-5b18-a6bd-05febf8ec776</ID>
+            <DISPLAY_NAME>Companies</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>businesses (companies)</SYNONYM>
+                <SYNONYM>corporations</SYNONYM>
+                <SYNONYM>enterprises (companies)</SYNONYM>
+                <SYNONYM>firms (companies)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="People and organisations"/>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="2" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="4424a12e-9352-5e4d-b7f5-ea0a07aa1da9" NAME="term">Organisations</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="2" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="55c29e80-80d6-5fae-83f5-54334e8c65ee" NAME="term">Cooperatives</FIELD>
+                <FIELD FREQ="0" ID="113e3698-614b-501e-a500-db8da32511a6" NAME="term">Small businesses</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="20b355ab-4fba-5a25-b84b-b97c152c345d" NAME="term">Employers</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="c1cbff96-d58f-5b18-a6bd-05febf8ec776" NAME="term">Companies</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="bc565469-cdd8-4c66-8c33-ee6d986f0328" NAME="term">People and organisations</FIELD>
+                <FIELD FREQ="0" ID="4424a12e-9352-5e4d-b7f5-ea0a07aa1da9" NAME="term">Organisations</FIELD>
+                <FIELD FREQ="0" ID="c1cbff96-d58f-5b18-a6bd-05febf8ec776" NAME="term">Companies</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO51</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.7411904" SRC="3" URI="http://smartlogic.com/term#OMITERMO699">
+            <NAME>Intelligence (information)</NAME>
+            <ID>d618e63d-636c-5c77-81ab-99bdef0126cd</ID>
+            <DISPLAY_NAME>Intelligence (information)</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business intelligence</SYNONYM>
+                <SYNONYM>Market intelligence</SYNONYM>
+                <SYNONYM>Military intelligence</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" NAME="Information and communication"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="f1570dbb-62da-5967-abf5-3b18c2885a44" NAME="term">Information</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="65aacec1-b9a2-5260-a1fa-065fb8d0e3dd" NAME="term">Data collection</FIELD>
+                <FIELD FREQ="0" ID="0b748a89-c743-5aaf-aa88-985db9fbc415" NAME="term">National security</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" NAME="term">Information and communication
+                </FIELD>
+                <FIELD FREQ="0" ID="f1570dbb-62da-5967-abf5-3b18c2885a44" NAME="term">Information</FIELD>
+                <FIELD FREQ="0" ID="d618e63d-636c-5c77-81ab-99bdef0126cd" NAME="term">Intelligence (information)</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO699</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.7411904" SRC="3" URI="http://smartlogic.com/term#OMITERMO7616">
+            <NAME>Relocation</NAME>
+            <ID>9218cba3-c2a7-5357-9add-823714b9e5ab</ID>
+            <DISPLAY_NAME>Relocation</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business relocation</SYNONYM>
+                <SYNONYM>Moving sites (business)</SYNONYM>
+                <SYNONYM>Relocation of businesses</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="5495566e-5b52-5dd1-aed5-cfc1b29b12f9" NAME="term">Organisational change</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="4" TYPE="Related To">
+                <FIELD FREQ="0" ID="26d1f188-24c4-5c22-9356-59f56c6722fe" NAME="term">Job transfers</FIELD>
+                <FIELD FREQ="0" ID="3f30082f-0b43-5269-b79d-b272afb84c2d" NAME="term">Redeployment</FIELD>
+                <FIELD FREQ="0" ID="fbba3a80-785c-51a1-a81d-c67601259051" NAME="term">Relocation allowances</FIELD>
+                <FIELD FREQ="0" ID="42218335-bf22-52e7-a20f-baf5a337f6e0" NAME="term">Temporary accommodation</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="5495566e-5b52-5dd1-aed5-cfc1b29b12f9" NAME="term">Organisational change</FIELD>
+                <FIELD FREQ="0" ID="9218cba3-c2a7-5357-9add-823714b9e5ab" NAME="term">Relocation</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="5495566e-5b52-5dd1-aed5-cfc1b29b12f9" NAME="term">Organisational change</FIELD>
+                <FIELD FREQ="0" ID="9218cba3-c2a7-5357-9add-823714b9e5ab" NAME="term">Relocation</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO7616</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.5476055" SRC="3" URI="http://smartlogic.com/term#OMITERMO6157">
+            <NAME>Fair trading</NAME>
+            <ID>5f620e9a-6720-5ade-b3ef-2726a28d4ffc</ID>
+            <DISPLAY_NAME>Fair trading</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Rogue Traders</SYNONYM>
+                <SYNONYM>Unfair business practices</SYNONYM>
+                <SYNONYM>Unfair trading</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="2" TYPE="Related To">
+                <FIELD FREQ="0" ID="340a652a-c2ee-5287-b704-d0f7a072aa4d" NAME="term">Ethical business practices</FIELD>
+                <FIELD FREQ="0" ID="d564f5d4-24aa-5489-b083-82022cc6440b" NAME="term">Retail trade</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="5f620e9a-6720-5ade-b3ef-2726a28d4ffc" NAME="term">Fair trading</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6157</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.5476055" SRC="3" URI="http://smartlogic.com/term#OMITERMO7603">
+            <NAME>Mergers</NAME>
+            <ID>b0320fbf-e563-5306-87ab-a396abe04ba1</ID>
+            <DISPLAY_NAME>Mergers</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business mergers</SYNONYM>
+                <SYNONYM>Company mergers</SYNONYM>
+                <SYNONYM>Mergers (business)</SYNONYM>
+                <SYNONYM>Organisation mergers</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="4f8a9ff9-82d1-5610-91b5-d589a5fe0190" NAME="term">Market competition</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="b0320fbf-e563-5306-87ab-a396abe04ba1" NAME="term">Mergers</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3023678c-cf96-5afb-96e3-429756746d84" NAME="term">Organisational development</FIELD>
+                <FIELD FREQ="0" ID="b0320fbf-e563-5306-87ab-a396abe04ba1" NAME="term">Mergers</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO7603</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.379559" SRC="3" URI="http://smartlogic.com/term#OMITERMO1660">
+            <NAME>Performance management</NAME>
+            <ID>18fa4117-357c-59c3-8497-8b45abd2488a</ID>
+            <DISPLAY_NAME>Performance management</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business performance</SYNONYM>
+                <SYNONYM>Corporate Performance</SYNONYM>
+                <SYNONYM>Performance (public sector bodies)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="10" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="6769a5cf-5075-5cc2-bb4c-2297800aa2ee" NAME="term">Accreditation</FIELD>
+                <FIELD FREQ="0" ID="8e75a956-59b8-5db6-b47b-b127e1d35743" NAME="term">Auditing</FIELD>
+                <FIELD FREQ="0" ID="77045459-28c6-59c1-9ebb-fe2c68b602f6" NAME="term">Best value</FIELD>
+                <FIELD FREQ="0" ID="a154c895-7858-58d3-8424-62b304b54394" NAME="term">Competitiveness</FIELD>
+                <FIELD FREQ="0" ID="4ff43cf5-733a-504b-b270-0e08d352ddab" NAME="term">Comprehensive performance
+                    assessment
+                </FIELD>
+                <FIELD FREQ="0" ID="310f5135-197e-50f0-aa50-2ee27ea31c4a" NAME="term">Council performance</FIELD>
+                <FIELD FREQ="0" ID="7a2c5c6c-a510-55ba-9e56-c9b5b1c21b6a" NAME="term">Performance measurement</FIELD>
+                <FIELD FREQ="0" ID="1d57cf7b-6b78-5688-8793-247cca8048bf" NAME="term">Performance targets</FIELD>
+                <FIELD FREQ="0" ID="b0d68567-bcfc-5849-9fdc-85d7c814c803" NAME="term">Quality management</FIELD>
+                <FIELD FREQ="0" ID="1f9ad882-5580-5c44-ac46-45d3fcc91a3a" NAME="term">Service Level Agreements</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="5" TYPE="Related To">
+                <FIELD FREQ="0" ID="9feaea0b-912f-5bb7-a17e-3bad8acfbf4c" NAME="term">Customer satisfaction</FIELD>
+                <FIELD FREQ="0" ID="ff23fed1-8917-5086-a557-e4c2c34c11bb" NAME="term">Maladministration</FIELD>
+                <FIELD FREQ="0" ID="ad445f71-6be4-56f8-9d68-f86f3432cf69" NAME="term">Public Service Agreements</FIELD>
+                <FIELD FREQ="0" ID="ad0989a5-c4b8-5470-8a4a-c9b874a04ea6" NAME="term">Public services</FIELD>
+                <FIELD FREQ="0" ID="9bb997f4-c968-568c-a633-abd7b3e4e0ba" NAME="term">School performance and standards
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="18fa4117-357c-59c3-8497-8b45abd2488a" NAME="term">Performance management</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="18fa4117-357c-59c3-8497-8b45abd2488a" NAME="term">Performance management</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO1660</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.379559" SRC="3" URI="http://smartlogic.com/term#OMITERMO704">
+            <NAME>Regulation and deregulation</NAME>
+            <ID>634fcb27-9878-5b3c-b079-cc63192813b4</ID>
+            <DISPLAY_NAME>Regulation and deregulation</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business regulations</SYNONYM>
+                <SYNONYM>Deregulation</SYNONYM>
+                <SYNONYM>Trading requirements</SYNONYM>
+                <SYNONYM>business legislation (regulations)</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="4" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="00b0aafd-bb88-5f48-b244-e8a8e0cf508c" NAME="term">Business licences</FIELD>
+                <FIELD FREQ="0" ID="4ad65fd2-f488-548e-8273-4a8b8b7fd53c" NAME="term">Employment regulations</FIELD>
+                <FIELD FREQ="0" ID="a10890e0-4632-5654-9a0b-4bdb4ea5a118" NAME="term">Financial regulation</FIELD>
+                <FIELD FREQ="0" ID="579525ad-6672-5026-97a9-a9f1310811ea" NAME="term">Regulatory impact assessment
+                </FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="8" TYPE="Related To">
+                <FIELD FREQ="0" ID="f12afc2f-dc68-5b9f-ad85-8c9a5e99a88d" NAME="term">Building regulations</FIELD>
+                <FIELD FREQ="0" ID="3b50a20f-e591-5b32-86d5-43f4b1f80896" NAME="term">Bureaucracy</FIELD>
+                <FIELD FREQ="0" ID="9de8f676-edfa-5e4a-a33e-7d4477fbbe2b" NAME="term">Business crime</FIELD>
+                <FIELD FREQ="0" ID="4187aa43-aae3-51d0-8a8f-abc54dad3401" NAME="term">Food legislation</FIELD>
+                <FIELD FREQ="0" ID="9c36d187-e67d-595a-9345-562b10da60de" NAME="term">Law</FIELD>
+                <FIELD FREQ="0" ID="caab4fa5-b980-5f39-8108-5e32d1174882" NAME="term">Legislation</FIELD>
+                <FIELD FREQ="0" ID="6624a343-0413-5668-8b7f-9b4e1343b7b0" NAME="term">Planning regulations</FIELD>
+                <FIELD FREQ="0" ID="5010b575-31d5-50da-bb81-84903b1d8330" NAME="term">Waste policies and regulation
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="634fcb27-9878-5b3c-b079-cc63192813b4" NAME="term">Regulation and deregulation
+                </FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO704</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="2.1022234" SRC="3" URI="http://smartlogic.com/term#OMITERMO2385">
+            <NAME>Commercial waste disposal</NAME>
+            <ID>b24ab47a-368e-5ab8-9496-230fcd3c38e3</ID>
+            <DISPLAY_NAME>Commercial waste disposal</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Business refuse disposal</SYNONYM>
+                <SYNONYM>Corporate refuse disposal</SYNONYM>
+                <SYNONYM>Trade waste disposal</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="Environment"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="dce1f74a-b381-5c77-9fd1-1bb023448be1" NAME="term">Waste disposal</FIELD>
+            </HIERARCHY>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="term">Environment</FIELD>
+                <FIELD FREQ="0" ID="820dc092-0ea6-55f0-a549-179ae6862e75" NAME="term">Waste management</FIELD>
+                <FIELD FREQ="0" ID="dce1f74a-b381-5c77-9fd1-1bb023448be1" NAME="term">Waste disposal</FIELD>
+                <FIELD FREQ="0" ID="b24ab47a-368e-5ab8-9496-230fcd3c38e3" NAME="term">Commercial waste disposal</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO2385</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="1.8827863" SRC="3" URI="http://smartlogic.com/term#OMITERMO5976">
+            <NAME>Premises to let</NAME>
+            <ID>15760bb8-d35f-5611-9f2f-65c0b60bccf0</ID>
+            <DISPLAY_NAME>Premises to let</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Rental property (commercial)</SYNONYM>
+                <SYNONYM>Rented property (commercial)</SYNONYM>
+                <SYNONYM>To Let (business premises)</SYNONYM>
+                <SYNONYM>Unoccupied premises to let</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="Environment"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="9e7a7c94-c125-540d-a915-b90243ef704a" NAME="term">Business premises</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="adadd846-850c-5b84-8079-51c5962695ab" NAME="term">Leasing</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="term">Environment</FIELD>
+                <FIELD FREQ="0" ID="b4beb2c2-8c55-554c-a6a0-44472e4a1adb" NAME="term">Land and premises</FIELD>
+                <FIELD FREQ="0" ID="a86d1a8b-bae4-58bd-8421-03d9b348636a" NAME="term">Non-residential property</FIELD>
+                <FIELD FREQ="0" ID="9e7a7c94-c125-540d-a915-b90243ef704a" NAME="term">Business premises</FIELD>
+                <FIELD FREQ="0" ID="15760bb8-d35f-5611-9f2f-65c0b60bccf0" NAME="term">Premises to let</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO5976</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="1.1960968" SRC="3" URI="http://smartlogic.com/term#OMITERMO1483">
+            <NAME>Procurement</NAME>
+            <ID>500e6874-1345-5d66-a269-bf362130bd28</ID>
+            <DISPLAY_NAME>Procurement</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Approved Suppliers (procurement)</SYNONYM>
+                <SYNONYM>Business procurement (by private sector companies)</SYNONYM>
+                <SYNONYM>Business procurement (public sector purchasing)</SYNONYM>
+                <SYNONYM>Procurement (private sector)</SYNONYM>
+                <SYNONYM>commissions for supplies to government bodies</SYNONYM>
+                <SYNONYM>contracts for supplies to government bodies</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+                <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="2" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+                <FIELD FREQ="0" ID="df202a91-d1ff-5363-8069-7e1d9c089dbf" NAME="term">Resource management</FIELD>
+            </HIERARCHY>
+            <HIERARCHY ABBR="NT" QTY="8" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="0988705a-d9ce-5cee-850c-d0e12a64a066" NAME="term">Contract management</FIELD>
+                <FIELD FREQ="0" ID="adadd846-850c-5b84-8079-51c5962695ab" NAME="term">Leasing</FIELD>
+                <FIELD FREQ="0" ID="b62cac8f-d091-5b81-bdf3-18fbc69a5219" NAME="term">Outsourcing</FIELD>
+                <FIELD FREQ="0" ID="a9540443-a5d1-50cf-801b-b8e603be1838" NAME="term">Product evaluation</FIELD>
+                <FIELD FREQ="0" ID="f1935f26-a1a3-56e7-b67c-0bea53e1e858" NAME="term">Purchase orders</FIELD>
+                <FIELD FREQ="0" ID="fa0424a8-bd38-5547-87d3-256bacd43a76" NAME="term">Purchasing</FIELD>
+                <FIELD FREQ="0" ID="77e9fca9-cf25-5044-9b2e-21a449c6ffc7" NAME="term">Subcontracting</FIELD>
+                <FIELD FREQ="0" ID="b0b9906f-63a9-5dd2-80d9-03ebe2cf03e1" NAME="term">Tendering</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="5" TYPE="Related To">
+                <FIELD FREQ="0" ID="ec8e2f6e-289e-5f0c-b106-3cf65a376a7a" NAME="term">Council opportunities</FIELD>
+                <FIELD FREQ="0" ID="6b143cba-9920-5abf-a81a-fc76c70ff40f" NAME="term">Defence equipment and supplies
+                </FIELD>
+                <FIELD FREQ="0" ID="dfe76499-5baf-5e37-b9bc-13b940914e0d" NAME="term">Expenditure</FIELD>
+                <FIELD FREQ="0" ID="2984e64c-aaf8-53e1-bff4-a780095db7bc" NAME="term">Public finance</FIELD>
+                <FIELD FREQ="0" ID="d7bfc3e9-b574-5f63-9bb5-0911c76b3af1" NAME="term">Public private partnerships
+                </FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+                <FIELD FREQ="0" ID="500e6874-1345-5d66-a269-bf362130bd28" NAME="term">Procurement</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="df202a91-d1ff-5363-8069-7e1d9c089dbf" NAME="term">Resource management</FIELD>
+                <FIELD FREQ="0" ID="500e6874-1345-5d66-a269-bf362130bd28" NAME="term">Procurement</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="3733edf6-30e8-5e3d-b77c-00f1ce94468e" NAME="term">Financial management</FIELD>
+                <FIELD FREQ="0" ID="500e6874-1345-5d66-a269-bf362130bd28" NAME="term">Procurement</FIELD>
+            </PATH>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="term">Government, politics and public
+                    administration
+                </FIELD>
+                <FIELD FREQ="0" ID="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" NAME="term">Public administration</FIELD>
+                <FIELD FREQ="0" ID="e2f2dd5a-8353-508e-b172-ddc797fbaa9b" NAME="term">Business management</FIELD>
+                <FIELD FREQ="0" ID="df202a91-d1ff-5363-8069-7e1d9c089dbf" NAME="term">Resource management</FIELD>
+                <FIELD FREQ="0" ID="500e6874-1345-5d66-a269-bf362130bd28" NAME="term">Procurement</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO1483</FIELD>
+                <FIELD NAME="Internal">1</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+        <TERM SCORE="0.81690055" SRC="3" URI="http://smartlogic.com/term#OMITERMO6312">
+            <NAME>Food related licences</NAME>
+            <ID>a1e0d45a-7ae5-5b5a-bd63-8b0de4ed6768</ID>
+            <DISPLAY_NAME>Food related licences</DISPLAY_NAME>
+            <FREQUENCY>0</FREQUENCY>
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <SYNONYMS ABBR="UF" TYPE="Use For">
+                <SYNONYM>Butcher's shop licences</SYNONYM>
+                <SYNONYM>Food business premises registration</SYNONYM>
+                <SYNONYM>Food premises registration</SYNONYM>
+                <SYNONYM>Late hours catering licences</SYNONYM>
+                <SYNONYM>Night cafe registration</SYNONYM>
+                <SYNONYM>Refreshment house licences (late night)</SYNONYM>
+                <SYNONYM>Street cafe licences</SYNONYM>
+                <SYNONYM>butchers licences</SYNONYM>
+                <SYNONYM>food delivery vehicles registration</SYNONYM>
+                <SYNONYM>late night refreshment house licences</SYNONYM>
+            </SYNONYMS>
+            <FACETS>
+                <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            </FACETS>
+            <HIERARCHY ABBR="BT" QTY="1" TYPE="Broader Term">
+                <FIELD FREQ="0" ID="00b0aafd-bb88-5f48-b244-e8a8e0cf508c" NAME="term">Business licences</FIELD>
+            </HIERARCHY>
+            <ASSOCIATED ABBR="RT" QTY="1" TYPE="Related To">
+                <FIELD FREQ="0" ID="4a79fe6f-11ab-5e00-a14d-045b6d279e7b" NAME="term">Game licences</FIELD>
+            </ASSOCIATED>
+            <PATH ABBR="NT" TYPE="Narrower Term">
+                <FIELD FREQ="0" ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="term">Business and industry</FIELD>
+                <FIELD FREQ="0" ID="736e1f31-3996-51a7-9c9c-48866552d50b" NAME="term">Business practice and regulation
+                </FIELD>
+                <FIELD FREQ="0" ID="634fcb27-9878-5b3c-b079-cc63192813b4" NAME="term">Regulation and deregulation
+                </FIELD>
+                <FIELD FREQ="0" ID="00b0aafd-bb88-5f48-b244-e8a8e0cf508c" NAME="term">Business licences</FIELD>
+                <FIELD FREQ="0" ID="a1e0d45a-7ae5-5b5a-bd63-8b0de4ed6768" NAME="term">Food related licences</FIELD>
+            </PATH>
+            <METADATA>
+                <FIELD NAME="URI">http://smartlogic.com/term#OMITERMO6312</FIELD>
+            </METADATA>
+            <CREATED_DATE>2020-11-02T17:52:34+0000</CREATED_DATE>
+            <MODIFIED_DATE>2020-11-02T17:52:34+0000</MODIFIED_DATE>
+        </TERM>
+    </TERMS>
+</SEMAPHORE>

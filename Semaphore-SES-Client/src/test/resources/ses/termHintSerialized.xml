@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<termHint>
+    <name>Appointments procedure</name>
+    <id>346a90a2-c8e9-523f-8a32-58fe02ba6efe</id>
+    <weight>0.0</weight>
+    <facet>
+        <name>Government, politics and public administration</name>
+        <id>ed296c39-8be6-4257-b44b-4bae4ad2d9c9</id>
+    </facet>
+    <facets>
+        <facetList>
+            <name>Business and industry</name>
+            <id>abb97cf2-3b2c-4ed2-a205-36ad9a7b0085</id>
+        </facetList>
+        <facetList>
+            <name>Government, politics and public administration</name>
+            <id>ed296c39-8be6-4257-b44b-4bae4ad2d9c9</id>
+        </facetList>
+    </facets>
+    <termClasses>
+        <termClassList>
+            <value>Concept</value>
+        </termClassList>
+    </termClasses>
+    <hint>Appointments procedure</hint>
+    <values>
+        <valueList>
+            <nature>PT</nature>
+            <id>346a90a2-c8e9-523f-8a32-58fe02ba6efe</id>
+            <em>Appo</em>
+            <preEm></preEm>
+            <postEm>intments procedure</postEm>
+        </valueList>
+    </values>
+</termHint>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<SEMAPHORE>
+    <PARAMETERS>
+        <PARAMETER NAME="template">service.xml</PARAMETER>
+        <PARAMETER NAME="fl">id, name_en_pl, name_en, class_name_en, [child parentFilter="(content_type:concept OR content_type:concept_scheme)" childFilter=content_type:facet]</PARAMETER>
+        <PARAMETER NAME="language">en</PARAMETER>
+        <PARAMETER NAME="language">en</PARAMETER>
+        <PARAMETER NAME="language">en</PARAMETER>
+        <PARAMETER NAME="fq">content_type:concept_scheme content_type:concept</PARAMETER>
+        <PARAMETER NAME="sort">score desc, name_en_pl asc</PARAMETER>
+        <PARAMETER NAME="rows">10</PARAMETER>
+        <PARAMETER NAME="version">1</PARAMETER>
+        <PARAMETER NAME="raw_query">appo</PARAMETER>
+        <PARAMETER NAME="structure">XML</PARAMETER>
+        <PARAMETER NAME="q">autocomplete_en_plf:appo* autocomplete_en_f:appo* autocomplete_en_pl:appo* autocomplete_en:appo*</PARAMETER>
+        <PARAMETER NAME="defType">edismax</PARAMETER>
+        <PARAMETER NAME="qf">autocomplete_en_plf^100.0 autocomplete_en_f^20.0 autocomplete_en_pl^50.0 autocomplete_en^1.0</PARAMETER>
+        <PARAMETER NAME="service">PREFIX</PARAMETER>
+        <PARAMETER NAME="tbdb">IPSV</PARAMETER>
+        <PARAMETER NAME="wt">sesHintsXML</PARAMETER>
+    </PARAMETERS>
+    <TERM_HINTS total="1">
+        <TERM_HINT ID="346a90a2-c8e9-523f-8a32-58fe02ba6efe" NAME="Appointments procedure">
+            <CLASSES>
+                <CLASS>Concept</CLASS>
+            </CLASSES>
+            <HINT ID="346a90a2-c8e9-523f-8a32-58fe02ba6efe" NATURE="PT">
+                <EM>Appo</EM>
+                intments procedure
+            </HINT>
+            <FACET ID="729c064f-166c-4924-b1b7-ffe38484142d" NAME="Business and industry"/>
+            <FACET ID="10612c03-a3ee-4272-ab88-6e403821700c" NAME="Government, politics and public administration"/>
+        </TERM_HINT>
+    </TERM_HINTS>
+</SEMAPHORE>
