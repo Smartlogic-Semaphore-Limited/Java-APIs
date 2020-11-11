@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<SEMAPHORE>
+    <MODELS>
+        <MODEL>
+            <NAME>IPSV</NAME>
+            <LANGUAGE>en</LANGUAGE>
+        </MODEL>
+        <MODEL>
+            <NAME>myExample</NAME>
+            <LANGUAGE>en</LANGUAGE>
+        </MODEL>
+    </MODELS>
+</SEMAPHORE>

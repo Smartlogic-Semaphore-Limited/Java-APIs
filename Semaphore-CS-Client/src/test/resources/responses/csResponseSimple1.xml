@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <STRUCTUREDDOCUMENT>
+        <URL>../tmp/1605058754_e</URL>
+        <SYSTEM name="HASH" value="eb957e3851225a78b8d7ba38245190fc"/>
+        <META name="Type" value="TEXT (4003)"/>
+        <META name="title/document_title" value="This is the document title"/>
+        <SYSTEM name="Template" value="default"/>
+        <META name="IPSV-Information and communication" value="Information and communication" id="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" score="0.59"/>
+        <META name="IPSV-Information and communication" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+        <META name="IPSV-Science, technology and innovation" value="Science, technology and innovation" id="e41d67e2-48bb-42bf-ba46-df7065ed0285" score="0.59"/>
+        <META name="IPSV-Science, technology and innovation" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+        <META name="IPSV-Leisure and culture" value="Tennis" id="d51be24c-9b5d-5a8f-b609-e1fd57f06b32" score="0.60"/>
+        <META name="IPSV-Health, well-being and care" value="Income support" id="f38a868e-ab4c-56d7-b3c6-6a3347a8dec5" score="0.84"/>
+        <META name="IPSV-Health, well-being and care" value="Benefits" id="1dda225f-ca80-5d33-a8cd-3770c08e7450" score="0.50"/>
+        <META name="IPSV-Health, well-being and care" value="Drinks" id="244647fc-80b7-5aed-b4bf-abb5ce93d98f" score="0.60"/>
+        <ARTICLE>
+            <SYSTEM name="DeterminedLanguage" value="english"/>
+            <SYSTEM name="LanguageGuessed" value="yes"/>
+            <META name="IPSV-Information and communication" value="Information and communication" id="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" score="0.59"/>
+            <META name="IPSV-Information and communication" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+            <META name="IPSV-Science, technology and innovation" value="Science, technology and innovation" id="e41d67e2-48bb-42bf-ba46-df7065ed0285" score="0.59"/>
+            <META name="IPSV-Science, technology and innovation" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+            <META name="IPSV-Leisure and culture" value="Tennis" id="d51be24c-9b5d-5a8f-b609-e1fd57f06b32" score="0.60"/>
+            <META name="IPSV-Health, well-being and care" value="Income support" id="f38a868e-ab4c-56d7-b3c6-6a3347a8dec5" score="0.84"/>
+            <META name="IPSV-Health, well-being and care" value="Benefits" id="1dda225f-ca80-5d33-a8cd-3770c08e7450" score="0.50"/>
+            <META name="IPSV-Health, well-being and care" value="Drinks" id="244647fc-80b7-5aed-b4bf-abb5ce93d98f" score="0.60"/>
+        </ARTICLE>
+    </STRUCTUREDDOCUMENT>
+</response>

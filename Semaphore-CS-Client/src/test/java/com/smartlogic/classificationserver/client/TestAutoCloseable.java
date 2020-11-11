@@ -2,6 +2,7 @@ package com.smartlogic.classificationserver.client;
 
 import org.testng.annotations.Test;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
@@ -9,6 +10,11 @@ public class TestAutoCloseable extends ClassificationTestCase {
 
     @Test
     public void testAutoClose() {
+        wireMockRule.stubFor(post(urlEqualTo("/"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "text/xml")
+                        .withBody(readFileToString("src/test/resources/responses/csResponseGetVersion.xml"))));
+
         try (ClassificationClient client = new ClassificationClient()) {
             ClassificationConfiguration config = new ClassificationConfiguration();
             config.setUrl((String)this.config.get("cs.url"));

@@ -1,25 +1,28 @@
 package com.smartlogic.classificationserver.client;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.testng.annotations.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 	protected final static Log logger = LogFactory.getLog(ClassifyBinaryTest.class);
 
 	@Test
 	public void testBinary() throws IOException, ClassificationException {
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseSamplePdf.xml"))));
+
 		File file = new File("src/test/resources/data/sample.pdf");
 		try (FileInputStream fileInputStream = new FileInputStream(file);
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();) {
@@ -43,6 +46,11 @@ public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 
 	@Test
 	public void testBodyInBytesOut() throws IOException, ClassificationException {
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseSamplePdf.xml"))));
+
 		File file = new File("src/test/resources/data/sample.pdf");
 		try (FileInputStream fileInputStream = new FileInputStream(file);
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();) {
@@ -81,6 +89,11 @@ public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 
 	@Test
 	public void testBodyTitleMetaInBytesOut() throws IOException, ClassificationException {
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseTestInBytesOut.xml"))));
+
 		Properties props = new Properties();
 		File file = new File("src/test/resources/data/testInBytesOut.txt");
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {
@@ -94,6 +107,11 @@ public class ClassifyBinaryInXmlOut extends ClassificationTestCase {
 
 	@Test
 	public void testUrlTitleMetaInBytesOut() throws IOException, ClassificationException {
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseTestInBytesOut.xml"))));
+
 		Properties props = new Properties();
 		File file = new File("src/test/resources/data/testInBytesOut.txt");
 		try (FileInputStream fileInputStream = new FileInputStream(file)) {

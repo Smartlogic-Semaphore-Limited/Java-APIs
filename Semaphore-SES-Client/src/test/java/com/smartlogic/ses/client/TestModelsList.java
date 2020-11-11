@@ -29,14 +29,7 @@ public class TestModelsList extends PrintingTestCase {
 		wireMockRule.stubFor(get(urlEqualTo("/ses?template=service.xml&service=modelslist"))
 				.willReturn(aResponse()
 						.withHeader("Content-Type", "text/xml")
-						.withBody("<SEMAPHORE>\n" +
-								"<MODELS>\n" +
-								"<MODEL>\n" +
-								"<NAME>IPSV</NAME>\n" +
-								"<LANGUAGE>en</LANGUAGE>\n" +
-								"</MODEL>\n" +
-								"</MODELS>\n" +
-								"</SEMAPHORE>")));
+						.withBody(readFileToString("src/test/resources/ses/sesResponseModelsList.xml"))));
 		Collection<Model> models = sesClient.listModels();
 		assertNotNull(models);
 		logger.info("testListModels - exit");

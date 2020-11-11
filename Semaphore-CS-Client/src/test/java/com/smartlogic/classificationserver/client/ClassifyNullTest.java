@@ -1,14 +1,20 @@
 package com.smartlogic.classificationserver.client;
 
-import static org.testng.Assert.assertEquals;
-
 import org.testng.annotations.Test;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.testng.Assert.assertEquals;
 
 public class ClassifyNullTest extends ClassificationTestCase {
 
 	@Test
 	public void testNull() throws ClassificationException {
-		
+
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseNoResults.xml"))));
+
 		String title = "This is the document title";
 		String body = "";
 		Result result1 = classificationClient.getClassifiedDocument(new Body(body), new Title(title));

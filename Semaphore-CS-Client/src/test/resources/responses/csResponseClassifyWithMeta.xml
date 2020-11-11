@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <STRUCTUREDDOCUMENT>
+        <URL>../tmp/1605111701_e</URL>
+        <SYSTEM name="HASH" value="861df5742e22cd1d18059530d263862d"/>
+        <META name="Type" value="TEXT (4003)"/>
+        <META name="title/document_title" value="This is the document title"/>
+        <META name="URL" value="http://www.bbc.co.uk"/>
+        <META name="URL" value="http://www.telegraph.co.uk"/>
+        <SYSTEM name="Template" value="default"/>
+        <META name="IPSV-Health, well-being and care" value="Income support" id="f38a868e-ab4c-56d7-b3c6-6a3347a8dec5"
+              score="0.60"/>
+        <META name="IPSV-Transport and infrastructure" value="Abandoned vehicles"
+              id="7d293202-be05-527f-8be9-b55fe6da0be1" score="0.60"/>
+        <ARTICLE>
+            <SYSTEM name="DeterminedLanguage" value="english"/>
+            <SYSTEM name="LanguageGuessed" value="yes"/>
+            <META name="IPSV-Health, well-being and care" value="Income support"
+                  id="f38a868e-ab4c-56d7-b3c6-6a3347a8dec5" score="0.60"/>
+            <META name="IPSV-Transport and infrastructure" value="Abandoned vehicles"
+                  id="7d293202-be05-527f-8be9-b55fe6da0be1" score="0.60"/>
+        </ARTICLE>
+    </STRUCTUREDDOCUMENT>
+</response>

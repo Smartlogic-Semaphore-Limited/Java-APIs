@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <languages type="Language_Pack">
+        <language id="en" name="English" display="English (English)" default="true" has_rules_defined="true"/>
+    </languages>
+</response>
