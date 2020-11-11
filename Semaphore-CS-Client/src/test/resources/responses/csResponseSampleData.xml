@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <STRUCTUREDDOCUMENT>
+        <URL>../tmp/SampleData.txt</URL>
+        <SYSTEM name="HASH" value="ebb1736d30b446a6cba45923076a18fa"/>
+        <META name="Type" value="TEXT (4003)"/>
+        <META name="title/document_title" value="title"/>
+        <SYSTEM name="Template" value="default"/>
+        <META name="IPSV-Information and communication" value="Information and communication" id="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" score="0.59"/>
+        <META name="IPSV-Information and communication" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+        <META name="IPSV-Life in the community" value="Civic amenity sites" id="1c7e742f-abf6-5e3f-af8d-b5df7031651b" score="0.60"/>
+        <META name="IPSV-Life in the community" value="Community facilities" id="8e23cfcf-42b7-5c4c-b323-1397b4dc57c5" score="0.59"/>
+        <META name="IPSV-Science, technology and innovation" value="Science, technology and innovation" id="e41d67e2-48bb-42bf-ba46-df7065ed0285" score="0.59"/>
+        <META name="IPSV-Science, technology and innovation" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+        <META name="IPSV-Health, well-being and care" value="Income support" id="f38a868e-ab4c-56d7-b3c6-6a3347a8dec5" score="0.94"/>
+        <META name="IPSV-Health, well-being and care" value="Benefits" id="1dda225f-ca80-5d33-a8cd-3770c08e7450" score="0.56"/>
+        <META name="IPSV-Transport and infrastructure" value="Abandoned vehicles" id="7d293202-be05-527f-8be9-b55fe6da0be1" score="0.99"/>
+        <META name="IPSV-Transport and infrastructure" value="Roads and highways" id="bef4b158-a785-5cdb-b469-31b6ba4e1453" score="0.60"/>
+        <META name="IPSV-Transport and infrastructure" value="Car parks" id="0cc690c2-e3fd-5e3d-acad-fa82f7da422f" score="0.99"/>
+        <META name="IPSV-Transport and infrastructure" value="Vehicles" id="187f5946-ccde-54c5-9157-6f2208691b37" score="0.86"/>
+        <META name="IPSV-Transport and infrastructure" value="Parking" id="3b7f9e76-2156-5341-bf58-c7252c6d723b" score="0.59"/>
+        <META name="IPSV-Transport and infrastructure" value="Cars" id="908d6083-8f33-5390-bcf4-29b5a4543c63" score="0.94"/>
+        <META name="IPSV-Environment" value="Animal fouling" id="ddc4132c-f811-5d91-9b51-3ae170d62eec" score="0.98"/>
+        <META name="IPSV-Environment" value="Dogs" id="9a354b49-a7d6-5701-959c-0d741628ade0" score="0.95"/>
+        <META name="IPSV-Environment" value="Civic amenity sites" id="1c7e742f-abf6-5e3f-af8d-b5df7031651b" score="0.60"/>
+        <META name="IPSV-Environment" value="Pollution" id="06d7d731-9e5c-5788-a2a2-327418831853" score="0.59"/>
+        <META name="IPSV-Environment" value="Animals" id="7d683678-0159-559e-b575-48ae982e9bf0" score="0.78"/>
+        <META name="IPSV-Environment" value="Animal nuisance" id="7b44c827-0fcc-52a9-9513-f3bc20ea56ba" score="0.59"/>
+        <META name="IPSV-Environment" value="Pets" id="304dbd0e-4696-5a52-850f-0404c2ad74ba" score="0.66"/>
+        <META name="IPSV-Environment" value="Waste management" id="820dc092-0ea6-55f0-a549-179ae6862e75" score="0.59"/>
+        <META name="AMDS-Data Dictionary" value="Parking" id="434353d8-208b-49fd-86b8-72515f6da6b1" score="0.60"/>
+        <META name="AMDS-Data Dictionary" value="Listed value" id="6e1136ba-1f4b-4015-b05e-b9c7b007df2b" score="0.59"/>
+        <META name="AMDS-Data Dictionary" value="Animals" id="bf066adf-1a8e-48e5-aee0-b3a3b2010f03" score="0.60"/>
+        <ARTICLE>
+            <SYSTEM name="DeterminedLanguage" value="english"/>
+            <SYSTEM name="LanguageGuessed" value="yes"/>
+            <META name="IPSV-Information and communication" value="Information and communication" id="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" score="0.59"/>
+            <META name="IPSV-Information and communication" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+            <META name="IPSV-Life in the community" value="Civic amenity sites" id="1c7e742f-abf6-5e3f-af8d-b5df7031651b" score="0.60"/>
+            <META name="IPSV-Life in the community" value="Community facilities" id="8e23cfcf-42b7-5c4c-b323-1397b4dc57c5" score="0.59"/>
+            <META name="IPSV-Science, technology and innovation" value="Science, technology and innovation" id="e41d67e2-48bb-42bf-ba46-df7065ed0285" score="0.59"/>
+            <META name="IPSV-Science, technology and innovation" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+            <META name="IPSV-Health, well-being and care" value="Income support" id="f38a868e-ab4c-56d7-b3c6-6a3347a8dec5" score="0.94"/>
+            <META name="IPSV-Health, well-being and care" value="Benefits" id="1dda225f-ca80-5d33-a8cd-3770c08e7450" score="0.56"/>
+            <META name="IPSV-Transport and infrastructure" value="Abandoned vehicles" id="7d293202-be05-527f-8be9-b55fe6da0be1" score="0.99"/>
+            <META name="IPSV-Transport and infrastructure" value="Roads and highways" id="bef4b158-a785-5cdb-b469-31b6ba4e1453" score="0.60"/>
+            <META name="IPSV-Transport and infrastructure" value="Car parks" id="0cc690c2-e3fd-5e3d-acad-fa82f7da422f" score="0.99"/>
+            <META name="IPSV-Transport and infrastructure" value="Vehicles" id="187f5946-ccde-54c5-9157-6f2208691b37" score="0.86"/>
+            <META name="IPSV-Transport and infrastructure" value="Parking" id="3b7f9e76-2156-5341-bf58-c7252c6d723b" score="0.59"/>
+            <META name="IPSV-Transport and infrastructure" value="Cars" id="908d6083-8f33-5390-bcf4-29b5a4543c63" score="0.94"/>
+            <META name="IPSV-Environment" value="Animal fouling" id="ddc4132c-f811-5d91-9b51-3ae170d62eec" score="0.98"/>
+            <META name="IPSV-Environment" value="Dogs" id="9a354b49-a7d6-5701-959c-0d741628ade0" score="0.95"/>
+            <META name="IPSV-Environment" value="Civic amenity sites" id="1c7e742f-abf6-5e3f-af8d-b5df7031651b" score="0.60"/>
+            <META name="IPSV-Environment" value="Pollution" id="06d7d731-9e5c-5788-a2a2-327418831853" score="0.59"/>
+            <META name="IPSV-Environment" value="Animals" id="7d683678-0159-559e-b575-48ae982e9bf0" score="0.78"/>
+            <META name="IPSV-Environment" value="Animal nuisance" id="7b44c827-0fcc-52a9-9513-f3bc20ea56ba" score="0.59"/>
+            <META name="IPSV-Environment" value="Pets" id="304dbd0e-4696-5a52-850f-0404c2ad74ba" score="0.66"/>
+            <META name="IPSV-Environment" value="Waste management" id="820dc092-0ea6-55f0-a549-179ae6862e75" score="0.59"/>
+            <META name="AMDS-Data Dictionary" value="Parking" id="434353d8-208b-49fd-86b8-72515f6da6b1" score="0.60"/>
+            <META name="AMDS-Data Dictionary" value="Listed value" id="6e1136ba-1f4b-4015-b05e-b9c7b007df2b" score="0.59"/>
+            <META name="AMDS-Data Dictionary" value="Animals" id="bf066adf-1a8e-48e5-aee0-b3a3b2010f03" score="0.60"/>
+        </ARTICLE>
+    </STRUCTUREDDOCUMENT>
+</response>

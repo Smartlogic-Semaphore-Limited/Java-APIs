@@ -6,9 +6,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import wiremock.org.apache.commons.io.FileUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;

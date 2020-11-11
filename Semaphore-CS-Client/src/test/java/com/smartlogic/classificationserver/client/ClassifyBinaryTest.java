@@ -1,6 +1,8 @@
 package com.smartlogic.classificationserver.client;
 
-import static org.testng.Assert.assertEquals;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -11,15 +13,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.testng.Assert.assertEquals;
 
 public class ClassifyBinaryTest extends ClassificationTestCase {
 	protected final static Log logger = LogFactory.getLog(ClassifyBinaryTest.class);
 
 	@Test
 	public void testBinary() throws IOException, ClassificationException {
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseSampleData.xml"))));
+
 		File file = new File("src/test/resources/data/SampleData.txt");
 		try (FileInputStream fileInputStream = new FileInputStream(file); ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();) {
 			
@@ -35,7 +41,7 @@ public class ClassifyBinaryTest extends ClassificationTestCase {
 			Map<String, Collection<ClassificationScore>> binaryScores1 = classificationClient
 					.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt")
 					.getAllClassifications();
-			assertEquals(6, binaryScores1.size(), "run1 - Category count");
+			assertEquals(7, binaryScores1.size(), "run1 - Category count");
 			assertEquals(2, binaryScores1.get("IPSV-Information and communication").size(), "run1 - IPSV-Information and communication");
 
 
@@ -50,7 +56,7 @@ public class ClassifyBinaryTest extends ClassificationTestCase {
 					.getClassifiedDocument(byteArrayOutputStream.toByteArray(), "SampleData.txt", new Title("title"),
 							metadata)
 					.getAllClassifications();
-			assertEquals(6, binaryScores2.size(), "run2 - Category count");
+			assertEquals(7, binaryScores2.size(), "run2 - Category count");
 			assertEquals(2, binaryScores2.get("IPSV-Information and communication").size(), "run2 - IPSV-Information and communication");
 		}
 	}

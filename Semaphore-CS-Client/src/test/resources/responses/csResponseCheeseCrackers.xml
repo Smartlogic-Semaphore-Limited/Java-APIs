@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <STRUCTUREDDOCUMENT>
+        <URL>../tmp/1605057586_e</URL>
+        <SYSTEM name="HASH" value="0a5cb15882dbf7ff35febf695e14e972"/>
+        <META name="Type" value="TEXT (4003)"/>
+        <META name="title/document_title" value="Cheese crackers"/>
+        <SYSTEM name="Template" value="default"/>
+        <META name="person" value="Wibble" score="1.00"/>
+        <ARTICLE>
+            <SYSTEM name="DeterminedLanguage" value="english"/>
+            <SYSTEM name="LanguageGuessed" value="yes"/>
+            <META name="person" value="Wibble" score="1.00" CandidateKey="365072220161"/>
+            <META name="IPSV-Health, well-being and care" value="Milk and dairy products" id="e1e61789-3716-5ec6-b0d6-e76e57c2eff3" score="0.60"/>
+        </ARTICLE>
+    </STRUCTUREDDOCUMENT>
+</response>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <Parameters>
+        <Param name="bLanguageSpecified" value="0"/>
+        <Param name="bLanguageGuessed" value="0"/>
+        <Param name="bUseGeneratedKeys" value="0"/>
+        <Param name="CharCountCutoff" value="500000"/>
+        <Param name="clustering_threshold" value="20"/>
+        <Param name="clustering_type" value="4" translation="RMS"/>
+        <Param name="diagnostics" value="0"/>
+        <Param name="document_paths" value="0"/>
+        <Param name="document_score_limit " value="0"/>
+        <Param name="EvaluateNode" value="0"/>
+        <Param name="EvaluateFiringKey" value="0"/>
+        <Param name="bEvaluateNodeIsGeneratedKey" value="1"/>
+        <Param name="bEvaluateNodeNoRepeats" value="0"/>
+        <Param name="bEvaluateNodeFollowAll" value="0"/>
+        <Param name="feedback" value="0" translation="FEEDBACK_NONE"/>
+        <Param name="handler_type" value="1" translation="XML"/>
+        <Param name="id_" value="3"/>
+        <Param name="language" value="en1" translation="English"/>
+        <Param name="minimum_average_article_pagesize" value="1.000000"/>
+        <Param name="num_articles_processed_in_singlepass" value="25"/>
+        <Param name="operation" value="getparameterdefaults"/>
+        <Param name="OperationMode" value="0" translation="Normal"/>
+        <Param name="SecurePDFHandling" value="ignore"/>
+        <Param name="SplittingTemplate" value=""/>
+        <Param name="Port" value="5059"/>
+        <Param name="singlearticle" value="0"/>
+        <Param name="zones" value="0"/>
+        <Param name="stylesheet" value=""/>
+        <Param name="threshold" value="48"/>
+        <Param name="title" value=""/>
+        <Param name="useXYSortOrderInPDF" value="0"/>
+        <Param name="UseXMLExportInsteadOfContentAccess" value="0"/>
+        <Param name="temporary_directory" value="../tmp"/>
+    </Parameters>
+</response>

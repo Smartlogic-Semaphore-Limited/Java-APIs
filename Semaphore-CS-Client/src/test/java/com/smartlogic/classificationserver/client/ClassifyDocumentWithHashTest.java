@@ -1,6 +1,8 @@
 package com.smartlogic.classificationserver.client;
 
-import static org.testng.Assert.assertEquals;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -11,15 +13,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.testng.Assert.assertEquals;
 
 public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 	protected final static Log logger = LogFactory.getLog(ClassifyDocumentWithHashTest.class);
 
 	@Test
 	public void testBinary() throws IOException, ClassificationException {
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseSampleData.xml"))));
+
 		File file = new File("src/test/resources/data/SampleData.txt");
 		try (FileInputStream fileInputStream = new FileInputStream(file);
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();) {
@@ -37,7 +43,12 @@ public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 
 			Result result1 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(),
 					"SampleData.txt");
-			assertEquals("e1bd32ef968c3508c1cae0d909b33a84", result1.getHash(), "Hash 1");
+			assertEquals("ebb1736d30b446a6cba45923076a18fa", result1.getHash(), "Hash 1");
+
+			wireMockRule.stubFor(post(urlEqualTo("/"))
+					.willReturn(aResponse()
+							.withHeader("Content-Type", "text/xml")
+							.withBody(readFileToString("src/test/resources/responses/csResponseSampleDataWithMetas.xml"))));
 
 			Map<String, Collection<String>> metadata = new HashMap<String, Collection<String>>();
 			Collection<String> cheeses = new Vector<String>();
@@ -48,7 +59,7 @@ public class ClassifyDocumentWithHashTest extends ClassificationTestCase {
 
 			Result result2 = classificationClient.getClassifiedDocument(byteArrayOutputStream.toByteArray(),
 					"SampleData.txt", new Title("title"), metadata);
-			assertEquals("7067aac90aea369e3220eb74fb12596a", result2.getHash(), "Hash 2");
+			assertEquals("d946fd5c0b416c0b0ff56a3a1a94c9ad", result2.getHash(), "Hash 2");
 
 		}
 	}

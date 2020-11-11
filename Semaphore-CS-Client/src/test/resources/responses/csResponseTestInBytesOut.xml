@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <STRUCTUREDDOCUMENT>
+        <URL>../tmp/TestInBytesOut.txt</URL>
+        <SYSTEM name="HASH" value="80080bdae722ff73543891314320b382"/>
+        <META name="Type" value="TEXT (4003)"/>
+        <META name="Example" value=""/>
+        <SYSTEM name="Template" value="default"/>
+        <META name="IPSV-Information and communication" value="Information and communication" id="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" score="0.59"/>
+        <META name="IPSV-Information and communication" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+        <META name="IPSV-Public order, justice and rights" value="Security equipment" id="9e4bea3c-8b29-5376-b324-a617eebc7f41" score="0.60"/>
+        <META name="IPSV-Science, technology and innovation" value="Science, technology and innovation" id="e41d67e2-48bb-42bf-ba46-df7065ed0285" score="0.59"/>
+        <META name="IPSV-Science, technology and innovation" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+        <META name="IPSV-Leisure and culture" value="Drama" id="c7f5943e-f76d-5f34-8e7e-ed7104a2a90d" score="0.84"/>
+        <META name="IPSV-Leisure and culture" value="Performing arts" id="1eb7d755-6a94-54e6-b0ce-5bb3830f0ece" score="0.50"/>
+        <META name="IPSV-Government, politics and public administration" value="Maladministration" id="ff23fed1-8917-5086-a557-e4c2c34c11bb" score="0.86"/>
+        <META name="IPSV-Government, politics and public administration" value="Agreements" id="ddcb43c0-ef6b-51b0-a5f3-19e7b81deee0" score="0.60"/>
+        <META name="IPSV-Government, politics and public administration" value="Resource management" id="df202a91-d1ff-5363-8069-7e1d9c089dbf" score="0.75"/>
+        <META name="IPSV-Government, politics and public administration" value="Public administration" id="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" score="0.50"/>
+        <META name="IPSV-Government, politics and public administration" value="Compliments and complaints (council)" id="cd9d7b65-ac00-55b9-b3e1-172e465706e3" score="0.86"/>
+        <META name="IPSV-Government, politics and public administration" value="Council contacts and feedback" id="8e7ae0a4-b53d-5456-a492-b9913a2f571a" score="0.50"/>
+        <META name="IPSV-Government, politics and public administration" value="Logistics" id="9c52c246-a6cf-5269-a4eb-4751575c495a" score="0.84"/>
+        <META name="IPSV-Government, politics and public administration" value="Cooperation" id="007a8b32-7a02-503d-9926-6cabdf18ec1a" score="0.59"/>
+        <META name="IPSV-Health, well-being and care" value="Health, well-being and care" id="675b8390-72ad-45d1-bfab-77b6c2ac7420" score="0.59"/>
+        <META name="IPSV-Health, well-being and care" value="Safety" id="99bcb4a4-17d2-5b3e-a7bb-1891a39ed58e" score="0.90"/>
+        <META name="IPSV-Health, well-being and care" value="Health" id="53647523-7909-5df4-bc2d-b473005e47c7" score="0.64"/>
+        <META name="IPSV-Health, well-being and care" value="Road safety" id="f24d88f4-31d2-56d1-a1be-0786b228905b" score="0.60"/>
+        <META name="IPSV-Health, well-being and care" value="Child protection" id="2df53e74-e598-53d4-af26-f6ae5afedda5" score="0.60"/>
+        <META name="IPSV-Health, well-being and care" value="Food safety" id="b7493833-e5b8-5cea-8ca3-fb100b321dbb" score="0.64"/>
+        <META name="IPSV-Business and industry" value="Agreements" id="ddcb43c0-ef6b-51b0-a5f3-19e7b81deee0" score="0.60"/>
+        <META name="IPSV-Business and industry" value="Resource management" id="df202a91-d1ff-5363-8069-7e1d9c089dbf" score="0.75"/>
+        <META name="IPSV-Business and industry" value="Consumer affairs" id="be64d246-a89a-53ea-b765-0232fd6d896c" score="0.50"/>
+        <META name="IPSV-Business and industry" value="Consumer complaints" id="97f435e6-d70f-5b80-a666-ec8da5696fbe" score="0.84"/>
+        <META name="IPSV-Business and industry" value="Logistics" id="9c52c246-a6cf-5269-a4eb-4751575c495a" score="0.84"/>
+        <META name="IPSV-Business and industry" value="Cooperation" id="007a8b32-7a02-503d-9926-6cabdf18ec1a" score="0.59"/>
+        <META name="IPSV-Housing" value="Housing" id="1be8ca5e-cc5a-4eef-ba7b-9966cada9905" score="0.60"/>
+        <META name="IPSV-Transport and infrastructure" value="Road transport" id="5f22052a-7ca5-5365-a28c-da92e13d5099" score="0.59"/>
+        <META name="IPSV-Transport and infrastructure" value="Air transport" id="2a6c0918-9a41-510f-8a83-99e33a9c75d1" score="0.60"/>
+        <META name="IPSV-Transport and infrastructure" value="Rail safety" id="6beb95b9-966e-55ea-a6bc-2aadccba54c3" score="0.60"/>
+        <META name="IPSV-Transport and infrastructure" value="Road safety" id="f24d88f4-31d2-56d1-a1be-0786b228905b" score="0.60"/>
+        <META name="AMDS-AMDS Entities" value="GPS 2018 Strategic Priority" id="c9aa2d24-f085-46c6-a021-be3db7473288" score="0.59"/>
+        <META name="AMDS-AMDS Entities" value="Safety" id="ce67bf92-2fa5-498a-abfd-8b118a0e2127" score="0.60"/>
+        <META name="AMDS-AMDS Entities" value="Legislative Instrument" id="cb5cf998-328d-47ad-a5be-e02924353980" score="0.75"/>
+        <META name="AMDS-AMDS Entities" value="Regulation" id="5b3edc5b-7d13-4f3d-890b-17e2afa5264f" score="0.84"/>
+        <META name="AMDS-Data Dictionary" value="GPS 2018 Strategic Priority" id="c9aa2d24-f085-46c6-a021-be3db7473288" score="0.59"/>
+        <META name="AMDS-Data Dictionary" value="Safety" id="ce67bf92-2fa5-498a-abfd-8b118a0e2127" score="0.60"/>
+        <META name="AMDS-Data Dictionary" value="vlRoadHumpMarkingMaterial" id="f6e68220-b444-4ed2-b3d1-ff49fd570cfa" score="0.50"/>
+        <META name="AMDS-Data Dictionary" value="Legislative Instrument" id="cb5cf998-328d-47ad-a5be-e02924353980" score="0.75"/>
+        <META name="AMDS-Data Dictionary" value="vlPoleCoatingSystem" id="918209f4-3829-4f89-bef3-c4a1be288375" score="0.50"/>
+        <META name="AMDS-Data Dictionary" value="Regulation" id="5b3edc5b-7d13-4f3d-890b-17e2afa5264f" score="0.84"/>
+        <META name="AMDS-Data Dictionary" value="Listed value" id="6e1136ba-1f4b-4015-b05e-b9c7b007df2b" score="0.75"/>
+        <META name="AMDS-Data Dictionary" value="Painted" id="49824f71-bef4-4e36-b6bc-c4aff4accbf5" score="0.84"/>
+        <META name="AMDS-Data Dictionary" value="Paint" id="887f1d0c-2693-403f-b303-fc16aa44c3c1" score="0.84"/>
+        <ARTICLE>
+            <SYSTEM name="DeterminedLanguage" value="english"/>
+            <SYSTEM name="LanguageGuessed" value="no"/>
+            <META name="IPSV-Information and communication" value="Information and communication" id="ca792b9a-f0ca-4fd9-ba45-a6fd65392a81" score="0.59"/>
+            <META name="IPSV-Information and communication" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+            <META name="IPSV-Public order, justice and rights" value="Security equipment" id="9e4bea3c-8b29-5376-b324-a617eebc7f41" score="0.60"/>
+            <META name="IPSV-Science, technology and innovation" value="Science, technology and innovation" id="e41d67e2-48bb-42bf-ba46-df7065ed0285" score="0.59"/>
+            <META name="IPSV-Science, technology and innovation" value="Information and communication technology" id="f5aa146c-7bca-5145-b314-8ade6e44532b" score="0.60"/>
+            <META name="IPSV-Leisure and culture" value="Drama" id="c7f5943e-f76d-5f34-8e7e-ed7104a2a90d" score="0.84"/>
+            <META name="IPSV-Leisure and culture" value="Performing arts" id="1eb7d755-6a94-54e6-b0ce-5bb3830f0ece" score="0.50"/>
+            <META name="IPSV-Government, politics and public administration" value="Maladministration" id="ff23fed1-8917-5086-a557-e4c2c34c11bb" score="0.86"/>
+            <META name="IPSV-Government, politics and public administration" value="Agreements" id="ddcb43c0-ef6b-51b0-a5f3-19e7b81deee0" score="0.60"/>
+            <META name="IPSV-Government, politics and public administration" value="Resource management" id="df202a91-d1ff-5363-8069-7e1d9c089dbf" score="0.75"/>
+            <META name="IPSV-Government, politics and public administration" value="Public administration" id="545afff3-7081-5f9b-ae21-7a87bf7e0cc7" score="0.50"/>
+            <META name="IPSV-Government, politics and public administration" value="Compliments and complaints (council)" id="cd9d7b65-ac00-55b9-b3e1-172e465706e3" score="0.86"/>
+            <META name="IPSV-Government, politics and public administration" value="Council contacts and feedback" id="8e7ae0a4-b53d-5456-a492-b9913a2f571a" score="0.50"/>
+            <META name="IPSV-Government, politics and public administration" value="Logistics" id="9c52c246-a6cf-5269-a4eb-4751575c495a" score="0.84"/>
+            <META name="IPSV-Government, politics and public administration" value="Cooperation" id="007a8b32-7a02-503d-9926-6cabdf18ec1a" score="0.59"/>
+            <META name="IPSV-Health, well-being and care" value="Health, well-being and care" id="675b8390-72ad-45d1-bfab-77b6c2ac7420" score="0.59"/>
+            <META name="IPSV-Health, well-being and care" value="Safety" id="99bcb4a4-17d2-5b3e-a7bb-1891a39ed58e" score="0.90"/>
+            <META name="IPSV-Health, well-being and care" value="Health" id="53647523-7909-5df4-bc2d-b473005e47c7" score="0.64"/>
+            <META name="IPSV-Health, well-being and care" value="Road safety" id="f24d88f4-31d2-56d1-a1be-0786b228905b" score="0.60"/>
+            <META name="IPSV-Health, well-being and care" value="Child protection" id="2df53e74-e598-53d4-af26-f6ae5afedda5" score="0.60"/>
+            <META name="IPSV-Health, well-being and care" value="Food safety" id="b7493833-e5b8-5cea-8ca3-fb100b321dbb" score="0.64"/>
+            <META name="IPSV-Business and industry" value="Agreements" id="ddcb43c0-ef6b-51b0-a5f3-19e7b81deee0" score="0.60"/>
+            <META name="IPSV-Business and industry" value="Resource management" id="df202a91-d1ff-5363-8069-7e1d9c089dbf" score="0.75"/>
+            <META name="IPSV-Business and industry" value="Consumer affairs" id="be64d246-a89a-53ea-b765-0232fd6d896c" score="0.50"/>
+            <META name="IPSV-Business and industry" value="Consumer complaints" id="97f435e6-d70f-5b80-a666-ec8da5696fbe" score="0.84"/>
+            <META name="IPSV-Business and industry" value="Logistics" id="9c52c246-a6cf-5269-a4eb-4751575c495a" score="0.84"/>
+            <META name="IPSV-Business and industry" value="Cooperation" id="007a8b32-7a02-503d-9926-6cabdf18ec1a" score="0.59"/>
+            <META name="IPSV-Housing" value="Housing" id="1be8ca5e-cc5a-4eef-ba7b-9966cada9905" score="0.60"/>
+            <META name="IPSV-Transport and infrastructure" value="Road transport" id="5f22052a-7ca5-5365-a28c-da92e13d5099" score="0.59"/>
+            <META name="IPSV-Transport and infrastructure" value="Air transport" id="2a6c0918-9a41-510f-8a83-99e33a9c75d1" score="0.60"/>
+            <META name="IPSV-Transport and infrastructure" value="Rail safety" id="6beb95b9-966e-55ea-a6bc-2aadccba54c3" score="0.60"/>
+            <META name="IPSV-Transport and infrastructure" value="Road safety" id="f24d88f4-31d2-56d1-a1be-0786b228905b" score="0.60"/>
+            <META name="AMDS-AMDS Entities" value="GPS 2018 Strategic Priority" id="c9aa2d24-f085-46c6-a021-be3db7473288" score="0.59"/>
+            <META name="AMDS-AMDS Entities" value="Safety" id="ce67bf92-2fa5-498a-abfd-8b118a0e2127" score="0.60"/>
+            <META name="AMDS-AMDS Entities" value="Legislative Instrument" id="cb5cf998-328d-47ad-a5be-e02924353980" score="0.75"/>
+            <META name="AMDS-AMDS Entities" value="Regulation" id="5b3edc5b-7d13-4f3d-890b-17e2afa5264f" score="0.84"/>
+            <META name="AMDS-Data Dictionary" value="GPS 2018 Strategic Priority" id="c9aa2d24-f085-46c6-a021-be3db7473288" score="0.59"/>
+            <META name="AMDS-Data Dictionary" value="Safety" id="ce67bf92-2fa5-498a-abfd-8b118a0e2127" score="0.60"/>
+            <META name="AMDS-Data Dictionary" value="vlRoadHumpMarkingMaterial" id="f6e68220-b444-4ed2-b3d1-ff49fd570cfa" score="0.50"/>
+            <META name="AMDS-Data Dictionary" value="Legislative Instrument" id="cb5cf998-328d-47ad-a5be-e02924353980" score="0.75"/>
+            <META name="AMDS-Data Dictionary" value="vlPoleCoatingSystem" id="918209f4-3829-4f89-bef3-c4a1be288375" score="0.50"/>
+            <META name="AMDS-Data Dictionary" value="Regulation" id="5b3edc5b-7d13-4f3d-890b-17e2afa5264f" score="0.84"/>
+            <META name="AMDS-Data Dictionary" value="Listed value" id="6e1136ba-1f4b-4015-b05e-b9c7b007df2b" score="0.75"/>
+            <META name="AMDS-Data Dictionary" value="Painted" id="49824f71-bef4-4e36-b6bc-c4aff4accbf5" score="0.84"/>
+            <META name="AMDS-Data Dictionary" value="Paint" id="887f1d0c-2693-403f-b303-fc16aa44c3c1" score="0.84"/>
+        </ARTICLE>
+    </STRUCTUREDDOCUMENT>
+</response>

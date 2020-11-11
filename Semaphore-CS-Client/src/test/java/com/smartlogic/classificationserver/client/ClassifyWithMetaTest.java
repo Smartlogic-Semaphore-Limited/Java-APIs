@@ -1,19 +1,25 @@
 package com.smartlogic.classificationserver.client;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
+import org.testng.annotations.Test;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.testng.annotations.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 public class ClassifyWithMetaTest extends ClassificationTestCase {
 
 	@Test
 	public void testClassifyWithMeta() {
+
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseClassifyWithMeta.xml"))));
 
 		try {
 			String title = "This is the document title";
@@ -31,7 +37,7 @@ public class ClassifyWithMetaTest extends ClassificationTestCase {
 
 			Result result = classificationClient.getClassifiedDocument(new Body(body), new Title(title), metadata);
 			System.out.println(result.getAllClassifications());
-			assertEquals(2, result.getAllClassifications().get("IPSV-Health, well-being and care").size(), "run 1 - IPSV-Health, well-being and care");
+			assertEquals(1, result.getAllClassifications().get("IPSV-Health, well-being and care").size(), "run 1 - IPSV-Health, well-being and care");
 
 
 		} catch (Exception e) {

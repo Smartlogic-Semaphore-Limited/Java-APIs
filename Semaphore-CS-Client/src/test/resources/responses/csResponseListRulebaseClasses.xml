@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <Classes count="26">
+        <Class Name="TestIt-MyScheme" count_rules="6"/>
+        <Class Name="EXTRACTION_CLASS" count_rules="1"/>
+        <Class Name="TEXTMINE_EXTRACTION_CLASS" count_rules="1"/>
+        <Class Name="IPSV-Information and communication" count_rules="188"/>
+        <Class Name="IPSV-Life in the community" count_rules="175"/>
+        <Class Name="IPSV-Employment, jobs and careers" count_rules="126"/>
+        <Class Name="IPSV-Education and skills" count_rules="165"/>
+        <Class Name="IPSV-Public order, justice and rights" count_rules="131"/>
+        <Class Name="IPSV-Science, technology and innovation" count_rules="121"/>
+        <Class Name="IPSV-Leisure and culture" count_rules="643"/>
+        <Class Name="IPSV-Government, politics and public administration" count_rules="408"/>
+        <Class Name="IPSV-Health, well-being and care" count_rules="597"/>
+        <Class Name="IPSV-People and organisations" count_rules="177"/>
+        <Class Name="IPSV-Business and industry" count_rules="498"/>
+        <Class Name="IPSV-Housing" count_rules="67"/>
+        <Class Name="IPSV-Transport and infrastructure" count_rules="166"/>
+        <Class Name="IPSV-Environment" count_rules="318"/>
+        <Class Name="IPSV-International affairs and defence" count_rules="55"/>
+        <Class Name="IPSV-Economics and finance" count_rules="68"/>
+        <Class Name="AMDS-Concept Review - To Do" count_rules="1"/>
+        <Class Name="AMDS-AMDS Entities" count_rules="1138"/>
+        <Class Name="AMDS-Concept Review - Newly Added" count_rules="1"/>
+        <Class Name="AMDS-Data Dictionary" count_rules="3257"/>
+        <Class Name="AMDS-AMDS Assets" count_rules="15"/>
+        <Class Name="AMDS-Concept Review - Modified" count_rules="1"/>
+        <Class Name="AMDS-AMDS Zones" count_rules="72"/>
+    </Classes>
+</response>

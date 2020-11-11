@@ -1,7 +1,6 @@
 package com.smartlogic.classificationserver.client;
 
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
+import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -10,12 +9,18 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 
-import org.testng.annotations.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 public class ClassifyLargeTest extends ClassificationTestCase {
 
 	@Test
 	public void testBinary() throws IOException, ClassificationException {
+		wireMockRule.stubFor(post(urlEqualTo("/"))
+				.willReturn(aResponse()
+						.withHeader("Content-Type", "text/xml")
+						.withBody(readFileToString("src/test/resources/responses/csResponseSampleData.xml"))));
 
 		URL log4jXmlUrl = ClassLoader.getSystemResource("log4j.xml");
 		if (log4jXmlUrl != null)
