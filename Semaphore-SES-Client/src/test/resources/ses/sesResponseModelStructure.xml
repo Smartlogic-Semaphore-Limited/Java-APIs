@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?><SEMAPHORE><PARAMETERS><PARAMETER NAME="relatedconceptlimit">10000</PARAMETER><PARAMETER NAME="q">content_type:om_structure_xml</PARAMETER><PARAMETER NAME="pathelementlimit">10000</PARAMETER><PARAMETER NAME="fl">json_en</PARAMETER><PARAMETER NAME="language">en</PARAMETER><PARAMETER NAME="language">en</PARAMETER><PARAMETER NAME="language">en</PARAMETER><PARAMETER NAME="tbdb">Subjects</PARAMETER><PARAMETER NAME="sort">name_en_pl asc</PARAMETER><PARAMETER NAME="rows">1000</PARAMETER><PARAMETER NAME="version">1</PARAMETER><PARAMETER NAME="wt">sesOmStructureXML</PARAMETER><PARAMETER NAME="structure">XML</PARAMETER><PARAMETER NAME="command">structure</PARAMETER></PARAMETERS><OM_STRUCTURE>
+    <TERM_CLASSES>
+        <TERM_CLASS ID="http://www.w3.org/2004/02/skos/core#Concept" PARENT_ID="0">Concept</TERM_CLASS>
+        <TERM_CLASS ID="http://www.w3.org/2004/02/skos/core#ConceptScheme" PARENT_ID="0">Concept Scheme</TERM_CLASS>
+    </TERM_CLASSES>
+    <TERM_FACETS>
+        <FIELD ID="https://models.smartlogic.com/Subjects/ConceptScheme/Subjects" NAME="term" URI="https://models.smartlogic.com/Subjects/ConceptScheme/Subjects">Subjects</FIELD>
+    </TERM_FACETS>
+    <TERM_ATTRIBUTES/>
+    <TERM_NOTES>
+        <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#URI" NAME="URI"/>
+        <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#editorialNote" NAME="editorial note"/>
+        <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#historyNote" NAME="history note"/>
+        <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#scopeNote" NAME="scope note"/>
+        <TERM_NOTE ID="http://www.w3.org/2000/01/rdf-schema#comment" NAME="comment"/>
+        <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#definition" NAME="definition"/>
+        <TERM_NOTE ID="http://www.w3.org/2004/02/skos/core#note" NAME="note"/>
+    </TERM_NOTES>
+    <TERM_METADATA/>
+    <EQUIVALENCE_RELATIONS>
+        <RELATION_DEF ABRV="UF" FWD_DISP_NAME="alternative label" ID="http://www.w3.org/2008/05/skos-xl#altLabel" NAME="Use For" REV_ABRV="UF" REV_DISP_NAME="alternative label" REV_NAME="Use For" SCOPE_NOTE="" SYMMETRIC="true"/>
+    </EQUIVALENCE_RELATIONS>
+    <HIERARCHICAL_RELATIONS>
+        <RELATION_DEF ABRV="NT" FWD_DISP_NAME="has narrower" ID="http://www.w3.org/2004/02/skos/core#broader" NAME="Narrower Term" REV_ABRV="BT" REV_DISP_NAME="has broader" REV_NAME="Broader Term" SCOPE_NOTE="" SYMMETRIC="false"/>
+        <RELATION_DEF ABRV="HAS NARROWER MATCH" FWD_DISP_NAME="has narrower match" ID="http://www.w3.org/2004/02/skos/core#broadMatch" NAME="has narrower match" REV_ABRV="HAS BROADER MATCH" REV_DISP_NAME="has broader match" REV_NAME="has broader match" SCOPE_NOTE="" SYMMETRIC="false"/>
+    </HIERARCHICAL_RELATIONS>
+    <ASSOCIATIVE_RELATIONS>
+        <RELATION_DEF ABRV="RT" FWD_DISP_NAME="has related" ID="http://www.w3.org/2004/02/skos/core#related" NAME="Related To" REV_ABRV="RT" REV_DISP_NAME="has related" REV_NAME="Related To" SCOPE_NOTE="" SYMMETRIC="true"/>
+        <RELATION_DEF ABRV="HAS RELATED MATCH" FWD_DISP_NAME="has related match" ID="http://www.w3.org/2004/02/skos/core#relatedMatch" NAME="has related match" REV_ABRV="HAS RELATED MATCH" REV_DISP_NAME="has related match" REV_NAME="has related match" SCOPE_NOTE="" SYMMETRIC="true"/>
+    </ASSOCIATIVE_RELATIONS>
+    <INDEX_METADATA>
+        <PUBLISH_DATE>2021-03-18T15:40:44.008Z</PUBLISH_DATE>
+    </INDEX_METADATA>
+</OM_STRUCTURE><MODELS><MODEL><NAME>Subjects</NAME></MODEL></MODELS></SEMAPHORE>
