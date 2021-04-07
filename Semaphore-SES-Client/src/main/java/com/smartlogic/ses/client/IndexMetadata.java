@@ -46,11 +46,11 @@ public class IndexMetadata implements Serializable {
     this.metas = metas;
   }
 
-  public Map<String, String> getIndexmetadata() {
+  public Map<String, String> getIndexMetadata() {
     return metas;
   }
 
-  public void setIndexmetadata(Map<String, String> metas) {
+  public void setIndexMetadata(Map<String, String> metas) {
     this.metas = metas;
   }
 
