@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -302,8 +301,8 @@ public class OMStructure implements Serializable {
     return indexmetas;
   }
 
-  public void setIndexMetadata(Map<String, String> metas) {
-    this.indexmetas = new IndexMetadata(metas);
+  public void setIndexMetadata(IndexMetadata metas) {
+    this.indexmetas = metas;
   }
 
   private void setIndexMetadata(Element e) {
