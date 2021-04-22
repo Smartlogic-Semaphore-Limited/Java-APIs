@@ -29,11 +29,6 @@
 			<artifactId>istack-commons-runtime</artifactId>
 			<version>3.0.11</version>
 		</dependency>
-		<!-- <dependency>
-			<groupId>com.sun.xml.fastinfoset</groupId>
-			<artifactId>FastInfoset</artifactId>
-			<version>2.0.0</version>
-		</dependency> -->
 
 		<dependency>
 			<groupId>junit</groupId>
