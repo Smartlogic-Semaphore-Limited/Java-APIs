@@ -36,11 +36,31 @@ public class OEModelEndpointTests {
     OEModelEndpoint ep = new OEModelEndpoint();
     ep.setModelIRI(IRIResolver.parseIRI("model:ModelID").toString());
     ep.setAccessToken("ACCESSTOKEN");
-    ep.setBaseUrl("http://localhost:8080/swoe/");
+    ep.setBaseUrl("http://localhost:5080");
 
-    assertEquals(ep.buildApiUrl().toString(), "http://localhost:8080/swoe/api/t/ACCESSTOKEN");
-    assertEquals(ep.buildSPARQLUrl(null).toString(),
-        "http://localhost:8080/swoe/api/t/ACCESSTOKEN/model:ModelID/sparql");
+    assertEquals("http://localhost:5080/t/ACCESSTOKEN/kmm/api", ep.buildApiUrl().toString());
+    assertEquals("http://localhost:5080/t/ACCESSTOKEN/kmm/api/model:ModelID/sparql", ep.buildSPARQLUrl(null));
+
+    ep.setBaseUrl("http://localhost:5080/");
+    ep.setModelIRI("model:TestAnotherModelID");
+    assertEquals("http://localhost:5080/t/ACCESSTOKEN/kmm/api", ep.buildApiUrl().toString());
+    assertEquals(
+            "http://localhost:5080/t/ACCESSTOKEN/kmm/api/model:TestAnotherModelID/sparql", ep.buildSPARQLUrl(null));
+    assertEquals(
+            "http://localhost:5080/t/ACCESSTOKEN/kmm/api/model:TestAnotherModelID/sparql?runEditRules=true&checkConstraints=true",
+            ep.buildSPARQLUrl());
+    SparqlUpdateOptions options = new SparqlUpdateOptions();
+    options.setAcceptWarnings(true);
+    assertEquals(
+            "http://localhost:5080/t/ACCESSTOKEN/kmm/api/model:TestAnotherModelID/sparql?warningsAccepted=true&runEditRules=true&checkConstraints=true",
+            ep.buildSPARQLUrl(options));
+
+    ep.setBaseUrl("http://myserver.mydomain.com:9999/");
+    ep.setModelIRI("model:TestID");
+    assertEquals("http://myserver.mydomain.com:9999/t/ACCESSTOKEN/kmm/api", ep.buildApiUrl().toString());
+    assertEquals(
+            "http://myserver.mydomain.com:9999/t/ACCESSTOKEN/kmm/api/model:TestID/sparql", ep.buildSPARQLUrl(null));
+
   }
 
   @Test
@@ -63,10 +83,22 @@ public class OEModelEndpointTests {
     ep.setModelIRI(IRIResolver.parseIRI("model:ModelID").toString());
     ep.setCloudTokenFetchUrl("https://cloud.smartlogic.com/token");
     ep.setCloudAPIKey("my-api-key");
-    ep.setBaseUrl("http://localhost:8080/swoe/");
+    ep.setBaseUrl("http://localhost:5080");
 
-    assertEquals(ep.getCloudAPIKey(), "my-api-key");
-    assertEquals(ep.getCloudTokenFetchUrl(), "https://cloud.smartlogic.com/token");
+    assertEquals("my-api-key", ep.getCloudAPIKey());
+    assertEquals("https://cloud.smartlogic.com/token", ep.getCloudTokenFetchUrl());
+    assertEquals("http://localhost:5080/kmm/api", ep.buildApiUrl().toString());
+    assertEquals("http://localhost:5080/kmm/api/model:ModelID/sparql?runEditRules=true&checkConstraints=true", ep.buildSPARQLUrl());
+    assertEquals("http://localhost:5080/kmm/api/model:ModelID/sparql", ep.buildSPARQLUrl(null));
+    SparqlUpdateOptions options = new SparqlUpdateOptions();
+    options.acceptWarnings = false;
+    options.runCheckConstraints = true;
+    options.runEditRules = false;
+    assertEquals("http://localhost:5080/kmm/api/model:ModelID/sparql?runEditRules=false&checkConstraints=true",
+            ep.buildSPARQLUrl(options));
+    options.acceptWarnings = true;
+    assertEquals("http://localhost:5080/kmm/api/model:ModelID/sparql?warningsAccepted=true&runEditRules=false&checkConstraints=true",
+            ep.buildSPARQLUrl(options));
 
   }
 }

@@ -40,7 +40,7 @@ import com.smartlogic.cloud.TokenFetcher;
 
 /**
  * Created by stevenbiondi on 6/21/17.
- * Semaphore Workbench Ontology Editor endpoint client.
+ * Semaphore Knowledge Model Manager endpoint client.
  * (For now, used to execute SPARQL insert and update calls)
  */
 public class OEModelEndpoint {
@@ -56,17 +56,17 @@ public class OEModelEndpoint {
   protected Integer proxyPort;
 
   /**
-   * Build the api URI for Ontology Editor. All RESTful commands extend this URI.
+   * Build the api URI for Knowledge Model Manager (KMM). All RESTful commands extend this URI.
    *
    * @return
    */
   public StringBuffer buildApiUrl() {
     StringBuffer buf = new StringBuffer()
-        .append(baseUrl)
-        .append("api");
+        .append(baseUrl);
     if (!Strings.isNullOrEmpty(accessToken)) {
-      buf.append("/t/").append(accessToken);
+      buf.append("t/").append(accessToken).append("/");
     }
+    buf.append("kmm/api");
     return buf;
   }
 
