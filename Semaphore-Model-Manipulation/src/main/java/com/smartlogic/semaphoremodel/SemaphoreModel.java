@@ -11,6 +11,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -490,6 +492,29 @@ public class SemaphoreModel {
    */
   private boolean resourceInUse(Resource resource) {
     return model.contains(resource, null);
+  }
+
+  public Map<Resource, Concept> getAllConcepts() {
+    String sparql = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n" +
+        "PREFIX skosxl: <http://www.w3.org/2008/05/skos-xl#>\n" +
+        "SELECT ?conceptURI WHERE {\n" +
+        "  ?conceptURI skosxl:prefLabel ?labelURI .\n" +
+        "}";
+    ParameterizedSparqlString getAllConcepts = new ParameterizedSparqlString(model);
+    getAllConcepts.setCommandText(sparql);
+
+    Query query = QueryFactory.create(getAllConcepts.asQuery());
+
+    Map<Resource, Concept> returnData = new HashMap<>();
+    try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+      ResultSet rs = qexec.execSelect();
+      while (rs.hasNext()) {
+        QuerySolution qs = rs.next();
+        Resource conceptUri = qs.getResource("conceptURI");
+        returnData.put(conceptUri, new Concept(model, conceptUri));
+      }
+      return returnData;
+    }
   }
 
   /**

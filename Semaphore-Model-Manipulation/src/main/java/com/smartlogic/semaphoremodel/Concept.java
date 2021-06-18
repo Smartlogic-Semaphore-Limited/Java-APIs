@@ -67,6 +67,13 @@ public class Concept extends IdentifiableObject {
     resource.addProperty(relationshipType.getProperty(), concept.getResource());
   }
 
+  public void addRelationWithInverse(RelationshipType relationshipType, Concept concept) {
+    addRelation(relationshipType, concept);
+    Resource resource = model.createResource(concept.getURI().toString());
+    resource.addProperty(relationshipType.getInverseProperty(), this.getResource());
+
+  }
+
   public void addConceptClass(ConceptClass conceptClass) {
     resource.addProperty(RDF.type, conceptClass.getResource());
   }
