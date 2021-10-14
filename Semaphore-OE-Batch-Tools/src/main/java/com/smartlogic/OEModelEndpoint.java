@@ -39,9 +39,8 @@ import com.smartlogic.cloud.Token;
 import com.smartlogic.cloud.TokenFetcher;
 
 /**
- * Created by stevenbiondi on 6/21/17.
- * Semaphore Workbench Ontology Editor endpoint client.
- * (For now, used to execute SPARQL insert and update calls)
+ * Created by stevenbiondi on 6/21/17. Semaphore Workbench Ontology Editor endpoint client. (For
+ * now, used to execute SPARQL insert and update calls)
  */
 public class OEModelEndpoint {
 
@@ -61,9 +60,7 @@ public class OEModelEndpoint {
    * @return
    */
   public StringBuffer buildApiUrl() {
-    StringBuffer buf = new StringBuffer()
-        .append(baseUrl)
-        .append("api");
+    StringBuffer buf = new StringBuffer().append(baseUrl).append("api");
     if (!Strings.isNullOrEmpty(accessToken)) {
       buf.append("/t/").append(accessToken);
     }
@@ -72,6 +69,7 @@ public class OEModelEndpoint {
 
   /**
    * Returns SPARQL URL with default sparql options.
+   *
    * @return
    */
   public String buildSPARQLUrl() {
@@ -83,7 +81,7 @@ public class OEModelEndpoint {
     StringBuffer buf = buildApiUrl().append("/").append(modelIri).append("/sparql");
 
     if (null != options) {
-      List<String> optionsList = new ArrayList<String>();
+      List<String> optionsList = new ArrayList<>();
 
       // default is false, don't set unless changed.
       if (options.acceptWarnings) {
@@ -111,27 +109,29 @@ public class OEModelEndpoint {
   }
 
   /**
-   * Runs the SPARQL query and returns a detached ResultSet.
-   * If you have a large query, use the same technique inline to stream results and save memory.
+   * Runs the SPARQL query and returns a detached ResultSet. If you have a large query, use the same
+   * technique inline to stream results and save memory.
    *
    * @param sparql
    * @return
    */
   public ResultSet runSparqlQuery(String sparql) {
 
-    if (logger.isDebugEnabled())
+    if (logger.isDebugEnabled()) {
       logger.debug("run SPARQL query: {}", sparql);
+    }
 
     Query query = QueryFactory.create(sparql);
     ResultSet results = null;
-    
+
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
     setProxyHttpHost(clientBuilder);
 
     setCloudAuthHeaderIfConfigured(clientBuilder);
 
     try (CloseableHttpClient client = clientBuilder.build();
-         QueryExecution qe = QueryExecutionFactory.sparqlService(buildSPARQLUrl(null).toString(), query, client)) {
+        QueryExecution qe =
+            QueryExecutionFactory.sparqlService(buildSPARQLUrl(null).toString(), query, client)) {
       results = ResultSetFactory.copyResults(qe.execSelect());
     } catch (IOException ioe) {
       throw new RuntimeException("IOException.", ioe);
@@ -145,30 +145,31 @@ public class OEModelEndpoint {
    */
   public boolean runSparqlUpdate(String sparql, SparqlUpdateOptions options) {
 
-    if (logger.isDebugEnabled())
+    if (logger.isDebugEnabled()) {
       logger.debug("run SPARQL update: {}", sparql);
+    }
 
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
     setProxyHttpHost(clientBuilder);
-    
-    setCloudAuthHeaderIfConfigured(clientBuilder);
 
+    setCloudAuthHeaderIfConfigured(clientBuilder);
 
     try (CloseableHttpClient client = clientBuilder.build()) {
       UpdateRequest update = UpdateFactory.create(sparql, Syntax.syntaxARQ);
-      UpdateProcessor processor = UpdateExecutionFactory.createRemoteForm(update, buildSPARQLUrl(options).toString(), client);
+      UpdateProcessor processor = UpdateExecutionFactory.createRemoteForm(update,
+          buildSPARQLUrl(options).toString(), client);
       processor.execute();
     } catch (IOException ioe) {
       throw new RuntimeException("IOException.", ioe);
     }
     return true;
   }
-  
+
   private void setProxyHttpHost(HttpClientBuilder clientBuilder) {
-	  if (proxyHost != null && proxyPort != null) {
-		  HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-		  clientBuilder.setProxy(proxy);
-	  }
+    if (proxyHost != null && proxyPort != null) {
+      HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+      clientBuilder.setProxy(proxy);
+    }
   }
 
   /**
@@ -180,6 +181,10 @@ public class OEModelEndpoint {
     Token token = null;
     try {
       TokenFetcher tokenFetcher = new TokenFetcher(cloudTokenFetchUrl, cloudAPIKey);
+      if (proxyHost != null && proxyPort != null) {
+        tokenFetcher.setProxyHost(proxyHost);
+        tokenFetcher.setProxyPort(proxyPort);
+      }
       token = tokenFetcher.getAccessToken();
     } catch (CloudException e) {
       throw new RuntimeException("Failed to fetch cloud token.", e);
@@ -329,9 +334,7 @@ public class OEModelEndpoint {
     Preconditions.checkNotNull(baseUrl);
     Preconditions.checkNotNull(modelIri);
 
-    String exportUrl = buildApiUrl()
-        .append("?path=backup%2F")
-        .append(modelIri)
+    String exportUrl = buildApiUrl().append("?path=backup%2F").append(modelIri)
         .append("%2Fexport&serialization=http:%2F%2Ftopbraid.org%2Fsparqlmotionlib%23Turtle")
         .toString();
 
@@ -350,22 +353,29 @@ public class OEModelEndpoint {
     setCloudAuthHeaderIfConfigured(clientBuilder);
     try (CloseableHttpClient httpClient = clientBuilder.build()) {
       HttpGet httpGet = new HttpGet(fetchUri);
-      /* New way to specify format on export calls: use Accept: header. Leaving old param on URI for now */
+      /*
+       * New way to specify format on export calls: use Accept: header. Leaving old param on URI for
+       * now
+       */
       httpGet.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeTurtle);
 
       HttpResponse response = httpClient.execute(httpGet);
-      if (response == null) throw new OEConnectionException("Null response from http client: " + fetchUri);
-      if (response.getStatusLine() == null)
+      if (response == null) {
+        throw new OEConnectionException("Null response from http client: " + fetchUri);
+      }
+      if (response.getStatusLine() == null) {
         throw new OEConnectionException("Null status line from http client: " + fetchUri);
-
+      }
 
       int statusCode = response.getStatusLine().getStatusCode();
 
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("HTTP request complete: " + statusCode + " " + fetchUri);
+      }
 
       if (statusCode != HttpStatus.SC_OK) {
-        throw new OEConnectionException("Status code " + statusCode + " received from URL: " + fetchUri);
+        throw new OEConnectionException(
+            "Status code " + statusCode + " received from URL: " + fetchUri);
       }
 
       HttpEntity entity = response.getEntity();
