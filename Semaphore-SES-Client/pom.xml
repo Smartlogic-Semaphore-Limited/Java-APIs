@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.smartlogic</groupId>
 		<artifactId>Semaphore-Java-APIs</artifactId>
-		<version>Semaphore-5.0.1-SNAPSHOT</version>
+		<version>5.2.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
