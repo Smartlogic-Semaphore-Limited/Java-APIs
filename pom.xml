@@ -57,12 +57,12 @@
 	</developers>
 
 	<modules>
-		<module>Semaphore-Cloud</module>
 		<module>Semaphore-CS-Client</module>
 		<module>Semaphore-Model-Manipulation</module>
 		<module>Semaphore-OE-Client</module>
 		<module>Semaphore-OE-Batch-Tools</module>
 		<module>Semaphore-SES-Client</module>
+		<module>Semaphore-Cloud</module>
 	</modules>
 
 	<dependencies>
