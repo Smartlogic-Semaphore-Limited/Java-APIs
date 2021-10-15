@@ -12,7 +12,6 @@
 		<xmlunit.version>1.3</xmlunit.version>
 		<jackson.version>2.10.0</jackson.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<semaphore-api-version>Semaphore-5.0.1-SNAPSHOT</semaphore-api-version>
 	</properties>
 
 	<version>5.2.0-SNAPSHOT</version>
@@ -163,17 +162,17 @@
 			<dependency>
 				<groupId>com.smartlogic.csclient</groupId>
 				<artifactId>Semaphore-CS-Client</artifactId>
-				<version>${semaphore-api-version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.smartlogic.sesclient</groupId>
 				<artifactId>Semaphore-SES-Client</artifactId>
-				<version>${semaphore-api-version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.smartlogic.cloud</groupId>
 				<artifactId>Semaphore-Cloud-Client</artifactId>
-				<version>${semaphore-api-version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
