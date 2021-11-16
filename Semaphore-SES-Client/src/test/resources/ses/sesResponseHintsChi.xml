@@ -1,1 +1,129 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?><SEMAPHORE><PARAMETERS><PARAMETER NAME="template">service.xml</PARAMETER><PARAMETER NAME="fl">id, name_en_pl, name_en, class_name_en, [child parentFilter="(content_type:concept OR content_type:concept_scheme)" childFilter=content_type:facet]</PARAMETER><PARAMETER NAME="language">en</PARAMETER><PARAMETER NAME="language">en</PARAMETER><PARAMETER NAME="language">en</PARAMETER><PARAMETER NAME="fq">content_type:concept_scheme content_type:concept</PARAMETER><PARAMETER NAME="sort">score desc, name_en_pl asc</PARAMETER><PARAMETER NAME="rows">10</PARAMETER><PARAMETER NAME="version">1</PARAMETER><PARAMETER NAME="raw_query">chi</PARAMETER><PARAMETER NAME="structure">XML</PARAMETER><PARAMETER NAME="q">autocomplete_en_plf:chi* autocomplete_en_f:chi* autocomplete_en_pl:chi* autocomplete_en:chi*</PARAMETER><PARAMETER NAME="defType">edismax</PARAMETER><PARAMETER NAME="qf">autocomplete_en_plf^100.0 autocomplete_en_f^20.0 autocomplete_en_pl^50.0 autocomplete_en^1.0</PARAMETER><PARAMETER NAME="service">PREFIX</PARAMETER><PARAMETER NAME="tbdb">IPSV</PARAMETER><PARAMETER NAME="wt">sesHintsXML</PARAMETER></PARAMETERS><TERM_HINTS total="10"><TERM_HINT ID="9e933b80-b6b1-5d31-9f77-8d25c3dc5816" NAME="Chickens"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="9e933b80-b6b1-5d31-9f77-8d25c3dc5816" NATURE="PT"><EM>Chi</EM>ckens</HINT><FACET ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="Environment"/></TERM_HINT><TERM_HINT ID="747792ba-1537-5cf6-93b2-90aadc188591" NAME="Child abuse"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="747792ba-1537-5cf6-93b2-90aadc188591" NATURE="PT"><EM>Chi</EM>ld abuse</HINT><FACET ID="6d13260c-642e-4ec2-9294-e5cbcefc3369" NAME="Life in the community"/></TERM_HINT><TERM_HINT ID="9de6fe1e-1206-5532-a48b-808809a7d0fe" NAME="Child benefit"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="9de6fe1e-1206-5532-a48b-808809a7d0fe" NATURE="PT"><EM>Chi</EM>ld benefit</HINT><FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care"/></TERM_HINT><TERM_HINT ID="cc44d542-12d0-507c-9652-9752c8c6e0c6" NAME="Child care"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="cc44d542-12d0-507c-9652-9752c8c6e0c6" NATURE="PT"><EM>Chi</EM>ld care</HINT><FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care"/></TERM_HINT><TERM_HINT ID="f80c16ca-0a62-5901-8cfb-32c549d5dfbd" NAME="Child custody"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="f80c16ca-0a62-5901-8cfb-32c549d5dfbd" NATURE="PT"><EM>Chi</EM>ld custody</HINT><FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care"/></TERM_HINT><TERM_HINT ID="b84cdc47-839b-5682-9000-b6cc75447e90" NAME="Child employment"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="b84cdc47-839b-5682-9000-b6cc75447e90" NATURE="PT"><EM>Chi</EM>ld employment</HINT><FACET ID="30b6deb0-bd17-4dec-ae5e-9935a16a84a3" NAME="Employment, jobs and careers"/></TERM_HINT><TERM_HINT ID="331dee57-0d4a-5cbd-b69c-e5f83ebc5a0a" NAME="Child health services"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="331dee57-0d4a-5cbd-b69c-e5f83ebc5a0a" NATURE="PT"><EM>Chi</EM>ld health services</HINT><FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care"/></TERM_HINT><TERM_HINT ID="2df53e74-e598-53d4-af26-f6ae5afedda5" NAME="Child protection"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="2df53e74-e598-53d4-af26-f6ae5afedda5" NATURE="PT"><EM>Chi</EM>ld protection</HINT><FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care"/></TERM_HINT><TERM_HINT ID="92eb5545-b3a0-5c3e-ab5d-b29d77292407" NAME="Child safety"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="92eb5545-b3a0-5c3e-ab5d-b29d77292407" NATURE="PT"><EM>Chi</EM>ld safety</HINT><FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care"/></TERM_HINT><TERM_HINT ID="d527162e-6853-5690-8c51-8e96b9cc78eb" NAME="Child support"><CLASSES><CLASS>Concept</CLASS></CLASSES><HINT ID="d527162e-6853-5690-8c51-8e96b9cc78eb" NATURE="PT"><EM>Chi</EM>ld support</HINT><FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care"/></TERM_HINT></TERM_HINTS></SEMAPHORE>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<SEMAPHORE>
+  <PARAMETERS>
+    <PARAMETER NAME="template">service.xml</PARAMETER>
+    <PARAMETER NAME="fl">id, name_en_pl, name_en, class_name_en, [child
+      parentFilter="(content_type:concept OR content_type:concept_scheme)"
+      childFilter=content_type:facet]</PARAMETER>
+    <PARAMETER NAME="language">en</PARAMETER>
+    <PARAMETER NAME="language">en</PARAMETER>
+    <PARAMETER NAME="language">en</PARAMETER>
+    <PARAMETER NAME="fq">content_type:concept_scheme content_type:concept</PARAMETER>
+    <PARAMETER NAME="sort">score desc, name_en_pl asc</PARAMETER>
+    <PARAMETER NAME="rows">10</PARAMETER>
+    <PARAMETER NAME="version">1</PARAMETER>
+    <PARAMETER NAME="raw_query">chi</PARAMETER>
+    <PARAMETER NAME="structure">XML</PARAMETER>
+    <PARAMETER NAME="q">autocomplete_en_plf:chi* autocomplete_en_f:chi*
+      autocomplete_en_pl:chi* autocomplete_en:chi*</PARAMETER>
+    <PARAMETER NAME="defType">edismax</PARAMETER>
+    <PARAMETER NAME="qf">autocomplete_en_plf^100.0 autocomplete_en_f^20.0
+      autocomplete_en_pl^50.0 autocomplete_en^1.0</PARAMETER>
+    <PARAMETER NAME="service">PREFIX</PARAMETER>
+    <PARAMETER NAME="tbdb">IPSV</PARAMETER>
+    <PARAMETER NAME="wt">sesHintsXML</PARAMETER>
+  </PARAMETERS>
+  <TERM_HINTS total="10">
+    <TERM_HINT ID="9e933b80-b6b1-5d31-9f77-8d25c3dc5816" NAME="Chickens" URI="http://example.com/TestCM#Chickens">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="9e933b80-b6b1-5d31-9f77-8d25c3dc5816"
+        URI="http://example.com/TestCM#AustralianCricketer" NATURE="PT">
+        <EM>Chi</EM>
+        ckens
+      </HINT>
+      <FACET ID="d761553a-d378-4e99-9712-c3d888465e29" NAME="Environment" />
+    </TERM_HINT>
+    <TERM_HINT ID="747792ba-1537-5cf6-93b2-90aadc188591" NAME="Child abuse" URI="http://example.com/TestCM#abuse">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="747792ba-1537-5cf6-93b2-90aadc188591" NATURE="PT">
+        <EM>Chi</EM>
+        ld abuse
+      </HINT>
+      <FACET ID="6d13260c-642e-4ec2-9294-e5cbcefc3369" NAME="Life in the community" />
+    </TERM_HINT>
+    <TERM_HINT ID="9de6fe1e-1206-5532-a48b-808809a7d0fe" NAME="Child benefit" URI="http://example.com/TestCM#benefit">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="9de6fe1e-1206-5532-a48b-808809a7d0fe" NATURE="PT">
+        <EM>Chi</EM>
+        ld benefit
+      </HINT>
+      <FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care" />
+    </TERM_HINT>
+    <TERM_HINT ID="cc44d542-12d0-507c-9652-9752c8c6e0c6" NAME="Child care" URI="http://example.com/TestCM#care">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="cc44d542-12d0-507c-9652-9752c8c6e0c6" NATURE="PT">
+        <EM>Chi</EM>
+        ld care
+      </HINT>
+      <FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care" />
+    </TERM_HINT>
+    <TERM_HINT ID="f80c16ca-0a62-5901-8cfb-32c549d5dfbd" NAME="Child custody" URI="http://example.com/TestCM#custody">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="f80c16ca-0a62-5901-8cfb-32c549d5dfbd" NATURE="PT">
+        <EM>Chi</EM>
+        ld custody
+      </HINT>
+      <FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care" />
+    </TERM_HINT>
+    <TERM_HINT ID="b84cdc47-839b-5682-9000-b6cc75447e90" NAME="Child employment" URI="http://example.com/TestCM#employment">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="b84cdc47-839b-5682-9000-b6cc75447e90" NATURE="PT">
+        <EM>Chi</EM>
+        ld employment
+      </HINT>
+      <FACET ID="30b6deb0-bd17-4dec-ae5e-9935a16a84a3" NAME="Employment, jobs and careers" />
+    </TERM_HINT>
+    <TERM_HINT ID="331dee57-0d4a-5cbd-b69c-e5f83ebc5a0a" NAME="Child health services" URI="http://example.com/TestCM#services">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="331dee57-0d4a-5cbd-b69c-e5f83ebc5a0a" NATURE="PT">
+        <EM>Chi</EM>
+        ld health services
+      </HINT>
+      <FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care" />
+    </TERM_HINT>
+    <TERM_HINT ID="2df53e74-e598-53d4-af26-f6ae5afedda5" NAME="Child protection" URI="http://example.com/TestCM#protection">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="2df53e74-e598-53d4-af26-f6ae5afedda5" NATURE="PT">
+        <EM>Chi</EM>
+        ld protection
+      </HINT>
+      <FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care" />
+    </TERM_HINT>
+    <TERM_HINT ID="92eb5545-b3a0-5c3e-ab5d-b29d77292407" NAME="Child safety" URI="http://example.com/TestCM#safety">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="92eb5545-b3a0-5c3e-ab5d-b29d77292407" NATURE="PT">
+        <EM>Chi</EM>
+        ld safety
+      </HINT>
+      <FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care" />
+    </TERM_HINT>
+    <TERM_HINT ID="d527162e-6853-5690-8c51-8e96b9cc78eb" NAME="Child support" URI="http://example.com/TestCM#support">
+      <CLASSES>
+        <CLASS>Concept</CLASS>
+      </CLASSES>
+      <HINT ID="d527162e-6853-5690-8c51-8e96b9cc78eb" NATURE="PT">
+        <EM>Chi</EM>
+        ld support
+      </HINT>
+      <FACET ID="675b8390-72ad-45d1-bfab-77b6c2ac7420" NAME="Health, well-being and care" />
+    </TERM_HINT>
+  </TERM_HINTS>
+</SEMAPHORE>
