@@ -517,11 +517,8 @@ public class SESClient implements AutoCloseable {
 				path.append("&mindocs=" + sesFilter.getMinDocs());
 			}
 
-			if (sesFilter.getPrefixResultsLimit() != SESFilter.UNDEFINED_INT) {
-				path.append("&prefix_results_limit=" + sesFilter.getPrefixResultsLimit());
-			}
-			if (sesFilter.getPrefixResultsInternalLimit() != SESFilter.UNDEFINED_INT) {
-				path.append("&prefix_results_internal_limit=" + sesFilter.getPrefixResultsInternalLimit());
+			if (sesFilter.getMaxResultCount() != SESFilter.UNDEFINED_INT) {
+				path.append("&maxresultcount=" + sesFilter.getMaxResultCount());
 			}
 
 			if (sesFilter.getClasses() != null) {
