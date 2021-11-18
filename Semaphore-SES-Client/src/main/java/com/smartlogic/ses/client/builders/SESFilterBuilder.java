@@ -14,6 +14,7 @@ public class SESFilterBuilder {
   private Optional<String[]> startTermZthesIds = Optional.empty();
   private Optional<String[]> facets = Optional.empty();
   private Optional<String[]> classes = Optional.empty();
+  private Optional<String[]> uris = Optional.empty();
   private Optional<Integer> minDocs = Optional.empty();
   private Optional<Integer> maxResultCount = Optional.empty();
 
@@ -62,6 +63,11 @@ public class SESFilterBuilder {
     return this;
   }
 
+  public SESFilterBuilder uris(String[] uris) {
+    this.uris = Optional.of(uris);
+    return this;
+  }
+
   public SESFilter build() {
     SESFilter sesFilter = new SESFilter();
     modifiedAfterDate.ifPresent(sesFilter::setModifiedAfterDate);
@@ -73,6 +79,7 @@ public class SESFilterBuilder {
     classes.ifPresent(sesFilter::setClasses);
     minDocs.ifPresent(sesFilter::setMinDocs);
     maxResultCount.ifPresent(sesFilter::setMaxResultCount);
+    uris.ifPresent(sesFilter::setUris);
     return sesFilter;
   }
 

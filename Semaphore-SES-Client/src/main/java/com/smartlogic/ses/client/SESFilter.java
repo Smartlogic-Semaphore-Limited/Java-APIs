@@ -18,6 +18,7 @@ public class SESFilter {
   private String[] startTermZthesIds;
   private String[] facets;
   private String[] classes;
+  private String[] uris;
   private int minDocs = UNDEFINED_INT;
   private int maxResultCount = UNDEFINED_INT;
 
@@ -83,6 +84,14 @@ public class SESFilter {
 
   public void setExcludeAttributes(String[] attributeNames) {
     filterExcludeAttributes = attributeNames;
+  }
+
+  public String[] getUris() {
+    return uris;
+  }
+
+  public void setUris(String[] uris) {
+    this.uris = uris;
   }
 
   public int getMaxResultCount() {
