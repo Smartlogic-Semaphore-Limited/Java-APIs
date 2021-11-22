@@ -1,6 +1,7 @@
 package com.smartlogic.ses.client.builders;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 
 import com.smartlogic.ses.client.SESFilter;
@@ -17,6 +18,7 @@ public class SESFilterBuilder {
   private Optional<String[]> uris = Optional.empty();
   private Optional<Integer> minDocs = Optional.empty();
   private Optional<Integer> maxResultCount = Optional.empty();
+  private Optional<Map<String, String>> metadata = Optional.empty();
 
   public SESFilterBuilder modifiedAfterDate(Date modifiedAfterDate) {
     this.modifiedAfterDate = Optional.of(modifiedAfterDate);
@@ -45,6 +47,11 @@ public class SESFilterBuilder {
 
   public SESFilterBuilder facets(String[] facets) {
     this.facets = Optional.of(facets);
+    return this;
+  }
+
+  public SESFilterBuilder metadata(Map<String, String> metadata) {
+    this.metadata = Optional.of(metadata);
     return this;
   }
 
@@ -80,6 +87,7 @@ public class SESFilterBuilder {
     minDocs.ifPresent(sesFilter::setMinDocs);
     maxResultCount.ifPresent(sesFilter::setMaxResultCount);
     uris.ifPresent(sesFilter::setUris);
+    metadata.ifPresent(sesFilter::setMetadata);
     return sesFilter;
   }
 

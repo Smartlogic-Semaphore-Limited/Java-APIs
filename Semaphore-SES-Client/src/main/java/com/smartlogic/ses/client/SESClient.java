@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeSet;
 
@@ -583,6 +584,14 @@ public class SESClient implements AutoCloseable {
       if (sesFilter.getUris() != null) {
         for (String uri : sesFilter.getUris()) {
           path.append("&filter=URI=" + URLEncoder.encode(uri, "UTF8"));
+        }
+      }
+      if (sesFilter.getMetadata() != null) {
+        for (Entry<String, String> entry : sesFilter.getMetadata().entrySet()) {
+          path.append("&filter=MDC_" +
+              URLEncoder.encode(entry.getKey(), "UTF8") +
+              "=" +
+              URLEncoder.encode(entry.getValue(), "UTF8"));
         }
       }
 

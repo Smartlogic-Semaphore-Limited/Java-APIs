@@ -6,6 +6,7 @@
 package com.smartlogic.ses.client;
 
 import java.util.Date;
+import java.util.Map;
 
 public class SESFilter {
 
@@ -19,6 +20,7 @@ public class SESFilter {
   private String[] facets;
   private String[] classes;
   private String[] uris;
+  private Map<String, String> metadata;
   private int minDocs = UNDEFINED_INT;
   private int maxResultCount = UNDEFINED_INT;
 
@@ -28,6 +30,14 @@ public class SESFilter {
 
   public void setStartTermZthesIds(String[] startTermZthesIds) {
     this.startTermZthesIds = startTermZthesIds;
+  }
+
+  public Map<String, String> getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(Map<String, String> metadata) {
+    this.metadata = metadata;
   }
 
   public String[] getFacets() {
