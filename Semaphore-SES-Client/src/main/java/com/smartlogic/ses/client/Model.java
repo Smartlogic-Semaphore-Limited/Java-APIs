@@ -42,6 +42,11 @@ public class Model extends AbstractSimpleNode implements Serializable, Comparabl
     return this.name;
   }
 
+  @Override
+  public String toString() {
+    return "Model [name=" + name + ", languages=" + languages + "]";
+  }
+
   protected Model(Element element) {
     NodeList nodeList = element.getChildNodes();
     for (int n = 0; n < nodeList.getLength(); n++) {
@@ -76,19 +81,23 @@ public class Model extends AbstractSimpleNode implements Serializable, Comparabl
 
   @Override
   public int compareTo(Model otherModel) {
-    if (this == otherModel)
+    if (this == otherModel) {
       return 0;
+    }
     return this.getName().compareTo(otherModel.getName());
   }
 
   @Override
   public boolean equals(Object otherObject) {
-    if (this == otherObject)
+    if (this == otherObject) {
       return true;
-    if (otherObject == null)
+    }
+    if (otherObject == null) {
       return false;
-    if (!(otherObject instanceof Model))
+    }
+    if (!(otherObject instanceof Model)) {
       return false;
+    }
 
     Model otherModel = (Model) otherObject;
     return this.getName().equals(otherModel.getName());
@@ -100,7 +109,7 @@ public class Model extends AbstractSimpleNode implements Serializable, Comparabl
   }
 
   public static Collection<Model> readCollection(Element element) {
-    Collection<Model> models = new TreeSet<Model>();
+    Collection<Model> models = new TreeSet<>();
     NodeList nodeList = element.getChildNodes();
     for (int n = 0; n < nodeList.getLength(); n++) {
       Node node = nodeList.item(n);
@@ -132,7 +141,7 @@ public class Model extends AbstractSimpleNode implements Serializable, Comparabl
     this.name = name;
   }
 
-  private Collection<String> languages = new TreeSet<String>();
+  private Collection<String> languages = new TreeSet<>();
 
   public Collection<String> getLanguages() {
     return languages;
