@@ -12,16 +12,17 @@ import org.w3c.dom.Element;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ModifiedDate extends AbstractSimpleNodeDate implements Serializable {
 
-	private static final long serialVersionUID = -5011054020631168933L;
+  private static final long serialVersionUID = -5011054020631168933L;
 
-	public ModifiedDate() {}
-	
-	protected ModifiedDate(String value) {
-		super(value);
-	}
-	
-	protected ModifiedDate(Element element) {
-		super(element);
-	}
+  public ModifiedDate() {
+  }
+
+  protected ModifiedDate(String value) {
+    super(value);
+  }
+
+  protected ModifiedDate(Element element) {
+    super(element);
+  }
 
 }

@@ -1,8 +1,8 @@
-//----------------------------------------------------------------------
-// Product:     Semantic Enhancement Server Java API
+// ----------------------------------------------------------------------
+// Product: Semantic Enhancement Server Java API
 //
 // (c) 2009 Smartlogic Semaphore Ltd
-//----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 package com.smartlogic.ses.client;
 
 import java.io.Serializable;
@@ -16,19 +16,20 @@ import org.w3c.dom.Element;
 
 @XmlRootElement(name = "metadata")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Metadata extends AbstractFieldMapElement implements Serializable
-{
-	private static final long serialVersionUID = -7641444801249874468L;
-	// This is required by the XML Marshalling/Unmarshalling
-	public Metadata() {}
+public class Metadata extends AbstractFieldMapElement implements Serializable {
+  private static final long serialVersionUID = -7641444801249874468L;
 
-	protected Metadata(Element element) {
-		super(element);
-	}
+  // This is required by the XML Marshalling/Unmarshalling
+  public Metadata() {
+  }
 
-	@Override
-	@XmlTransient
-	IdentifierField getIdentifierField() {
-		return IdentifierField.NAME;
-	}
+  protected Metadata(Element element) {
+    super(element);
+  }
+
+  @Override
+  @XmlTransient
+  IdentifierField getIdentifierField() {
+    return IdentifierField.NAME;
+  }
 }

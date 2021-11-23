@@ -1,8 +1,8 @@
-//----------------------------------------------------------------------
-// Product:     Semantic Enhancement Server Java API
+// ----------------------------------------------------------------------
+// Product: Semantic Enhancement Server Java API
 //
 // (c) 2009 Smartlogic Semaphore Ltd
-//----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 package com.smartlogic.ses.client;
 
 import java.io.Serializable;
@@ -15,19 +15,19 @@ import org.w3c.dom.Element;
 
 @XmlRootElement(name = "id")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Id extends AbstractSimpleNode implements Serializable
-{
-	private static final long serialVersionUID = -5922069417223070189L;
-	
-	// This is required by the XML Marshalling/Unmarshalling
-	public Id() {}
+public class Id extends AbstractSimpleNode implements Serializable {
+  private static final long serialVersionUID = -5922069417223070189L;
 
-	protected Id(String value) {
-		super(value);
-	}
+  // This is required by the XML Marshalling/Unmarshalling
+  public Id() {
+  }
 
-	protected Id(Element element) {
-		super(element);
-	}
+  protected Id(String value) {
+    super(value);
+  }
+
+  protected Id(Element element) {
+    super(element);
+  }
 
 }

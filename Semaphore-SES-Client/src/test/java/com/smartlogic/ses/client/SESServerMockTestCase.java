@@ -13,22 +13,23 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 public abstract class SESServerMockTestCase extends TestCase {
 
-	@ClassRule
-	public static WireMockClassRule wireMockRule = new WireMockClassRule(options().port(9999));
+  @ClassRule
+  public static WireMockClassRule wireMockRule = new WireMockClassRule(options().port(9999));
 
-	@Rule
-	public WireMockClassRule instanceRule = wireMockRule;
+  @Rule
+  public WireMockClassRule instanceRule = wireMockRule;
 
-	/**
-	 * Utility method to read file to string
-	 * @param path
-	 * @return
-	 */
-	public static String readFileToString(String path) {
-		try {
-			return FileUtils.readFileToString(new File(path));
-		} catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
-	}
+  /**
+   * Utility method to read file to string
+   * 
+   * @param path
+   * @return
+   */
+  public static String readFileToString(String path) {
+    try {
+      return FileUtils.readFileToString(new File(path));
+    } catch (IOException ioe) {
+      throw new RuntimeException(ioe);
+    }
+  }
 }

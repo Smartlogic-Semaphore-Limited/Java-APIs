@@ -12,16 +12,17 @@ import org.w3c.dom.Element;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class CreatedDate extends AbstractSimpleNodeDate implements Serializable {
 
-	private static final long serialVersionUID = 2725685372690585118L;
+  private static final long serialVersionUID = 2725685372690585118L;
 
-	public CreatedDate() {}
-	
-	protected CreatedDate(String value) {
-		super(value);
-	}
-	
-	protected CreatedDate(Element element) {
-		super(element);
-	}
+  public CreatedDate() {
+  }
+
+  protected CreatedDate(String value) {
+    super(value);
+  }
+
+  protected CreatedDate(Element element) {
+    super(element);
+  }
 
 }
