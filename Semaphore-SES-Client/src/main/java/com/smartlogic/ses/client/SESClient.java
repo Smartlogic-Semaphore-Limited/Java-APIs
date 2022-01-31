@@ -586,6 +586,11 @@ public class SESClient implements AutoCloseable {
           path.append("&filter=URI=" + URLEncoder.encode(uri, "UTF8"));
         }
       }
+      if (sesFilter.getLabelTypes() != null) {
+        for (String uri : sesFilter.getLabelTypes()) {
+          path.append("&filter=EQ_REL=" + URLEncoder.encode(uri, "UTF8"));
+        }
+      }
       if (sesFilter.getMetadata() != null) {
         for (Entry<String, String> entry : sesFilter.getMetadata().entrySet()) {
           path.append("&filter=MDC_" +
@@ -684,6 +689,11 @@ public class SESClient implements AutoCloseable {
 
   public Map<String, Term> getTermDetailsByName(String name)
       throws SESException, NoSuchTermException {
+    return getTermDetailsByName(name, null);
+  }
+
+  public Map<String, Term> getTermDetailsByName(String name, SESFilter sesFilter)
+      throws SESException, NoSuchTermException {
     logger.info("getTermDetails - entry");
     URL url = null;
 
@@ -694,6 +704,8 @@ public class SESClient implements AutoCloseable {
       query.append("&service=term");
       query.append("&term=" + URLEncoder.encode(name, "UTF8"));
       query.append(getLanguageChoice());
+
+      query.append(getFilterString(sesFilter));
 
       url = getURLImpl(query.toString());
       if (logger.isDebugEnabled()) {

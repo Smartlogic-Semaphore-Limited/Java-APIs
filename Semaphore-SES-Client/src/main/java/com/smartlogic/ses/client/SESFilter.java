@@ -20,6 +20,8 @@ public class SESFilter {
   private String[] facets;
   private String[] classes;
   private String[] uris;
+  private String[] labelTypes;
+
   private Map<String, String> metadata;
   private int minDocs = UNDEFINED_INT;
   private int maxResultCount = UNDEFINED_INT;
@@ -42,6 +44,14 @@ public class SESFilter {
 
   public String[] getFacets() {
     return facets;
+  }
+
+  public String[] getLabelTypes() {
+    return labelTypes;
+  }
+
+  public void setLabelTypes(String[] labelType) {
+    this.labelTypes = labelType;
   }
 
   public void setFacets(String[] facets) {
