@@ -12,33 +12,34 @@ import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Label;
 
 public class AddConceptLabel extends ModelManipulation {
-	public static void main(String args[]) throws IOException, CloudException, OEClientException {
-		runTests(new AddConceptLabel());
-	}
-	
-	@Override
-	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
+  public static void main(String args[]) throws IOException, CloudException, OEClientException {
+    runTests(new AddConceptLabel());
+  }
 
-		List<Label> csLabels = new ArrayList<Label>();
-		csLabels.add(new Label("en", "Concept Scheme for Add Concept Label"));
+  @Override
+  protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
-		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#ConceptSchemeForAddConceptLabel",
-				csLabels);
-		oeClient.createConceptScheme(conceptScheme);
-		
-		List<Label> cLabels = new ArrayList<Label>();
-		cLabels.add(new Label("en", "My Added concept"));
-		Concept concept = new Concept(oeClient, "http://example.com/APITest#MyConceptForAddConceptLabel", cLabels);
+    List<Label> csLabels = new ArrayList<>();
+    csLabels.add(new Label("en", "Concept Scheme for Add Concept Label"));
 
-		oeClient.createConcept(conceptScheme.getUri(), concept);
+    ConceptScheme conceptScheme = new ConceptScheme(oeClient,
+        "http://example.com/APITest#ConceptSchemeForAddConceptLabel", csLabels);
+    oeClient.createConceptScheme(conceptScheme);
 
-		String relationshipType = "skosxl:altLabel";
-		Label label = new Label("fr", "Concept Une");
-		oeClient.createLabel(concept, relationshipType, label);
+    List<Label> cLabels = new ArrayList<>();
+    cLabels.add(new Label("en", "My Added concept"));
+    Concept concept =
+        new Concept(oeClient, "http://example.com/APITest#MyConceptForAddConceptLabel", cLabels);
 
-		String relationshipType2 = "http://example.com/APITest#CodeName";
-		Label label2 = new Label("de", "Die Code");
-		oeClient.createLabel(concept, relationshipType2, label2);
-	
-	}
+    oeClient.createConcept(conceptScheme.getUri(), concept);
+
+    String relationshipType = "skosxl:altLabel";
+    Label label = new Label("fr", "Concept Une");
+    oeClient.createLabel(concept, relationshipType, label);
+
+    String relationshipType2 = "http://example.com/APITest#CodeName";
+    Label label2 = new Label("de", "Die Code");
+    oeClient.createLabel(concept, relationshipType2, label2);
+
+  }
 }

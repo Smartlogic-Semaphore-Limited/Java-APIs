@@ -23,7 +23,7 @@ public abstract class ModelManipulation {
       oeClients = new ArrayList<>();
       oeClients.add(getOEClient("semaphore4.properties"));
       oeClients.add(getOEClient("semaphore5.properties"));
-      // oeClients.add(getOEClient("cloud.properties"));
+      oeClients.add(getOEClient("cloud.properties"));
     }
     return oeClients;
   }

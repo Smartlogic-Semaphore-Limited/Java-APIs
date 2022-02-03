@@ -499,6 +499,66 @@ public class OEClientReadOnly {
     return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
   }
 
+  public Concept getConceptByName(String relationshipTypeUri, String labelValue)
+      throws OEClientException {
+    return getConceptByName(relationshipTypeUri, labelValue, null);
+  }
+
+  public Concept getConceptByName(String relationshipTypeUri, String labelValue, String language)
+      throws OEClientException {
+    JsonObject jsonResponse = getConceptByNameResponse(relationshipTypeUri, labelValue, language);
+    if (jsonResponse.get("@graph").getAsArray().size() == 0) {
+      throw new OEClientException(
+          String.format("No concept found with label type '%s' and value '%s' (%s)",
+              relationshipTypeUri, labelValue, language));
+    } else if (jsonResponse.get("@graph").getAsArray().size() > 1) {
+      throw new OEClientException(
+          String.format("Multiple concepts found with label type '%s' and value '%s'",
+              relationshipTypeUri, labelValue));
+    }
+    return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+  }
+
+  public Collection<Concept> getConceptsByName(String relationshipTypeUri, String labelValue)
+      throws OEClientException {
+    return getConceptsByName(relationshipTypeUri, labelValue, null);
+  }
+
+  public Collection<Concept> getConceptsByName(String relationshipTypeUri, String labelValue,
+      String language) throws OEClientException {
+    JsonObject jsonResponse = getConceptByNameResponse(relationshipTypeUri, labelValue, language);
+    Collection<Concept> concepts = new ArrayList<>();
+    for (JsonValue jsonValue : jsonResponse.get("@graph").getAsArray()) {
+      concepts.add(new Concept(this, jsonValue.getAsObject()));
+    }
+    return concepts;
+  }
+
+  private JsonObject getConceptByNameResponse(String relationshipTypeUri, String labelValue,
+      String language) throws OEClientException {
+    logger.info("getConceptByNameResponse entry: {} {}", relationshipTypeUri, labelValue);
+
+    String url = getModelURL() + "/skos:Concept/meta:transitiveInstance";
+    logger.info("getConceptByNameResponse url: {}", url);
+
+    Map<String, String> queryParameters = new HashMap<>();
+    queryParameters.put("properties", basicProperties);
+    queryParameters.put("filters", String.format("subject(%s/skosxl:literalForm matches \"%s\"%s)",
+        getWrappedUri(relationshipTypeUri), labelValue, language == null ? "" : "@" + language));
+    if (language != null) {
+      queryParameters.put("language", language);
+    }
+    logger.info("getConceptByNameResponse queryParameters: {}", queryParameters);
+    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
+
+    Date startDate = new Date();
+    logger.info("getConceptByNameResponse making call  : {}", startDate.getTime());
+    Response response = invocationBuilder.get();
+
+    JsonObject jsonResponse = getJsonResponse("getConceptByName", response);
+    return jsonResponse;
+  }
+
   public Collection<Concept> getAllConcepts() throws OEClientException {
     return getFilteredConcepts(new OEFilter());
   }
