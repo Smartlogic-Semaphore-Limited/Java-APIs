@@ -15,4 +15,14 @@ public class TestConfig {
     }
     return props;
   }
+
+  public static Properties getCloudConfig() {
+	  Properties props = new Properties();
+	  try (InputStream input = TestConfig.class.getClassLoader().getResourceAsStream("cloudtestconfig.properties")) {
+		  props.load(input);
+	  } catch (Exception e) {
+		  throw new RuntimeException(e);
+	  }
+	  return props;
+  }
 }

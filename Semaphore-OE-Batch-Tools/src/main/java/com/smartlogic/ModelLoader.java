@@ -1,9 +1,5 @@
 package com.smartlogic;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.query.Dataset;
@@ -14,6 +10,8 @@ import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb.TDBLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * Utilities class for fetching and loading RDF models into Jena models.
@@ -31,10 +29,10 @@ public class ModelLoader {
    * @param endpoint
    * @param tDbDirectoryPath
    * @return
- * @throws OEConnectionException 
- * @throws IOException 
+   * @throws OEConnectionException
+   * @throws IOException
    */
-  public static Model loadOEModelToTdb(OEModelEndpoint endpoint, String tDbDirectoryPath) throws IOException, OEConnectionException {
+  public static Model loadOEModelToTdb(OEModelEndpoint endpoint, String tDbDirectoryPath) throws IOException, OEConnectionException, InterruptedException {
     Preconditions.checkNotNull(endpoint);
     Preconditions.checkArgument(!Strings.isNullOrEmpty(tDbDirectoryPath));
 
@@ -43,12 +41,9 @@ public class ModelLoader {
       logger.debug("TDB Dir path   : {}", tDbDirectoryPath);
     }
 
-    String modelAsTTL = endpoint.fetchData();
-
     Dataset dataset = TDBFactory.createDataset(tDbDirectoryPath);
     Model model = dataset.getNamedModel(endpoint.modelIri);
-    model.read(new ByteArrayInputStream(modelAsTTL.getBytes()), "TTL");
-    return model;
+    return endpoint.fetchData(model);
   }
 
   /**
@@ -56,21 +51,15 @@ public class ModelLoader {
    *
    * @param endpoint
    * @return
- * @throws OEConnectionException 
- * @throws IOException 
+   * @throws OEConnectionException
+   * @throws IOException
    */
-  public static Model loadOEModelToMem(OEModelEndpoint endpoint) throws IOException, OEConnectionException {
+  public static Model loadOEModelToMem(OEModelEndpoint endpoint) throws IOException, OEConnectionException, InterruptedException {
     Preconditions.checkNotNull(endpoint);
 
-    logger.debug("OEModelEndpoint base URL: {}", endpoint.toString());
+    logger.debug("OEModelEndpoint base URL: {}", endpoint.baseUrl);
 
-    String modelAsTTL = endpoint.fetchData();
-    
-    logger.debug("Downloaded model: {}", modelAsTTL);
-    
-    Model model = ModelFactory.createDefaultModel();
-    model.read(new ByteArrayInputStream(modelAsTTL.getBytes(StandardCharsets.UTF_8)), null, "TTL");
-    return model;
+    return endpoint.fetchData(null);
   }
 
   /**
@@ -91,7 +80,7 @@ public class ModelLoader {
 
     Dataset dataset = TDBFactory.createDataset(tDbDirectoryPath);
     Model model = dataset.getNamedModel(modelId);
-    TDBLoader.loadModel(model, rdfUri );
+    TDBLoader.loadModel(model, rdfUri);
     return model;
   }
 
