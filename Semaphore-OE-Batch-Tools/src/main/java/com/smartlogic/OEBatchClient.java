@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Batch client for OE. Send addition and removal of triples in batch-fashion using SPARQL.
@@ -24,6 +25,7 @@ public class OEBatchClient implements Closeable {
   protected Model pendingModel = null;
   protected BatchMode batchMode = BatchMode.None;
   protected SparqlUpdateOptions sparqlUpdateOptions = new SparqlUpdateOptions();
+  protected int batchThreshold = 100000;
 
   /**
    * Constructor for a OEBatchClient object. The OEModelEndpoint includes
@@ -119,6 +121,18 @@ public class OEBatchClient implements Closeable {
   }
 
   /**
+   * Set the batch threshold
+   * @param batchThreshold
+   */
+  public void setBatchThreshold(int batchThreshold) {
+    this.batchThreshold = batchThreshold;
+  }
+
+  public int getBatchThreshold() {
+    return this.batchThreshold;
+  }
+
+  /**
    * Set the SparqlUpdateOptions config object.
    * @param options
    */
@@ -148,22 +162,45 @@ public class OEBatchClient implements Closeable {
    */
   public boolean commit() throws IOException {
     boolean result = false;
-    switch (batchMode) {
-      case None:
-        String sparql = DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(getBatchDiff());
-        if (sparql != null) {
-            logger.debug("Changes detected, running SPARQL Update");
-            result = endpoint.runSparqlUpdate(sparql, sparqlUpdateOptions);
-        } else {
-          if (logger.isDebugEnabled())
-            logger.debug("No changes detected in model. Not running SPARQL update.");
+
+    RDFDifference rdfDiff = getBatchDiff();
+
+    if (rdfDiff.getInLeftOnly().size() == 0 && rdfDiff.getInRightOnly().size() == 0) {
+      logger.info("No changes detected, no data sent");
+    } else {
+      logger.info("Building and sending SPARQL batches");
+
+      long nDelete = rdfDiff.getInLeftOnly().size();
+      long nAdd = rdfDiff.getInRightOnly().size();
+      logger.info("  triples to delete: " + nDelete);
+      logger.info("  triples to add   : " + nAdd);
+
+      int nBatches = 0;
+
+      if ((nDelete + nAdd) <= batchThreshold) {
+        logger.info("Total triples count [{}] within threshold, running in single DELETE/INSERT SPARQL command", nDelete + nAdd);
+        endpoint.runSparqlUpdate(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(rdfDiff), sparqlUpdateOptions);
+      } else {
+
+        // batch mode. Send deletes first, then adds. (maybe use an import command for inserts?)
+        logger.info("Total triples [{}] exceeds threshold [{}], running DELETE and INSERT SPARQL statements in batches",
+                nDelete + nAdd, batchThreshold);
+
+        List<String> batchSparqlList = DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdateBatches(rdfDiff, batchThreshold);
+        logger.info("Number of batches: {}", batchSparqlList.size());
+
+        for (String batchStr : batchSparqlList) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Batch SPARQL: [{}]", batchStr);
+          }
+          endpoint.runSparqlUpdate(batchStr, sparqlUpdateOptions);
+          nBatches++;
+          logger.info("Batch SPARQL completed");
+          logger.info("{} of {} batches completed.", nBatches, batchSparqlList.size());
         }
-      case ByConcept:
-      {
-        //TODO: implement batched by concept
       }
     }
-    reset();
+    logger.info("SPARQL batch updates completed. Reset client before running another batch.");
 
     return result;
   }
