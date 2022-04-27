@@ -1,5 +1,7 @@
 package com.smartlogic;
 
+import java.io.IOException;
+
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.query.Dataset;
@@ -10,8 +12,6 @@ import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb.TDBLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  * Utilities class for fetching and loading RDF models into Jena models.
@@ -31,8 +31,10 @@ public class ModelLoader {
    * @return
    * @throws OEConnectionException
    * @throws IOException
+   * @throws InterruptedException
    */
-  public static Model loadOEModelToTdb(OEModelEndpoint endpoint, String tDbDirectoryPath) throws IOException, OEConnectionException, InterruptedException {
+  public static Model loadOEModelToTdb(OEModelEndpoint endpoint, String tDbDirectoryPath)
+      throws IOException, OEConnectionException, InterruptedException {
     Preconditions.checkNotNull(endpoint);
     Preconditions.checkArgument(!Strings.isNullOrEmpty(tDbDirectoryPath));
 
@@ -53,8 +55,10 @@ public class ModelLoader {
    * @return
    * @throws OEConnectionException
    * @throws IOException
+   * @throws InterruptedException
    */
-  public static Model loadOEModelToMem(OEModelEndpoint endpoint) throws IOException, OEConnectionException, InterruptedException {
+  public static Model loadOEModelToMem(OEModelEndpoint endpoint)
+      throws IOException, OEConnectionException, InterruptedException {
     Preconditions.checkNotNull(endpoint);
 
     logger.debug("OEModelEndpoint base URL: {}", endpoint.baseUrl);
@@ -86,6 +90,7 @@ public class ModelLoader {
 
   /**
    * Creates a new model, adds the specified model to it, and returns the new model.
+   *
    * @param inModel
    * @return
    */
@@ -119,6 +124,7 @@ public class ModelLoader {
 
   /**
    * Fetch a model at the specified URI, load, and return a memory-backed Jena model.
+   *
    * @param rdfUri
    * @return
    */
@@ -132,6 +138,5 @@ public class ModelLoader {
 
     return RDFDataMgr.loadModel(rdfUri);
   }
-
 
 }

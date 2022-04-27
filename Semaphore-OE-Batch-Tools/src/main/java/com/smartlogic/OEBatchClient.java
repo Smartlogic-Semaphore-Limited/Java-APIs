@@ -1,17 +1,18 @@
 package com.smartlogic;
 
-import com.smartlogic.rdfdiff.DiffToSparqlInsertUpdateBuilder;
-import com.smartlogic.rdfdiff.RDFDifference;
-import com.smartlogic.rdfdiff.RDFDifferenceBuilder;
-import com.smartlogic.tools.JenaUtil;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.List;
+import com.smartlogic.rdfdiff.DiffToSparqlInsertUpdateBuilder;
+import com.smartlogic.rdfdiff.RDFDifference;
+import com.smartlogic.rdfdiff.RDFDifferenceBuilder;
+import com.smartlogic.tools.JenaUtil;
 
 /**
  * Batch client for OE. Send addition and removal of triples in batch-fashion using SPARQL.
@@ -28,8 +29,9 @@ public class OEBatchClient implements Closeable {
   protected int batchThreshold = 100000;
 
   /**
-   * Constructor for a OEBatchClient object. The OEModelEndpoint includes
-   * the OE base URL, the access token, and the model IRI.
+   * Constructor for a OEBatchClient object. The OEModelEndpoint includes the OE base URL, the
+   * access token, and the model IRI.
+   *
    * @param endpoint
    */
   public OEBatchClient(OEModelEndpoint endpoint) {
@@ -39,6 +41,7 @@ public class OEBatchClient implements Closeable {
 
   /**
    * Gets the current OE endpoint.
+   *
    * @return
    */
   public OEModelEndpoint getEndpoint() {
@@ -47,6 +50,7 @@ public class OEBatchClient implements Closeable {
 
   /**
    * Sets the current OE endpoint
+   *
    * @param endpoint
    */
   public void setEndpoint(OEModelEndpoint endpoint) {
@@ -54,31 +58,35 @@ public class OEBatchClient implements Closeable {
   }
 
   public void setBatchMode(BatchMode mode) {
-	  if (mode != null) {
-		  this.batchMode = mode;
-	  }
+    if (mode != null) {
+      this.batchMode = mode;
+    }
   }
 
   /**
-   * Load the current model from OE and prepares to track changes.
-   * This method resets the baseline for the batch changes collected.
-   * Use with caution, any changes will be lost.
+   * Load the current model from OE and prepares to track changes. This method resets the baseline
+   * for the batch changes collected. Use with caution, any changes will be lost.
+   *
    * @throws OEConnectionException
+   * @throws InterruptedException
+   * @throws IOException
    */
-  public void loadCurrentModelFromOE() throws IOException, OEConnectionException, InterruptedException {
+  public void loadCurrentModelFromOE()
+      throws IOException, OEConnectionException, InterruptedException {
     this.currentModel = ModelLoader.loadOEModelToMem(endpoint);
     this.pendingModel = ModelLoader.loadModelToMem(currentModel);
 
     /*
-     Unnecessary coupling?
+     * Unnecessary coupling?
      */
     JenaUtil.setStandardNsPrefixes(currentModel);
     JenaUtil.setStandardNsPrefixes(pendingModel);
   }
 
   /**
-   * Get a reference to the current (original, unmodified) model. The getDiff call uses this as the "before"
-   * in the diff.
+   * Get a reference to the current (original, unmodified) model. The getDiff call uses this as the
+   * "before" in the diff.
+   *
    * @return
    */
   public Model getCurrentModel() {
@@ -86,8 +94,8 @@ public class OEBatchClient implements Closeable {
   }
 
   /**
-   * Get a reference to the pending (modified) model. The getDiff call uses this as the "after"
-   * in the diff.
+   * Get a reference to the pending (modified) model. The getDiff call uses this as the "after" in
+   * the diff.
    *
    * @return
    */
@@ -95,9 +103,10 @@ public class OEBatchClient implements Closeable {
     return this.pendingModel;
   }
 
-
   /**
-   * Sets the current (unmodified, original to compare against) model to the specified model (by reference)
+   * Sets the current (unmodified, original to compare against) model to the specified model (by
+   * reference)
+   *
    * @param model
    */
   public void setCurrentModel(Model model) {
@@ -106,6 +115,7 @@ public class OEBatchClient implements Closeable {
 
   /**
    * Sets the pending (modified, changed to compare current against) model.
+   *
    * @param model
    */
   public void setPendingModel(Model model) {
@@ -114,6 +124,7 @@ public class OEBatchClient implements Closeable {
 
   /**
    * Get the SparqlUpdateOptions config object.
+   *
    * @return
    */
   public SparqlUpdateOptions getSparqlUpdateOptions() {
@@ -122,6 +133,7 @@ public class OEBatchClient implements Closeable {
 
   /**
    * Set the batch threshold
+   *
    * @param batchThreshold
    */
   public void setBatchThreshold(int batchThreshold) {
@@ -134,6 +146,7 @@ public class OEBatchClient implements Closeable {
 
   /**
    * Set the SparqlUpdateOptions config object.
+   *
    * @param options
    */
   public void setSparqlUpdateOptions(SparqlUpdateOptions options) {
@@ -141,8 +154,10 @@ public class OEBatchClient implements Closeable {
   }
 
   /**
-   * Reset the client by copying pending to current model. Use this if you've committed all pending changes
-   * and want to start working on new changes without pulling a new copy of the model from OE.
+   * Reset the client by copying pending to current model. Use this if you've committed all pending
+   * changes and want to start working on new changes without pulling a new copy of the model from
+   * OE.
+   *
    * @throws IOException
    */
   public void reset() throws IOException {
@@ -178,15 +193,20 @@ public class OEBatchClient implements Closeable {
       int nBatches = 0;
 
       if ((nDelete + nAdd) <= batchThreshold) {
-        logger.info("Total triples count [{}] within threshold, running in single DELETE/INSERT SPARQL command", nDelete + nAdd);
-        endpoint.runSparqlUpdate(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(rdfDiff), sparqlUpdateOptions);
+        logger.info(
+            "Total triples count [{}] within threshold, running in single DELETE/INSERT SPARQL command",
+            nDelete + nAdd);
+        endpoint.runSparqlUpdate(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(rdfDiff),
+            sparqlUpdateOptions);
       } else {
 
         // batch mode. Send deletes first, then adds. (maybe use an import command for inserts?)
-        logger.info("Total triples [{}] exceeds threshold [{}], running DELETE and INSERT SPARQL statements in batches",
-                nDelete + nAdd, batchThreshold);
+        logger.info(
+            "Total triples [{}] exceeds threshold [{}], running DELETE and INSERT SPARQL statements in batches",
+            nDelete + nAdd, batchThreshold);
 
-        List<String> batchSparqlList = DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdateBatches(rdfDiff, batchThreshold);
+        List<String> batchSparqlList =
+            DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdateBatches(rdfDiff, batchThreshold);
         logger.info("Number of batches: {}", batchSparqlList.size());
 
         for (String batchStr : batchSparqlList) {
@@ -205,6 +225,7 @@ public class OEBatchClient implements Closeable {
     return result;
   }
 
+  @Override
   public void close() throws IOException {
     if (this.currentModel != null) {
       this.currentModel.close();
@@ -219,6 +240,7 @@ public class OEBatchClient implements Closeable {
 
   /**
    * Return changes diff between current and pending model.
+   *
    * @return
    */
   public RDFDifference getBatchDiff() {
@@ -226,7 +248,6 @@ public class OEBatchClient implements Closeable {
   }
 
   enum BatchMode {
-    None,
-    ByConcept
+    None, ByConcept
   }
 }
