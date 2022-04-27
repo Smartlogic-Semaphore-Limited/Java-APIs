@@ -1,6 +1,11 @@
 package com.smartlogic.rdfdiff;
 
-import com.smartlogic.tools.JenaUtil;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.ext.com.google.common.collect.Lists;
 import org.apache.jena.rdf.model.Model;
@@ -10,25 +15,25 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import com.smartlogic.tools.JenaUtil;
 
 public class DiffToSparqlInsertUpdateBuilder {
 
   static Logger logger = LoggerFactory.getLogger(DiffToSparqlInsertUpdateBuilder.class);
 
   /**
-   * Return a list of SPARQL statements to perform delete then insert batches where total number
-   * of sent triples is less than batchSize argument.
+   * Return a list of SPARQL statements to perform delete then insert batches where total number of
+   * sent triples is less than batchSize argument.
    *
-   * @diff the RDFDifference object
-   * @param batchSize the maximum batch size for each statement.
+   * @param diff
+   *          the RDFDifference object
+   * @param batchSize
+   *          the maximum batch size for each statement.
    * @return a list of SPARQL statements.
+   * @throws IOException
    */
-  public static List<String> buildSparqlInsertUpdateBatches(RDFDifference diff, long batchSize) throws IOException {
+  public static List<String> buildSparqlInsertUpdateBatches(RDFDifference diff, long batchSize)
+      throws IOException {
 
     List<String> sparqlList = Lists.newArrayList();
 
@@ -48,13 +53,15 @@ public class DiffToSparqlInsertUpdateBuilder {
       nTriples++;
 
       if (nTriples % batchSize == 0) {
-        sparqlList.add(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(tempInLeftOnly, tempInRightOnly));
+        sparqlList.add(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(tempInLeftOnly,
+            tempInRightOnly));
         tempInLeftOnly = ModelFactory.createDefaultModel();
       }
     }
 
     if (tempInLeftOnly.size() > 0) {
-      sparqlList.add(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(tempInLeftOnly, tempInRightOnly));
+      sparqlList.add(
+          DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(tempInLeftOnly, tempInRightOnly));
       tempInLeftOnly = ModelFactory.createDefaultModel();
     }
 
@@ -69,13 +76,15 @@ public class DiffToSparqlInsertUpdateBuilder {
       nTriples++;
 
       if (nTriples % batchSize == 0) {
-        sparqlList.add(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(tempInLeftOnly, tempInRightOnly));
+        sparqlList.add(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(tempInLeftOnly,
+            tempInRightOnly));
         tempInRightOnly = ModelFactory.createDefaultModel();
       }
     }
 
     if (tempInRightOnly.size() > 0) {
-      sparqlList.add(DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(tempInLeftOnly, tempInRightOnly));
+      sparqlList.add(
+          DiffToSparqlInsertUpdateBuilder.buildSparqlInsertUpdate(tempInLeftOnly, tempInRightOnly));
       tempInRightOnly = ModelFactory.createDefaultModel();
     }
 
@@ -84,21 +93,25 @@ public class DiffToSparqlInsertUpdateBuilder {
 
   /**
    * Build a SPARQL INSERT/DELETE statement using the specified inLeftOnly and inRightOnly models.
-   * The "right" model is the final state, the "left" model is the initial state.
-   * Changes will make the left model look like the right.
+   * The "right" model is the final state, the "left" model is the initial state. Changes will make
+   * the left model look like the right.
    *
-   * @param inLeftOnly  - triples that are in "left" model only and should be removed. (left is current model, right is updated model)
-   * @param inRightOnly - triples that are in the "right" model only and should be added. (left is current model, right is updated model)
+   * @param inLeftOnly
+   *          - triples that are in "left" model only and should be removed. (left is current model,
+   *          right is updated model)
+   * @param inRightOnly
+   *          - triples that are in the "right" model only and should be added. (left is current
+   *          model, right is updated model)
    * @return
-   * @throws IOException
    */
   public static String buildSparqlInsertUpdate(Model inLeftOnly, Model inRightOnly) {
 
     Preconditions.checkNotNull(inLeftOnly);
     Preconditions.checkNotNull(inRightOnly);
 
-    if (inRightOnly.size() < 1 && inLeftOnly.size() < 1)
+    if (inRightOnly.size() < 1 && inLeftOnly.size() < 1) {
       return null;
+    }
 
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       try (OutputStreamWriter writer = new OutputStreamWriter(baos, StandardCharsets.UTF_8)) {
@@ -126,8 +139,9 @@ public class DiffToSparqlInsertUpdateBuilder {
         writer.append("WHERE {}");
         writer.flush();
         String sparql = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
           logger.debug("Change SPARQL: [{}]", sparql);
+        }
         return sparql;
       } finally {
       }
@@ -137,14 +151,13 @@ public class DiffToSparqlInsertUpdateBuilder {
     }
   }
 
-
   /**
-   * Build a SPARQL INSERT/DELETE statement using the specified RDFDifference object.
-   * The "right" model is the final state, the "left" model is the initial state.
-   * Changes make the left look like the right.
+   * Build a SPARQL INSERT/DELETE statement using the specified RDFDifference object. The "right"
+   * model is the final state, the "left" model is the initial state. Changes make the left look
+   * like the right.
+   *
    * @param diff
    * @return
-   * @throws IOException
    */
   public static String buildSparqlInsertUpdate(RDFDifference diff) {
     Preconditions.checkNotNull(diff);

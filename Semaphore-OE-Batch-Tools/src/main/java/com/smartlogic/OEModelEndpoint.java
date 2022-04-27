@@ -1,8 +1,12 @@
 package com.smartlogic;
 
-import com.smartlogic.cloud.CloudException;
-import com.smartlogic.cloud.Token;
-import com.smartlogic.cloud.TokenFetcher;
+import static org.apache.jena.ext.com.google.common.base.Preconditions.checkNotNull;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -39,12 +43,9 @@ import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.apache.jena.ext.com.google.common.base.Preconditions.checkNotNull;
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.cloud.Token;
+import com.smartlogic.cloud.TokenFetcher;
 
 /**
  * Created by stevenbiondi on 6/21/17. Semaphore Knowledge Model Manager (KMM). All RESTful commands
@@ -80,10 +81,8 @@ public class OEModelEndpoint {
     /*
      * SCB - make timeouts infinite for this app for all HTTP requests.
      */
-    RequestConfig config = RequestConfig.custom()
-            .setConnectTimeout(0)
-            .setConnectionRequestTimeout(0)
-            .setSocketTimeout(0).build();
+    RequestConfig config = RequestConfig.custom().setConnectTimeout(0)
+        .setConnectionRequestTimeout(0).setSocketTimeout(0).build();
     httpClientBuilder.setDefaultRequestConfig(config);
   }
 
@@ -188,8 +187,8 @@ public class OEModelEndpoint {
 
     try (CloseableHttpClient client = httpClientBuilder.build()) {
       UpdateRequest update = UpdateFactory.create(sparql, Syntax.syntaxARQ);
-      UpdateProcessor processor = UpdateExecutionFactory.createRemoteForm(update,
-              buildSPARQLUrl(options), client);
+      UpdateProcessor processor =
+          UpdateExecutionFactory.createRemoteForm(update, buildSPARQLUrl(options), client);
       processor.execute();
     } catch (IOException ioe) {
       throw new RuntimeException("IOException.", ioe);
@@ -363,7 +362,9 @@ public class OEModelEndpoint {
   }
 
   protected void setCloudAuthHeaderIfConfigured(HttpClientBuilder clientBuilder) {
-    if (!Strings.isNullOrEmpty(cloudTokenFetchUrl) && !Strings.isNullOrEmpty(cloudAPIKey) && !cloudAuthHeaderSet) {
+    if (!Strings.isNullOrEmpty(cloudTokenFetchUrl) &&
+        !Strings.isNullOrEmpty(cloudAPIKey) &&
+        !cloudAuthHeaderSet) {
       Token cloudToken = getCloudToken();
       String cloudTokenString = cloudToken.getAccess_token();
       if (!Strings.isNullOrEmpty(cloudTokenString)) {
@@ -384,14 +385,8 @@ public class OEModelEndpoint {
     checkNotNull(baseUrl);
     checkNotNull(modelIri);
 
-    String exportUrl = buildApiUrl()
-            .append("?path=backup")
-            .append("%2F")
-            .append(modelIri)
-            .append("%2F")
-            .append("export")
-            .append("&async=true")
-            .toString();
+    String exportUrl = buildApiUrl().append("?path=backup").append("%2F").append(modelIri)
+        .append("%2F").append("export").append("&async=true").toString();
 
     if (logger.isDebugEnabled()) {
       logger.debug("KMM model export URL (async): {}", exportUrl);
@@ -430,15 +425,16 @@ public class OEModelEndpoint {
 
       if (statusCode != HttpStatus.SC_ACCEPTED) {
         throw new OEConnectionException(
-                "Incorrect status code " + statusCode + " received from URL: " + initiateExportUrl);
+            "Incorrect status code " + statusCode + " received from URL: " + initiateExportUrl);
       }
 
       HttpEntity entity = response.getEntity();
 
       try (InputStream is = entity.getContent()) {
         JsonObject responseJson = JSON.parse(is);
-        if (responseJson == null)
+        if (responseJson == null) {
           throw new OEConnectionException("Invalid JSON response to callback for job status");
+        }
 
         String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
         if (null == jobStatus) {
@@ -463,11 +459,14 @@ public class OEModelEndpoint {
    * @return
    * @throws IOException
    * @throws OEConnectionException
+   * @throws InterruptedException
    */
-  public Model fetchData(Model model) throws IOException, OEConnectionException, InterruptedException {
+  public Model fetchData(Model model)
+      throws IOException, OEConnectionException, InterruptedException {
 
-    if (null == model)
+    if (null == model) {
       model = ModelFactory.createDefaultModel();
+    }
 
     String jobId = initiateExportAsyncDownload();
     String jobStatusFromServer = getJobStatus(getJobCallbackUrl(jobId));
@@ -476,9 +475,10 @@ public class OEModelEndpoint {
 
       // break out if status from last job call was not ACCEPTED or FINISHED.
       if (!jobStatusFromServer.equals(JOB_STATUS_FINISHED) &&
-              !jobStatusFromServer.equals(JOB_STATUS_ACCEPTED) &&
-                !jobStatusFromServer.equals(JOB_STATUS_RUNNING)) {
-        throw new OEConnectionException("Unexpected export job status from server: " + jobStatusFromServer);
+          !jobStatusFromServer.equals(JOB_STATUS_ACCEPTED) &&
+          !jobStatusFromServer.equals(JOB_STATUS_RUNNING)) {
+        throw new OEConnectionException(
+            "Unexpected export job status from server: " + jobStatusFromServer);
       }
 
       logger.debug("job not done, sleeping for 1 second...");
@@ -520,7 +520,7 @@ public class OEModelEndpoint {
 
       if (statusCode != HttpStatus.SC_OK) {
         throw new OEConnectionException(
-                "Status code " + statusCode + " received from URL: " + jobResultUrl);
+            "Status code " + statusCode + " received from URL: " + jobResultUrl);
       }
 
       HttpEntity entity = response.getEntity();
@@ -558,8 +558,9 @@ public class OEModelEndpoint {
         }
       }
 
-      if (responseJson == null)
+      if (responseJson == null) {
         throw new RuntimeException("Invalid JSON response to callback for job status");
+      }
 
       return responseJson.get(JOB_STATUS).getAsString().value();
 
