@@ -1,51 +1,50 @@
 package com.smartlogic;
 
-import static org.apache.jena.ext.com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.cloud.Token;
+import com.smartlogic.cloud.TokenFetcher;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.ext.com.google.common.base.Joiner;
 import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
+import org.apache.jena.ext.com.google.common.collect.Lists;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFactory;
-import org.apache.jena.query.Syntax;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
-import org.apache.jena.update.UpdateExecutionFactory;
-import org.apache.jena.update.UpdateFactory;
-import org.apache.jena.update.UpdateProcessor;
-import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.smartlogic.cloud.CloudException;
-import com.smartlogic.cloud.Token;
-import com.smartlogic.cloud.TokenFetcher;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.jena.ext.com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by stevenbiondi on 6/21/17. Semaphore Knowledge Model Manager (KMM). All RESTful commands
@@ -59,6 +58,7 @@ public class OEModelEndpoint {
   public static final String JOB_STATUS_RUNNING = "RUNNING";
   public static final String JOB_STATUS = "status";
   public static final String JOB_STATUS_FINISHED = "FINISHED";
+  public static final int JOB_CHECK_SLEEP_INTERVAL_MILLIS = 1000;
   static Logger logger = LoggerFactory.getLogger(OEModelEndpoint.class);
 
   protected boolean cloudAuthHeaderSet = false;
@@ -113,8 +113,12 @@ public class OEModelEndpoint {
 
     StringBuffer buf = buildApiUrl().append("/").append(modelIri).append("/sparql");
 
+    List<String> optionsList = new ArrayList<>();
+
+    // always run SPARQL updates asynchronously.
+    optionsList.add("async=true");
+
     if (null != options) {
-      List<String> optionsList = new ArrayList<>();
 
       // default is false, don't set unless changed.
       if (options.acceptWarnings) {
@@ -173,8 +177,10 @@ public class OEModelEndpoint {
   }
 
   /**
-   * @param sparql
-   * @return
+   * Run SPARQL update with specified SPARQL statement string and options
+   *
+   * @param sparql the sparql update statement to execute
+   * @return true if request was successful.
    */
   public boolean runSparqlUpdate(String sparql, SparqlUpdateOptions options) {
 
@@ -182,17 +188,39 @@ public class OEModelEndpoint {
       logger.debug("run SPARQL update: {}", sparql);
     }
 
-    setProxyHttpHost(httpClientBuilder);
-    setCloudAuthHeaderIfConfigured(httpClientBuilder);
+    int sleepCount = 0;
+    try {
+      String jobId = initiateSPARQLUpdateAsync(sparql, options);
 
-    try (CloseableHttpClient client = httpClientBuilder.build()) {
-      UpdateRequest update = UpdateFactory.create(sparql, Syntax.syntaxARQ);
-      UpdateProcessor processor =
-          UpdateExecutionFactory.createRemoteForm(update, buildSPARQLUrl(options), client);
-      processor.execute();
-    } catch (IOException ioe) {
-      throw new RuntimeException("IOException.", ioe);
+      String sparqlUpdateJobStatus = getJobStatus(getJobCallbackUrl(jobId));
+
+      while (!JOB_STATUS_FINISHED.equals(sparqlUpdateJobStatus)) {
+
+        // break out if status from last job call was not ACCEPTED or not FINISHED.
+        if (!sparqlUpdateJobStatus.equals(JOB_STATUS_ACCEPTED) &&
+                !sparqlUpdateJobStatus.equals(JOB_STATUS_RUNNING)) {
+          throw new OEConnectionException(
+                  "Unexpected SPARQL update job status from server: " + sparqlUpdateJobStatus);
+        }
+
+        if (sleepCount % 10 == 0) {
+          logger.info("SPARQL update job not finished, waiting...(waited {} seconds so far)", sleepCount);
+        }
+
+        sleepCount++;
+
+        Thread.sleep(JOB_CHECK_SLEEP_INTERVAL_MILLIS);
+
+        sparqlUpdateJobStatus = getJobStatus(getJobCallbackUrl(jobId));
+
+      }
+
+      logger.debug("Async SPARQL update job complete.");
+
+    } catch (Exception e) {
+      throw new RuntimeException("SPARQL update failed.", e);
     }
+
     return true;
   }
 
@@ -395,60 +423,120 @@ public class OEModelEndpoint {
     return exportUrl;
   }
 
-  public String initiateExportAsyncDownload() throws IOException, OEConnectionException {
-
-    String initiateExportUrl = buildOEExportApiUrl();
+  /**
+   * Initiate a SPARQL update asynchronously, return jobId.
+   *
+   * @param sparqlString the sparql update string to run.
+   * @param options the SPARQL update options.
+   * @return jobId
+   * @throws IOException
+   * @throws OEConnectionException
+   */
+  public String initiateSPARQLUpdateAsync(String sparqlString, SparqlUpdateOptions options) throws IOException, OEConnectionException {
 
     setProxyHttpHost(httpClientBuilder);
     setCloudAuthHeaderIfConfigured(httpClientBuilder);
 
+    String sparqlUpdateUrl = buildSPARQLUrl(options);
+
+    List<NameValuePair> formParams = Lists.newArrayList();
+    formParams.add(new BasicNameValuePair("update", sparqlString));
+    UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams);
     String jobId = null;
     try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-      HttpGet httpGet = new HttpGet(initiateExportUrl);
+      HttpPost httpPost = new HttpPost(sparqlUpdateUrl);
+      httpPost.setEntity(formEntity);
+      try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
 
-      /* NT format for response */
-      httpGet.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
+        int statusCode = response.getStatusLine().getStatusCode();
 
-      HttpResponse response = httpClient.execute(httpGet);
-      if (response == null) {
-        throw new OEConnectionException("Null response from http client: " + initiateExportUrl);
-      }
-      if (response.getStatusLine() == null) {
-        throw new OEConnectionException("Null status line from http client: " + initiateExportUrl);
-      }
-
-      int statusCode = response.getStatusLine().getStatusCode();
-
-      if (logger.isDebugEnabled()) {
-        logger.debug("HTTP request returned, status code: " + statusCode + " " + initiateExportUrl);
-      }
-
-      if (statusCode != HttpStatus.SC_ACCEPTED) {
-        throw new OEConnectionException(
-            "Incorrect status code " + statusCode + " received from URL: " + initiateExportUrl);
-      }
-
-      HttpEntity entity = response.getEntity();
-
-      try (InputStream is = entity.getContent()) {
-        JsonObject responseJson = JSON.parse(is);
-        if (responseJson == null) {
-          throw new OEConnectionException("Invalid JSON response to callback for job status");
+        if (logger.isDebugEnabled()) {
+          logger.debug("HTTP POST request returned, status code: " + statusCode + " " + sparqlUpdateUrl);
         }
 
-        String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
-        if (null == jobStatus) {
-          throw new OEConnectionException("Invalid response JSON payload");
+        if (statusCode != HttpStatus.SC_ACCEPTED) {
+          throw new OEConnectionException(
+                  "Incorrect status code " + statusCode + " received from URL: " + sparqlUpdateUrl);
         }
 
-        if (!jobStatus.equals(JOB_STATUS_ACCEPTED)) {
-          throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
-        }
+        HttpEntity entity = response.getEntity();
 
-        jobId = responseJson.get("jobId").getAsString().value();
+        try (InputStream is = entity.getContent()) {
+          JsonObject responseJson = JSON.parse(is);
+          if (responseJson == null) {
+            throw new OEConnectionException("Invalid JSON response to callback for job status");
+          }
+
+          String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
+          if (null == jobStatus) {
+            throw new OEConnectionException("Invalid response JSON payload");
+          }
+
+          if (!jobStatus.equals(JOB_STATUS_ACCEPTED)) {
+            throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
+          }
+
+          jobId = responseJson.get("jobId").getAsString().value();
+        }
       }
     }
     return jobId;
+  }
+
+  public String initiateExportAsyncDownload() throws IOException, OEConnectionException {
+
+      String initiateExportUrl = buildOEExportApiUrl();
+
+      setProxyHttpHost(httpClientBuilder);
+      setCloudAuthHeaderIfConfigured(httpClientBuilder);
+
+      String jobId = null;
+      try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
+        HttpGet httpGet = new HttpGet(initiateExportUrl);
+
+        /* NT format for response */
+        httpGet.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
+
+        HttpResponse response = httpClient.execute(httpGet);
+        if (response == null) {
+          throw new OEConnectionException("Null response from http client: " + initiateExportUrl);
+        }
+        if (response.getStatusLine() == null) {
+          throw new OEConnectionException("Null status line from http client: " + initiateExportUrl);
+        }
+
+        int statusCode = response.getStatusLine().getStatusCode();
+
+        if (logger.isDebugEnabled()) {
+          logger.debug("HTTP request returned, status code: " + statusCode + " " + initiateExportUrl);
+        }
+
+        if (statusCode != HttpStatus.SC_ACCEPTED) {
+          throw new OEConnectionException(
+                  "Incorrect status code " + statusCode + " received from URL: " + initiateExportUrl);
+        }
+
+        HttpEntity entity = response.getEntity();
+
+        try (InputStream is = entity.getContent()) {
+          JsonObject responseJson = JSON.parse(is);
+          if (responseJson == null) {
+            throw new OEConnectionException("Invalid JSON response to callback for job status");
+          }
+
+          String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
+          if (null == jobStatus) {
+            throw new OEConnectionException("Invalid response JSON payload");
+          }
+
+          if (!jobStatus.equals(JOB_STATUS_ACCEPTED)) {
+            throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
+          }
+
+          jobId = responseJson.get("jobId").getAsString().value();
+        }
+      }
+      return jobId;
   }
 
   /**
@@ -456,7 +544,7 @@ public class OEModelEndpoint {
    * or fill specified model. This method does NOT clear out existing triples in the model object.
    *
    * @param model
-   * @return
+   * @return model object created from returned export triples.
    * @throws IOException
    * @throws OEConnectionException
    * @throws InterruptedException
@@ -483,7 +571,7 @@ public class OEModelEndpoint {
 
       logger.debug("job not done, sleeping for 1 second...");
 
-      Thread.sleep(1000);
+      Thread.sleep(JOB_CHECK_SLEEP_INTERVAL_MILLIS);
 
       jobStatusFromServer = getJobStatus(getJobCallbackUrl(jobId));
 
