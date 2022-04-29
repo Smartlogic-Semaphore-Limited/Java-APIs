@@ -1,18 +1,17 @@
 package com.smartlogic;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.List;
-
+import com.smartlogic.rdfdiff.DiffToSparqlInsertUpdateBuilder;
+import com.smartlogic.rdfdiff.RDFDifference;
+import com.smartlogic.rdfdiff.RDFDifferenceBuilder;
+import com.smartlogic.tools.JenaUtil;
 import org.apache.jena.ext.com.google.common.base.Preconditions;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.smartlogic.rdfdiff.DiffToSparqlInsertUpdateBuilder;
-import com.smartlogic.rdfdiff.RDFDifference;
-import com.smartlogic.rdfdiff.RDFDifferenceBuilder;
-import com.smartlogic.tools.JenaUtil;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Batch client for OE. Send addition and removal of triples in batch-fashion using SPARQL.
@@ -171,6 +170,7 @@ public class OEBatchClient implements Closeable {
   }
 
   /**
+   * Commit the changes to KMM.
    *
    * @return
    * @throws IOException
@@ -213,6 +213,7 @@ public class OEBatchClient implements Closeable {
           if (logger.isDebugEnabled()) {
             logger.debug("Batch SPARQL: [{}]", batchStr);
           }
+          logger.info("Sending SPARQL batch ({} statements)", batchThreshold);
           endpoint.runSparqlUpdate(batchStr, sparqlUpdateOptions);
           nBatches++;
           logger.info("Batch SPARQL completed");

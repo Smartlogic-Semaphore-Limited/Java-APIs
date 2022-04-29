@@ -2,7 +2,14 @@ package com.smartlogic;
 
 import org.apache.jena.ext.com.google.common.collect.Lists;
 import org.apache.jena.ext.com.google.common.collect.Sets;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.SKOS;
 import org.apache.jena.vocabulary.SKOSXL;
@@ -44,7 +51,7 @@ public class LocalTestingClient {
 
 				logger.info("Model size: {}", m.size());
 
-				client.setBatchThreshold(10000);
+				client.setBatchThreshold(50000);
 
 				addConcepts(m);
 //				deleteConcepts(m);
@@ -102,7 +109,7 @@ public class LocalTestingClient {
 	}
 
 	public static void addConcepts(Model m) {
-		for ( int i = 0; i < 100; i++) {
+		for ( int i = 0; i < 54231; i++) {
 			addConcept(m, i);
 		}
 	}
@@ -111,7 +118,6 @@ public class LocalTestingClient {
 		String name = "Term " + i;
 		String guid = UUID.randomUUID().toString();
 		String uri = String.format("http://example.com/BatchTest#%s", guid);
-		logger.debug("Concept URI: {}", uri);
 		Resource conceptRes = m.createResource(uri);
 		Resource conceptSchemeRes = m.createResource("http://example.com/BatchTest#ConceptScheme/ConceptScheme");
 		m.add(m.createStatement(conceptSchemeRes, SKOS.hasTopConcept, conceptRes));
