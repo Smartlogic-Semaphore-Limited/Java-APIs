@@ -176,7 +176,6 @@ public class OEBatchClient implements Closeable {
    * @throws IOException
    */
   public boolean commit() throws IOException {
-    boolean result = false;
 
     RDFDifference rdfDiff = getBatchDiff();
 
@@ -223,7 +222,12 @@ public class OEBatchClient implements Closeable {
     }
     logger.info("SPARQL batch updates completed. Reset client before running another batch.");
 
-    return result;
+    /*
+    Always return true. If there's an issue encountered when running the SPARQL update, we throw an exception.
+    This logic happens in runSparqlUpdate method on the endpoint object. So rather than break the signature,
+    just return true always and client will have to catch exceptions if there are problems.
+     */
+    return true;
   }
 
   @Override
