@@ -10,7 +10,7 @@
 		<jena.version>3.16.0</jena.version>
 		<junit.version>4.12</junit.version>
 		<xmlunit.version>1.3</xmlunit.version>
-		<jackson.version>2.13.4</jackson.version>
+		<jackson.version>2.13.4.1</jackson.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
