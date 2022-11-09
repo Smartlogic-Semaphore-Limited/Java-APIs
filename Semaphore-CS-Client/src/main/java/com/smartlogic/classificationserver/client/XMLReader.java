@@ -23,48 +23,56 @@ import org.xml.sax.SAXException;
 
 public abstract class XMLReader {
 
-	private static DocumentBuilderFactory documentBuilderFactory = null;
-	private static synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
-		if (documentBuilderFactory == null) {
-			documentBuilderFactory = DocumentBuilderFactory.newInstance();
-			documentBuilderFactory.setValidating(false);
-		}
-		return documentBuilderFactory;
-	}
-	
-	protected static Document getDocument(byte[] data) throws ClassificationException {
-		try {
-			DocumentBuilder documentBuilder = getDocumentBuilderFactory().newDocumentBuilder();
-			InputStream inputStream = new ByteArrayInputStream(data);
-			InputSource inputSource = new InputSource(inputStream);
-			return documentBuilder.parse(inputSource);
-		} catch (ParserConfigurationException | SAXException | IOException e) {
-			throw new ClassificationException("Error writing document to string in debug code: %f - %f", e.getClass().getSimpleName(), e.getMessage());
-		}
-	}
+  private static DocumentBuilderFactory documentBuilderFactory = null;
 
-	protected Element getRootElement(byte[] data) throws ClassificationException {
-		return getDocument(data).getDocumentElement();
-	}
+  private static synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
+    if (documentBuilderFactory == null) {
+      documentBuilderFactory = DocumentBuilderFactory.newInstance();
+      try {
+        documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl",
+            true);
+      } catch (ParserConfigurationException e) {
+        throw new RuntimeException(
+            "ParserConfigurationException thrown setting http://apache.org/xml/features/disallow-doctype-decl on DocumentBuilderFactory");
+      }
+      documentBuilderFactory.setValidating(false);
+    }
+    return documentBuilderFactory;
+  }
 
-	protected String toString(byte[] data) throws ClassificationException {
-		return new String(data, StandardCharsets.UTF_8);
-	}
-	
-	protected String toString(Document document) throws ClassificationException {
-		try {
-			TransformerFactory tf = TransformerFactory.newInstance();
-			Transformer transformer = tf.newTransformer();
-			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			StringWriter writer = new StringWriter();
-			transformer.transform(new DOMSource(document), new StreamResult(writer));
-			return writer.toString();
-		} catch (TransformerException e) {
-			throw new ClassificationException("Error writing document to string in debug code: %f - %f", e.getClass().getSimpleName(), e.getMessage());
-		}
-		
-	}
+  protected static Document getDocument(byte[] data) throws ClassificationException {
+    try {
+      DocumentBuilder documentBuilder = getDocumentBuilderFactory().newDocumentBuilder();
+      InputStream inputStream = new ByteArrayInputStream(data);
+      InputSource inputSource = new InputSource(inputStream);
+      return documentBuilder.parse(inputSource);
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      throw new ClassificationException("Error writing document to string in debug code: %f - %f",
+          e.getClass().getSimpleName(), e.getMessage());
+    }
+  }
 
+  protected Element getRootElement(byte[] data) throws ClassificationException {
+    return getDocument(data).getDocumentElement();
+  }
 
+  protected String toString(byte[] data) throws ClassificationException {
+    return new String(data, StandardCharsets.UTF_8);
+  }
+
+  protected String toString(Document document) throws ClassificationException {
+    try {
+      TransformerFactory tf = TransformerFactory.newInstance();
+      Transformer transformer = tf.newTransformer();
+      transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+      StringWriter writer = new StringWriter();
+      transformer.transform(new DOMSource(document), new StreamResult(writer));
+      return writer.toString();
+    } catch (TransformerException e) {
+      throw new ClassificationException("Error writing document to string in debug code: %f - %f",
+          e.getClass().getSimpleName(), e.getMessage());
+    }
+
+  }
 
 }

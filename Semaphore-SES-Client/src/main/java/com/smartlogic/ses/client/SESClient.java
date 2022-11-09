@@ -39,7 +39,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -1309,7 +1309,7 @@ public class SESClient implements AutoCloseable {
 
       SSLContextBuilder builder = new SSLContextBuilder();
       SSLConnectionSocketFactory sslsf =
-          new SSLConnectionSocketFactory(builder.build(), NoopHostnameVerifier.INSTANCE);
+          new SSLConnectionSocketFactory(builder.build(), new DefaultHostnameVerifier());
 
       PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
       cm.setMaxTotal(this.maxConnections);
