@@ -111,7 +111,10 @@ public class Field implements Serializable {
   private String value;
 
   public String getValue() {
-    return value;
+
+    if ((value != null) && (value.length() > 0)) return value;
+
+    return name;
   }
 
   public void setValue(String value) {
