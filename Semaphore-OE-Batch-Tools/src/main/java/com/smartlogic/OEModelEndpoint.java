@@ -1,8 +1,10 @@
 package com.smartlogic;
 
-import com.smartlogic.cloud.CloudException;
-import com.smartlogic.cloud.Token;
-import com.smartlogic.cloud.TokenFetcher;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -39,10 +41,9 @@ import org.apache.jena.riot.WebContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import com.smartlogic.cloud.CloudException;
+import com.smartlogic.cloud.Token;
+import com.smartlogic.cloud.TokenFetcher;
 
 import static org.apache.jena.ext.com.google.common.base.Preconditions.checkNotNull;
 
@@ -110,7 +111,7 @@ public class OEModelEndpoint {
   }
 
   public String buildSPARQLUrl(SparqlUpdateOptions options) {
-
+    logger.info("building sparql options - entry");
     StringBuffer buf = buildApiUrl().append("/").append(modelIri).append("/sparql");
 
     List<String> optionsList = new ArrayList<>();
@@ -142,6 +143,7 @@ public class OEModelEndpoint {
         buf.append(Joiner.on("&").join(optionsList));
       }
     }
+    logger.info("building sparql options - exit");
     return buf.toString();
   }
 
@@ -184,8 +186,8 @@ public class OEModelEndpoint {
    */
   public boolean runSparqlUpdate(String sparql, SparqlUpdateOptions options) {
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("run SPARQL update: {}", sparql);
+    if (logger.isInfoEnabled()) {
+      logger.info("run SPARQL update: {}", sparql);
     }
 
     int sleepCount = 0;
@@ -218,6 +220,7 @@ public class OEModelEndpoint {
       logger.debug("Async SPARQL update job complete.");
 
     } catch (Exception e) {
+      logger.warn("Exception thrown: {} {}", e.getMessage(), e.getClass().getCanonicalName());
       throw new RuntimeException("SPARQL update failed.", e);
     }
 
@@ -433,25 +436,32 @@ public class OEModelEndpoint {
    * @throws OEConnectionException
    */
   public String initiateSPARQLUpdateAsync(String sparqlString, SparqlUpdateOptions options) throws IOException, OEConnectionException {
-
+    logger.info("initiateSPARQLUpdateAsync - entry: {}", sparqlString);
     setProxyHttpHost(httpClientBuilder);
+    logger.info("initiateSPARQLUpdateAsync - set proxy");
     setCloudAuthHeaderIfConfigured(httpClientBuilder);
+    logger.info("initiateSPARQLUpdateAsync - set cloud header");
 
     String sparqlUpdateUrl = buildSPARQLUrl(options);
+    logger.info("initiateSPARQLUpdateAsync - sparql options built");
 
     List<NameValuePair> formParams = Lists.newArrayList();
     formParams.add(new BasicNameValuePair("update", sparqlString));
+    logger.info("initiateSPARQLUpdateAsync param added");
     UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams);
+    logger.info("initiateSPARQLUpdateAsync form entity created");
     String jobId = null;
     try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
       HttpPost httpPost = new HttpPost(sparqlUpdateUrl);
       httpPost.setEntity(formEntity);
+      logger.info("initiateSPARQLUpdateAsync about to execute");
       try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+        logger.info("initiateSPARQLUpdateAsync execute complete");
 
         int statusCode = response.getStatusLine().getStatusCode();
 
-        if (logger.isDebugEnabled()) {
-          logger.debug("HTTP POST request returned, status code: " + statusCode + " " + sparqlUpdateUrl);
+        if (logger.isInfoEnabled()) {
+          logger.info("HTTP POST request returned, status code: " + statusCode + " " + sparqlUpdateUrl);
         }
 
         if (statusCode != HttpStatus.SC_ACCEPTED) {
@@ -476,10 +486,13 @@ public class OEModelEndpoint {
             throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
           }
 
+          logger.info("parsing response");
           jobId = responseJson.get("jobId").getAsString().value();
+          logger.info("jobid: {}", jobId);
         }
       }
     }
+    logger.info("initiateSPARQLUpdateAsync - exit: {}", jobId);
     return jobId;
   }
 
