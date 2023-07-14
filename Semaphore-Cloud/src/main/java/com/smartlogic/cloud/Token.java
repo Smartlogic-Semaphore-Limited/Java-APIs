@@ -71,4 +71,13 @@ public class Token {
 	public void setExpires(String expires) {
 		this.expires = expires;
 	}
+
+	private String statusCode;
+	public String getStatusCode() {
+		return statusCode;
+	}
+	@JsonProperty("statusCode")
+	public void setStatusCode(String statusCode) {
+		this.statusCode = statusCode;
+	}
 }
