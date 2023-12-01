@@ -1,2 +1,2 @@
-cs.url: http://localhost:9999
-#cs.proxyUrl: http://192.168.1.162:8090
+cs.url: http://localhost:5058
+cs.proxyUrl: http://localhost:8888

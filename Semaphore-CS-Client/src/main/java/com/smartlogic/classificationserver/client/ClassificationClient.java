@@ -41,6 +41,7 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.FileBody;
@@ -753,7 +754,7 @@ public class ClassificationClient implements AutoCloseable {
 
   private MultipartEntityBuilder getDefaultParts() {
     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-
+    multipartEntityBuilder.setMode(HttpMultipartMode.RFC6532);
     for (String parameterName : classificationConfiguration.getAdditionalParameters().keySet()) {
       String value = classificationConfiguration.getAdditionalParameters().get(parameterName);
       if ((value != null) && (value.length() > 0)) {
