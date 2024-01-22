@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,6 +54,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import com.smartlogic.classificationserver.client.utils.XMLFeatureConst;
 
 /**
  * General purpose client for the classification server
@@ -857,16 +860,7 @@ public class ClassificationClient implements AutoCloseable {
 
   private String getCommandXML(String command, String publishSetName)
       throws ClassificationException {
-    if (documentBuilder == null) {
-      DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-      try {
-        documentBuilder = documentBuilderFactory.newDocumentBuilder();
-      } catch (ParserConfigurationException e) {
-        throw new ClassificationException(
-            String.format("ParserConfigurationException building CS command: %s %s - %s", command,
-                publishSetName, e.getMessage()));
-      }
-    }
+    createDocumentBuilder();
     Document document = documentBuilder.newDocument();
     Element requestElement = document.createElement("request");
     requestElement.setAttribute("op", command);
@@ -893,6 +887,22 @@ public class ClassificationClient implements AutoCloseable {
               publishSetName, e.getMessage()));
     }
     return stringWriter.toString();
+  }
+
+  private void createDocumentBuilder() {
+    if (documentBuilder == null) {
+      DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+      try {
+        documentBuilderFactory.setFeature(XMLFeatureConst.LOAD_DTD_GRAMMAR, false);
+        documentBuilderFactory.setFeature(XMLFeatureConst.LOAD_EXTERNAL_DTD, false);
+        documentBuilderFactory.setFeature(XMLFeatureConst.EXTERNAL_GENERAL_ENTITIES, false);
+        documentBuilderFactory.setFeature(XMLFeatureConst.EXTERNAL_PARAMETER_ENTITIES, false);
+        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        documentBuilder = documentBuilderFactory.newDocumentBuilder();
+      } catch (ParserConfigurationException e) {
+        throw new RuntimeException("Failed to create XML document builder", e);
+      }
+    }
   }
 
   private byte[] sendPostRequest(String commandString, File pakFile)

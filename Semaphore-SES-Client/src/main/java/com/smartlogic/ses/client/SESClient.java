@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.TreeSet;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,6 +54,7 @@ import org.xml.sax.SAXException;
 
 import com.smartlogic.ses.client.exceptions.NoSuchTermException;
 import com.smartlogic.ses.client.exceptions.SESException;
+import com.smartlogic.ses.client.utils.XMLFeatureConst;
 
 public class SESClient implements AutoCloseable {
   Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -1376,9 +1378,7 @@ public class SESClient implements AutoCloseable {
           new InputSource(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
 
       // Read the semaphore object from the returned XML
-      DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-      documentBuilderFactory.setValidating(false);
-      DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+      DocumentBuilder documentBuilder = createDocumentBuilder();
       Document xmlDocument = documentBuilder.parse(inputSource);
 
       semaphore = new Semaphore(xmlDocument.getDocumentElement());
@@ -1454,6 +1454,17 @@ public class SESClient implements AutoCloseable {
           .compareTo(term2.getName().getValue().toLowerCase());
     }
 
+  }
+
+  private DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
+    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+    documentBuilderFactory.setFeature(XMLFeatureConst.LOAD_DTD_GRAMMAR, false);
+    documentBuilderFactory.setFeature(XMLFeatureConst.LOAD_EXTERNAL_DTD, false);
+    documentBuilderFactory.setFeature(XMLFeatureConst.EXTERNAL_GENERAL_ENTITIES, false);
+    documentBuilderFactory.setFeature(XMLFeatureConst.EXTERNAL_PARAMETER_ENTITIES, false);
+    documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    documentBuilderFactory.setValidating(false);
+    return documentBuilderFactory.newDocumentBuilder();
   }
 
 }
