@@ -757,7 +757,6 @@ public class ClassificationClient implements AutoCloseable {
 
   private MultipartEntityBuilder getDefaultParts() {
     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-    multipartEntityBuilder.setMode(HttpMultipartMode.RFC6532);
     for (String parameterName : classificationConfiguration.getAdditionalParameters().keySet()) {
       String value = classificationConfiguration.getAdditionalParameters().get(parameterName);
       if ((value != null) && (value.length() > 0)) {
