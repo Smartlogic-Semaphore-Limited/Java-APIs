@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -441,7 +442,7 @@ public class OEModelEndpoint {
 
     List<NameValuePair> formParams = Lists.newArrayList();
     formParams.add(new BasicNameValuePair("update", sparqlString));
-    UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams);
+    UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, StandardCharsets.UTF_8);
     String jobId = null;
     try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
       HttpPost httpPost = new HttpPost(sparqlUpdateUrl);
