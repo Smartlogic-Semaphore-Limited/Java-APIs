@@ -89,6 +89,8 @@ public class JenaUtil {
         buf.append("\"").append(objNode.asLiteral().getString()).append("\"^^<").append(XSDDatatype.XSDanyURI.getURI()).append(">");
       } else if (dt.getURI().equals(XSDDatatype.XSDdate.getURI())) {
         buf.append("\"").append(objNode.asLiteral().getLexicalForm()).append("\"^^<").append(XSDDatatype.XSDdate.getURI()).append(">");
+      } else if (dt.getURI().equals(XSDDatatype.XSDdateTime.getURI())) {
+        buf.append("\"").append(objNode.asLiteral().getLexicalForm()).append("\"^^<").append(XSDDatatype.XSDdateTime.getURI()).append(">");
       } else if (dt.getJavaClass() != null && dt.getJavaClass().getName() != null &&
           dt.getJavaClass().getName().equals("java.util.Date")) {
         buf.append("\"").append(dtfmt.format(objNode.asLiteral().getValue())).append("\"^^<").append(XSDDatatype.XSDdate.getURI()).append(">");

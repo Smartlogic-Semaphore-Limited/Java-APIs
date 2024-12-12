@@ -101,7 +101,7 @@
     <snapshotRepository>
       <id>MavenCentral</id>
       <name>Maven Central</name>
-      <url>dav:https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <url>dav:https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 
