@@ -22,23 +22,9 @@ public class AddConceptToReview extends ModelManipulation {
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 		oeClient.setKRTClient(true);
 
-		ConceptScheme newlyAddedConceptScheme = null;
-		Collection<ConceptScheme> conceptSchemes = oeClient.getAllConceptSchemes();
-		for (ConceptScheme conceptScheme: conceptSchemes) {
-			Collection<Label> labels = conceptScheme.getPrefLabels();
-			for (Label label: labels) {
-				if (label.getValue().equals("Concept Review - Newly Added")) {
-					newlyAddedConceptScheme = conceptScheme;
-					break;
-				}
-			}
-			if (newlyAddedConceptScheme != null) {
-				break;
-			}
-		}
+		ConceptScheme newlyAddedConceptScheme = oeClient.getConceptSchemeByName("Concept Review - Newly Added", "en");
 
-
-		addConcept(oeClient, newlyAddedConceptScheme, "Fruit Bats");
+		addConcept(oeClient, newlyAddedConceptScheme, "Fruit Flies");
 	}
 
 	private void addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {

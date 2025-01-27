@@ -531,6 +531,17 @@ public class OEClientReadOnly {
     return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
   }
 
+  public ConceptScheme getConceptSchemeByName(String labelValue,  String language) throws OEClientException {
+    JsonObject jsonResponse = getConceptSchemeByNameResponse(labelValue, language);
+    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    if (jsonArray.isEmpty()) {
+      throw new OEClientException(String.format("Concept Scheme not found: \"%s\"@%s", labelValue, language));
+    } else if (jsonArray.size() > 1) {
+      throw new OEClientException(String.format("Multiple Concept Schemes found for: \"%s\"@%s", labelValue, language));
+    }
+    return new ConceptScheme(this, jsonArray.get(0).getAsObject());
+
+  }
   public Collection<Concept> getConceptsByName(String relationshipTypeUri, String labelValue)
       throws OEClientException {
     return getConceptsByName(relationshipTypeUri, labelValue, null);
