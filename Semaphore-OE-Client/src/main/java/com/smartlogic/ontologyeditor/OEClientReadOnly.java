@@ -143,6 +143,14 @@ public class OEClientReadOnly {
     this.warningsAccepted = warningsAccepted;
   }
 
+  private boolean isKRTClient = false;
+  public boolean isKRTClient() {
+    return isKRTClient;
+  }
+  public void setKRTClient(boolean KRTClient) {
+    isKRTClient = KRTClient;
+  }
+
   protected String getWrappedUri(String uriString) throws OEClientException {
     try {
       URI uri = new URI(uriString);
@@ -179,6 +187,10 @@ public class OEClientReadOnly {
         .header("Authorization", getCloudTokenValue());
     if (headerToken != null) {
       builder.header("X-Api-Key", headerToken);
+    }
+    if (isKRTClient) {
+      builder.header("x-change-accepted", "false");
+      builder.header("x-split-change", "true");
     }
     return builder;
   }
@@ -557,6 +569,28 @@ public class OEClientReadOnly {
 
     JsonObject jsonResponse = getJsonResponse("getConceptByName", response);
     return jsonResponse;
+  }
+  private JsonObject getConceptSchemeByNameResponse(String labelValue, String language) throws OEClientException {
+    logger.info("getConceptSchemeByNameResponse entry: {}", labelValue);
+
+    String url = getModelURL() + "/skos:ConceptScheme/meta:transitiveInstance";
+    logger.info("getConceptSchemeByNameResponse url: {}", url);
+
+    Map<String, String> queryParameters = new HashMap<>();
+    queryParameters.put("properties", "rdfs:label,sem:guid");
+    queryParameters.put("filters", String.format("subject(rdfs:label matches \"%s\"%s)",
+            labelValue, language == null ? "" : "@" + language));
+    if (language != null) {
+      queryParameters.put("language", language);
+    }
+    logger.info("getConceptSchemeByNameResponse queryParameters: {}", queryParameters);
+    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
+
+    Date startDate = new Date();
+    logger.info("getConceptSchemeByNameResponse making call  : {}", startDate.getTime());
+    Response response = invocationBuilder.get();
+
+    return  getJsonResponse("getConceptSchemeByNameResponse", response);
   }
 
   public Collection<Concept> getAllConcepts() throws OEClientException {
