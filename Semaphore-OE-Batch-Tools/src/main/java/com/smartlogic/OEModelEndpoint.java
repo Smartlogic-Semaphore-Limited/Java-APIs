@@ -1,33 +1,17 @@
 package com.smartlogic;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
 import com.smartlogic.cloud.CloudException;
 import com.smartlogic.cloud.Token;
 import com.smartlogic.cloud.TokenFetcher;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonObject;
-import org.apache.jena.ext.com.google.common.base.Joiner;
-import org.apache.jena.ext.com.google.common.base.Strings;
-import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
-import org.apache.jena.ext.com.google.common.collect.Lists;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFactory;
@@ -36,16 +20,25 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
+import org.apache.jena.sparql.exec.http.QueryExecutionHTTP;
+import org.apache.jena.sparql.exec.http.QueryExecutionHTTPBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.ProxySelector;
+import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.jena.ext.com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 
 /**
  * Created by stevenbiondi on 6/21/17. Semaphore Knowledge Model Manager (KMM). All RESTful commands
@@ -73,18 +66,21 @@ public class OEModelEndpoint {
   protected String proxyHost;
   protected Integer proxyPort;
 
-  protected HttpClientBuilder httpClientBuilder;
+  protected HttpClient.Builder httpClientBuilder;
 
   public OEModelEndpoint() {
+  }
 
-    httpClientBuilder = HttpClientBuilder.create();
+  private synchronized HttpClient.Builder  getHttpClientBuilder() {
+    if (httpClientBuilder == null) {
+      httpClientBuilder = HttpClient.newBuilder();
+      httpClientBuilder.connectTimeout(Duration.of(60, SECONDS));
 
-    /*
-     * SCB - make timeouts infinite for this app for all HTTP requests.
-     */
-    RequestConfig config = RequestConfig.custom().setConnectTimeout(0)
-        .setConnectionRequestTimeout(0).setSocketTimeout(0).build();
-    httpClientBuilder.setDefaultRequestConfig(config);
+      if (proxyHost != null && proxyPort != 0) {
+        httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort)));
+      }
+    }
+    return httpClientBuilder;
   }
 
   /**
@@ -162,19 +158,33 @@ public class OEModelEndpoint {
     Query query = QueryFactory.create(sparql);
     ResultSet results = null;
 
-    HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    setProxyHttpHost(clientBuilder);
-
-    setCloudAuthHeaderIfConfigured(clientBuilder);
-
-    try (CloseableHttpClient client = clientBuilder.build();
-        QueryExecution qe =
-            QueryExecutionFactory.sparqlService(buildSPARQLUrl(null).toString(), query, client)) {
-      results = ResultSetFactory.copyResults(qe.execSelect());
-    } catch (IOException ioe) {
-      throw new RuntimeException("IOException.", ioe);
+    try (HttpClient client = httpClientBuilder.build()) {
+        QueryExecutionHTTPBuilder builder = QueryExecution.service(buildSPARQLUrl(null)).httpClient(client).query(query);
+        setCloudHeaders(builder);
+        results = ResultSetFactory.copyResults(builder.build().execSelect());
     }
     return results;
+  }
+
+
+  private Token cloudToken = null;
+  private QueryExecutionHTTPBuilder setCloudHeaders(QueryExecutionHTTPBuilder builder) {
+
+
+    if (Strings.isNullOrEmpty(cloudTokenFetchUrl) ||
+            Strings.isNullOrEmpty(cloudAPIKey)) {
+      return builder;
+    }
+
+    if ((cloudToken == null) || (cloudToken.isExpired())) {
+      cloudToken = getCloudToken();
+    }
+    String cloudTokenString = cloudToken.getAccess_token();
+    if (!Strings.isNullOrEmpty(cloudTokenString)) {
+      builder.httpHeader("Authorization", cloudTokenString);
+    }
+    return builder;
+
   }
 
   /**
@@ -239,14 +249,6 @@ public class OEModelEndpoint {
 
   public void setProxyServerConfigSet(boolean proxyServerConfigSet) {
     this.proxyServerConfigSet = proxyServerConfigSet;
-  }
-
-  private void setProxyHttpHost(HttpClientBuilder clientBuilder) {
-    if (proxyHost != null && proxyPort != null && !proxyServerConfigSet) {
-      HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-      clientBuilder.setProxy(proxy);
-      proxyServerConfigSet = true;
-    }
   }
 
   /**
@@ -388,21 +390,6 @@ public class OEModelEndpoint {
 
   public void setProxyPort(Integer proxyPort) {
     this.proxyPort = proxyPort;
-  }
-
-  protected void setCloudAuthHeaderIfConfigured(HttpClientBuilder clientBuilder) {
-    if (!Strings.isNullOrEmpty(cloudTokenFetchUrl) &&
-        !Strings.isNullOrEmpty(cloudAPIKey) &&
-        !cloudAuthHeaderSet) {
-      Token cloudToken = getCloudToken();
-      String cloudTokenString = cloudToken.getAccess_token();
-      if (!Strings.isNullOrEmpty(cloudTokenString)) {
-        Header header = new BasicHeader("Authorization", cloudTokenString);
-        clientBuilder.setDefaultHeaders(ImmutableSet.of(header));
-        cloudAuthHeaderSet = true;
-      }
-    }
-
   }
 
   /**

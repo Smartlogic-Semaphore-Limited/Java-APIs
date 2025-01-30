@@ -1,7 +1,7 @@
 package com.smartlogic.rdfdiff;
 
-import org.apache.jena.ext.com.google.common.base.Preconditions;
-import org.apache.jena.ext.com.google.common.collect.*;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.SKOSXL;
 

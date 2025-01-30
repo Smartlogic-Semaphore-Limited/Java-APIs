@@ -2,14 +2,14 @@ package com.smartlogic;
 
 import java.io.IOException;
 
-import org.apache.jena.ext.com.google.common.base.Preconditions;
-import org.apache.jena.ext.com.google.common.base.Strings;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.tdb.TDBFactory;
-import org.apache.jena.tdb.TDBLoader;
+import org.apache.jena.tdb1.TDB1Factory;
+import org.apache.jena.tdb1.TDB1Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,7 @@ public class ModelLoader {
       logger.debug("TDB Dir path   : {}", tDbDirectoryPath);
     }
 
-    Dataset dataset = TDBFactory.createDataset(tDbDirectoryPath);
+    Dataset dataset = TDB1Factory.createDataset(tDbDirectoryPath);
     Model model = dataset.getNamedModel(endpoint.modelIri);
     return endpoint.fetchData(model);
   }
@@ -82,9 +82,9 @@ public class ModelLoader {
       logger.debug("TDB  DIR: {}", tDbDirectoryPath);
     }
 
-    Dataset dataset = TDBFactory.createDataset(tDbDirectoryPath);
+    Dataset dataset = TDB1Factory.createDataset(tDbDirectoryPath);
     Model model = dataset.getNamedModel(modelId);
-    TDBLoader.loadModel(model, rdfUri);
+    TDB1Loader.loadModel(model, rdfUri);
     return model;
   }
 
@@ -116,7 +116,7 @@ public class ModelLoader {
       logger.debug("TDB  DIR: {}", tDbDirectoryPath);
     }
 
-    Dataset dataset = TDBFactory.createDataset(tDbDirectoryPath);
+    Dataset dataset = TDB1Factory.createDataset(tDbDirectoryPath);
     Model model = dataset.getNamedModel(modelId);
     model.add(inModel);
     return model;

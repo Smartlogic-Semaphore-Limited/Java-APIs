@@ -18,11 +18,11 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.atlas.json.JsonValue;
-import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.sparql.util.FmtUtils;
 import org.apache.jena.vocabulary.DC_11;
 import org.apache.jena.vocabulary.OWL;
@@ -220,7 +220,7 @@ public class OEClientReadOnly {
         stringBuilder.append("/");
       }
       stringBuilder.append("api/");
-      if (!Strings.isNullOrEmpty(token)) {
+      if (!StringUtils.isEmpty(token)) {
         stringBuilder.append("t/");
         stringBuilder.append(token);
         stringBuilder.append("/");

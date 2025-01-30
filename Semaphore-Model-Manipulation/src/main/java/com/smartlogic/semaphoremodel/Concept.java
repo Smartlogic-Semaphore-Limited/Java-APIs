@@ -1,7 +1,5 @@
 package com.smartlogic.semaphoremodel;
 
-import static org.apache.jena.ext.com.google.common.base.Preconditions.checkNotNull;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -16,8 +14,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Sets;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.ext.com.google.common.base.Strings;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -39,6 +37,7 @@ import org.apache.jena.vocabulary.SKOSXL;
 import com.smartlogic.semaphoremodel.OrderedCollection.Type;
 
 public class Concept extends IdentifiableObject {
+
 
   private final static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -404,7 +403,7 @@ public class Concept extends IdentifiableObject {
     pSparql.setCommandText(sparql);
     pSparql.setIri("conceptUri", resource.getURI());
     pSparql.setLiteral("labelLanguage",
-        Strings.isNullOrEmpty(langCode) ? model.createLiteral("") : model.createLiteral(langCode));
+            StringUtils.isEmpty(langCode) ? model.createLiteral("") : model.createLiteral(langCode));
     QueryExecution qe = QueryExecutionFactory.create(pSparql.asQuery(), model);
     ResultSet rs = qe.execSelect();
     Label label = null;
@@ -548,7 +547,7 @@ public class Concept extends IdentifiableObject {
     parameterizedSparql.setParam("conceptUri", resource);
     parameterizedSparql.setParam("labelProp", altLabelProp);
     Literal literal;
-    if (Strings.isNullOrEmpty(label.getLanguageCode())) {
+    if (StringUtils.isEmpty(label.getLanguageCode())) {
       literal = model.createLiteral(label.getValue());
     } else {
       literal = model.createLiteral(label.getValue(), label.getLanguageCode());
@@ -583,11 +582,11 @@ public class Concept extends IdentifiableObject {
   private void addPrefLabelPostCheck(Label label) {
     String labelUri = resource.getURI() +
         Utils.encodeStringForURI(label.getValue()) +
-        (Strings.isNullOrEmpty(label.getLanguageCode()) ? "" : "_" + label.getLanguageCode());
+        (StringUtils.isEmpty(label.getLanguageCode()) ? "" : "_" + label.getLanguageCode());
     Resource prefLabelRes = model.createResource(labelUri);
     prefLabelRes.addProperty(RDF.type, SKOSXL.Label);
     Literal literal;
-    if (Strings.isNullOrEmpty(label.getLanguageCode())) {
+    if (StringUtils.isEmpty(label.getLanguageCode())) {
       literal = model.createLiteral(label.getValue());
     } else {
       literal = model.createLiteral(label.getValue(), label.getLanguageCode());
@@ -607,12 +606,12 @@ public class Concept extends IdentifiableObject {
   private void addAltLabelPostCheck(Property relationshipTypeProperty, Label altLabel) {
     Resource altLabelRes = model.createResource(resource.getURI() +
         Utils.encodeStringForURI(altLabel.getValue()) +
-        (Strings.isNullOrEmpty(altLabel.getLanguageCode()) ? ""
+        (StringUtils.isEmpty(altLabel.getLanguageCode()) ? ""
             : "_" + altLabel.getLanguageCode()));
     resource.addProperty(relationshipTypeProperty, altLabelRes);
     altLabelRes.addProperty(RDF.type, SKOSXL.Label);
     Literal literal;
-    if (Strings.isNullOrEmpty(altLabel.getLanguageCode())) {
+    if (StringUtils.isEmpty(altLabel.getLanguageCode())) {
       literal = model.createLiteral(altLabel.getValue());
     } else {
       literal = model.createLiteral(altLabel.getValue(), altLabel.getLanguageCode());
@@ -644,7 +643,7 @@ public class Concept extends IdentifiableObject {
     parameterizedSparql.setCommandText(sparql);
     parameterizedSparql.setParam("conceptUri", resource);
     parameterizedSparql.setParam("labelLanguage",
-        Strings.isNullOrEmpty(label.getLanguageCode()) ? model.createLiteral("")
+            StringUtils.isEmpty(label.getLanguageCode()) ? model.createLiteral("")
             : model.createLiteral(label.getLanguageCode()));
 
     Query query = QueryFactory.create(parameterizedSparql.asQuery());
@@ -661,7 +660,7 @@ public class Concept extends IdentifiableObject {
     parameterizedSparql.setCommandText(sparql);
     parameterizedSparql.setParam("conceptUri", resource);
     parameterizedSparql.setParam("labelLanguage",
-        Strings.isNullOrEmpty(label.getLanguageCode()) ? model.createLiteral("")
+            StringUtils.isEmpty(label.getLanguageCode()) ? model.createLiteral("")
             : model.createLiteral(label.getLanguageCode()));
 
     Query query = QueryFactory.create(parameterizedSparql.asQuery());

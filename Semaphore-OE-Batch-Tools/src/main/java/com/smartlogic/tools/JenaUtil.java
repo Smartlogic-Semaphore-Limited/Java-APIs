@@ -17,7 +17,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 
-import static org.apache.jena.ext.com.google.common.base.Preconditions.checkArgument;
+import static com.google.gson.internal.$Gson$Preconditions.checkArgument;
+
 
 /**
  *

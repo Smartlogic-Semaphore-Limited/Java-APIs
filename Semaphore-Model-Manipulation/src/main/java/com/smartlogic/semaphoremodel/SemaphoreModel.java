@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.jena.ext.com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
@@ -32,6 +32,9 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb.TDBLoader;
+import org.apache.jena.tdb1.TDB1Factory;
+import org.apache.jena.tdb1.TDB1Loader;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -138,7 +141,7 @@ public class SemaphoreModel {
    * @return the Jena Literal object.
    */
   protected static Literal getAsLiteral(Model model, Label prefLabel) {
-    if (Strings.isNullOrEmpty(prefLabel.getLanguageCode())) {
+    if (StringUtils.isEmpty(prefLabel.getLanguageCode())) {
       return model.createLiteral(prefLabel.getValue());
     } else {
       return model.createLiteral(prefLabel.getValue(), prefLabel.getLanguageCode());
@@ -275,9 +278,8 @@ public class SemaphoreModel {
     if (resetTDB && tdbDirectory.exists()) {
       FileUtils.deleteDirectory(tdbDirectory);
     }
-    Dataset dataset = TDBFactory.createDataset(tdbDirectory.getAbsolutePath());
-
-    if ((graphName == null) || (graphName.trim().length() == 0)) {
+    Dataset dataset = TDB1Factory.createDataset(tdbDirectory.getAbsolutePath());
+    if ((graphName == null) || (graphName.trim().isEmpty())) {
       model = dataset.getNamedModel(graphName);
     } else {
       model = dataset.getDefaultModel();
@@ -755,7 +757,7 @@ public class SemaphoreModel {
    * @return
    */
   public Resource createResource(String uri) {
-    if (Strings.isNullOrEmpty(uri)) {
+    if (StringUtils.isEmpty(uri)) {
       return null;
     }
     return model.createResource(uri);
