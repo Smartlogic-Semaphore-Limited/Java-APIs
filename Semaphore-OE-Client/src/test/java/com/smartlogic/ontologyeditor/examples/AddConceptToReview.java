@@ -24,7 +24,7 @@ public class AddConceptToReview extends ModelManipulation {
 
 		ConceptScheme newlyAddedConceptScheme = oeClient.getConceptSchemeByName("Concept Review - Newly Added", "en");
 
-		addConcept(oeClient, newlyAddedConceptScheme, "Duffel Coat");
+		addConcept(oeClient, newlyAddedConceptScheme, "Paddington");
 	}
 
 	private void addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {

@@ -10,13 +10,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.Invocation.Builder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.Invocation.Builder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JSON;
@@ -31,10 +31,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.apache.jena.vocabulary.SKOSXL;
 import org.apache.jena.vocabulary.XSD;
-import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.HttpUrlConnectorProvider;
+import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.uri.UriComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,6 +130,25 @@ public class OEClientReadOnly {
     this.proxyAddress = proxyAddress;
   }
 
+  public String getProxyHost() {
+    return proxyHost;
+  }
+
+  public void setProxyHost(String proxyHost) {
+    this.proxyHost = proxyHost;
+  }
+
+  public int getProxyPort() {
+    return proxyPort;
+  }
+
+  public void setProxyPort(int proxyPort) {
+    this.proxyPort = proxyPort;
+  }
+
+  private String proxyHost;
+  private int proxyPort;
+
   private boolean warningsAccepted = false;
 
   public boolean isWarningsAccepted() {
@@ -165,13 +181,13 @@ public class OEClientReadOnly {
   }
 
   protected Builder getInvocationBuilder(String url, Map<String, String> queryParameters) {
-    ClientConfig clientConfig = new ClientConfig();
-    if (getProxyAddress() != null) {
-      clientConfig.connectorProvider(new ApacheConnectorProvider());
-      clientConfig.property(ClientProperties.PROXY_URI, getProxyAddress());
+
+    Client client;
+    if (!StringUtils.isEmpty(proxyHost) && (proxyPort > 0)) {
+      client = JerseyClientBuilder.newBuilder().property("org.jboss.resteasy.jaxrs.client.proxy.host", proxyHost).property("org.jboss.resteasy.jaxrs.client.proxy.port", proxyPort).build();
+    } else {
+      client = JerseyClientBuilder.newBuilder().build();
     }
-    Client client = ClientBuilder.newClient(clientConfig);
-    client.property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
     WebTarget webTarget = client.target(url);
 
     if (queryParameters != null) {

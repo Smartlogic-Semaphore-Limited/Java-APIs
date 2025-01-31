@@ -29,7 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
+import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
@@ -169,13 +172,10 @@ public class OEModelEndpoint {
 
   private Token cloudToken = null;
   private QueryExecutionHTTPBuilder setCloudHeaders(QueryExecutionHTTPBuilder builder) {
-
-
     if (Strings.isNullOrEmpty(cloudTokenFetchUrl) ||
             Strings.isNullOrEmpty(cloudAPIKey)) {
       return builder;
     }
-
     if ((cloudToken == null) || (cloudToken.isExpired())) {
       cloudToken = getCloudToken();
     }
@@ -184,8 +184,22 @@ public class OEModelEndpoint {
       builder.httpHeader("Authorization", cloudTokenString);
     }
     return builder;
-
   }
+  private HttpRequest.Builder setCloudHeaders(HttpRequest.Builder builder) {
+    if (Strings.isNullOrEmpty(cloudTokenFetchUrl) ||
+            Strings.isNullOrEmpty(cloudAPIKey)) {
+      return builder;
+    }
+    if ((cloudToken == null) || (cloudToken.isExpired())) {
+      cloudToken = getCloudToken();
+    }
+    String cloudTokenString = cloudToken.getAccess_token();
+    if (!Strings.isNullOrEmpty(cloudTokenString)) {
+      builder.header("Authorization", cloudTokenString);
+    }
+    return builder;
+  }
+
 
   /**
    * Run SPARQL update with specified SPARQL statement string and options
@@ -624,8 +638,16 @@ public class OEModelEndpoint {
 
     try {
       JsonObject responseJson;
+
+
       HttpGet httpGet = new HttpGet(callbackUrl);
-      try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
+      try (HttpClient httpClient = httpClientBuilder.build()) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder();
+        setCloudHeaders(builder);
+        HttpRequest request = builder.uri(URI.create(callbackUrl)).build();
+
+        httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+
         try (CloseableHttpResponse resp = httpClient.execute(httpGet)) {
           HttpEntity ent = resp.getEntity();
           try (InputStream inStr = ent.getContent()) {
