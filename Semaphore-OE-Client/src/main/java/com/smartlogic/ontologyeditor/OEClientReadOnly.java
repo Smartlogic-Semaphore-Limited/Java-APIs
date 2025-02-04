@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.Invocation.Builder;
 import jakarta.ws.rs.client.WebTarget;
@@ -50,6 +49,7 @@ public class OEClientReadOnly {
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private final static String basicProperties = "sem:guid,skosxl:prefLabel/[]";
+  private final static String conceptSchemeProperties = "rdf:type,rdfs:label,sem:guid,skos:hasTopConcept";
 
   private final static Map<String, String> prefixMapping = new HashMap<>();
   static {
@@ -482,6 +482,22 @@ public class OEClientReadOnly {
 
     JsonObject jsonResponse = getJsonResponse("getConcept", response);
     return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+  }
+
+  public ConceptScheme getConceptScheme(String conceptSchemeUri) throws OEClientException {
+    logger.info("getConceptScheme entry: {}", conceptSchemeUri);
+
+    Map<String, String> queryParameters = new HashMap<>();
+    queryParameters.put("properties", conceptSchemeProperties);
+    queryParameters.put("path", getPathParameter(conceptSchemeUri));
+    Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
+
+    Date startDate = new Date();
+    logger.info("getConceptScheme making call  : {}", startDate.getTime());
+    Response response = invocationBuilder.get();
+
+    JsonObject jsonResponse = getJsonResponse("getConceptScheme", response);
+    return new ConceptScheme(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
   }
 
   /**
