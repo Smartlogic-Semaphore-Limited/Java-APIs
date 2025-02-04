@@ -2,8 +2,6 @@ package com.smartlogic;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 import com.smartlogic.cloud.CloudException;
 import com.smartlogic.cloud.Token;
@@ -20,23 +18,20 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
-import org.apache.jena.sparql.exec.http.QueryExecutionHTTP;
 import org.apache.jena.sparql.exec.http.QueryExecutionHTTPBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.ProxySelector;
-import java.net.URI;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -160,11 +155,10 @@ public class OEModelEndpoint {
 
     Query query = QueryFactory.create(sparql);
     ResultSet results = null;
-
-    try (HttpClient client = httpClientBuilder.build()) {
-        QueryExecutionHTTPBuilder builder = QueryExecution.service(buildSPARQLUrl(null)).httpClient(client).query(query);
-        setCloudHeaders(builder);
-        results = ResultSetFactory.copyResults(builder.build().execSelect());
+    try (HttpClient client = getHttpClientBuilder().build()) {
+      QueryExecutionHTTPBuilder builder = QueryExecution.service(buildSPARQLUrl(null)).httpClient(client).query(query);
+      setCloudHeaders(builder);
+      results = ResultSetFactory.copyResults(builder.build().execSelect());
     }
     return results;
   }
@@ -436,38 +430,35 @@ public class OEModelEndpoint {
    */
   public String initiateSPARQLUpdateAsync(String sparqlString, SparqlUpdateOptions options) throws IOException, OEConnectionException {
 
-    setProxyHttpHost(httpClientBuilder);
-    setCloudAuthHeaderIfConfigured(httpClientBuilder);
+    String jobId = null;
 
     String sparqlUpdateUrl = buildSPARQLUrl(options);
 
-    List<NameValuePair> formParams = Lists.newArrayList();
-    formParams.add(new BasicNameValuePair("update", sparqlString));
-    UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, StandardCharsets.UTF_8);
-    String jobId = null;
-    try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-      HttpPost httpPost = new HttpPost(sparqlUpdateUrl);
-      httpPost.setEntity(formEntity);
-      try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+    String formData = "update=" + URLEncoder.encode(sparqlString, StandardCharsets.UTF_8);
 
-        int statusCode = response.getStatusLine().getStatusCode();
+    try (HttpClient httpClient = getHttpClientBuilder().build()) {
+      HttpRequest.Builder builder = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(formData));
+      setCloudHeaders(builder);
+      HttpRequest request = builder.uri(URI.create(sparqlUpdateUrl)).build();
 
-        if (logger.isDebugEnabled()) {
-          logger.debug("HTTP POST request returned, status code: " + statusCode + " " + sparqlUpdateUrl);
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+      int statusCode = response.statusCode();
+
+      if (logger.isDebugEnabled()) {
+        logger.debug("HTTP POST request returned, status code: " + statusCode + " " + sparqlUpdateUrl);
+      }
+
+      if (statusCode != HttpURLConnection.HTTP_ACCEPTED) {
+        throw new OEConnectionException(
+                 "Incorrect status code " + statusCode + " received from URL: " + sparqlUpdateUrl);
+      }
+
+      try (InputStream is = response.body()) {
+        JsonObject responseJson = JSON.parse(is);
+        if (responseJson == null) {
+          throw new OEConnectionException("Invalid JSON response to callback for job status");
         }
-
-        if (statusCode != HttpStatus.SC_ACCEPTED) {
-          throw new OEConnectionException(
-                  "Incorrect status code " + statusCode + " received from URL: " + sparqlUpdateUrl);
-        }
-
-        HttpEntity entity = response.getEntity();
-
-        try (InputStream is = entity.getContent()) {
-          JsonObject responseJson = JSON.parse(is);
-          if (responseJson == null) {
-            throw new OEConnectionException("Invalid JSON response to callback for job status");
-          }
 
           String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
           if (null == jobStatus) {
@@ -480,65 +471,60 @@ public class OEModelEndpoint {
 
           jobId = responseJson.get("jobId").getAsString().value();
         }
-      }
+       } catch (InterruptedException e) {
+        throw new RuntimeException(e);
     }
     return jobId;
   }
 
   public String initiateExportAsyncDownload() throws IOException, OEConnectionException {
 
-      String initiateExportUrl = buildOEExportApiUrl();
+    String initiateExportUrl = buildOEExportApiUrl();
 
-      setProxyHttpHost(httpClientBuilder);
-      setCloudAuthHeaderIfConfigured(httpClientBuilder);
+    String jobId = null;
 
-      String jobId = null;
-      try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-        HttpGet httpGet = new HttpGet(initiateExportUrl);
+    try (HttpClient httpClient = getHttpClientBuilder().build()) {
+      HttpRequest.Builder builder = HttpRequest.newBuilder().header(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
+      setCloudHeaders(builder);
+      HttpRequest request = builder.uri(URI.create(initiateExportUrl)).build();
 
-        /* NT format for response */
-        httpGet.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-        HttpResponse response = httpClient.execute(httpGet);
-        if (response == null) {
-          throw new OEConnectionException("Null response from http client: " + initiateExportUrl);
-        }
-        if (response.getStatusLine() == null) {
-          throw new OEConnectionException("Null status line from http client: " + initiateExportUrl);
-        }
-
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        if (logger.isDebugEnabled()) {
-          logger.debug("HTTP request returned, status code: " + statusCode + " " + initiateExportUrl);
-        }
-
-        if (statusCode != HttpStatus.SC_ACCEPTED) {
-          throw new OEConnectionException(
-                  "Incorrect status code " + statusCode + " received from URL: " + initiateExportUrl);
-        }
-
-        HttpEntity entity = response.getEntity();
-
-        try (InputStream is = entity.getContent()) {
-          JsonObject responseJson = JSON.parse(is);
-          if (responseJson == null) {
-            throw new OEConnectionException("Invalid JSON response to callback for job status");
-          }
-
-          String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
-          if (null == jobStatus) {
-            throw new OEConnectionException("Invalid response JSON payload");
-          }
-
-          if (!jobStatus.equals(JOB_STATUS_ACCEPTED)) {
-            throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
-          }
-
-          jobId = responseJson.get("jobId").getAsString().value();
-        }
+      if (response == null) {
+        throw new OEConnectionException("Null response from http client: " + initiateExportUrl);
       }
-      return jobId;
+      int statusCode = response.statusCode();
+      if (logger.isDebugEnabled()) {
+        logger.debug("HTTP request returned, status code: " + statusCode + " " + initiateExportUrl);
+      }
+
+      if (statusCode != HttpURLConnection.HTTP_ACCEPTED) {
+        throw new OEConnectionException(
+                "Incorrect status code " + statusCode + " received from URL: " + initiateExportUrl);
+      }
+
+
+      try (InputStream is = response.body()) {
+        JsonObject responseJson = JSON.parse(is);
+        if (responseJson == null) {
+          throw new OEConnectionException("Invalid JSON response to callback for job status");
+        }
+
+        String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
+        if (null == jobStatus) {
+          throw new OEConnectionException("Invalid response JSON payload");
+        }
+
+        if (!jobStatus.equals(JOB_STATUS_ACCEPTED)) {
+          throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
+        }
+
+        jobId = responseJson.get("jobId").getAsString().value();
+      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    return jobId;
   }
 
   /**
@@ -583,39 +569,28 @@ public class OEModelEndpoint {
 
     String jobResultUrl = getJobCallbackUrl(jobId) + "/result";
 
-    setProxyHttpHost(httpClientBuilder);
-    setCloudAuthHeaderIfConfigured(httpClientBuilder);
+    try (HttpClient httpClient = getHttpClientBuilder().build()) {
+      HttpRequest.Builder builder = HttpRequest.newBuilder();
+      setCloudHeaders(builder);
 
-    try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-      HttpGet httpGet = new HttpGet(jobResultUrl);
-      /*
-       * New way to specify format on export calls: use Accept: header. Leaving old param on URI for
-       * now
-       */
-      httpGet.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
+      HttpRequest request = builder.uri(URI.create(jobResultUrl)).build();
+      request.headers().map().put(HttpHeaders.ACCEPT, Arrays.asList(new String[] { WebContent.contentTypeNTriples }));
 
-      HttpResponse response = httpClient.execute(httpGet);
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
       if (response == null) {
         throw new OEConnectionException("Null response from http client: " + jobResultUrl);
       }
-      if (response.getStatusLine() == null) {
-        throw new OEConnectionException("Null status line from http client: " + jobResultUrl);
+      if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+        throw new OEConnectionException(
+                "Status code " + response.statusCode() + " received from URL: " + jobResultUrl);
       }
-
-      int statusCode = response.getStatusLine().getStatusCode();
 
       if (logger.isDebugEnabled()) {
-        logger.debug("HTTP request complete: " + statusCode + " " + jobResultUrl);
+        logger.debug("HTTP request complete: " + response.statusCode()  + " " + jobResultUrl);
       }
 
-      if (statusCode != HttpStatus.SC_OK) {
-        throw new OEConnectionException(
-            "Status code " + statusCode + " received from URL: " + jobResultUrl);
-      }
-
-      HttpEntity entity = response.getEntity();
-
-      try (InputStream is = entity.getContent()) {
+      try (InputStream is = response.body()) {
         RDFDataMgr.read(model, is, RDFFormat.NT.getLang());
       }
     }
@@ -632,27 +607,22 @@ public class OEModelEndpoint {
    * @param callbackUrl
    * @return
    */
-  public String getJobStatus(String callbackUrl) {
+  public String getJobStatus(String callbackUrl)  {
     checkNotNull(callbackUrl);
     logger.debug("Running getJobStatus, callback url: {}", callbackUrl);
 
     try {
       JsonObject responseJson;
 
-
-      HttpGet httpGet = new HttpGet(callbackUrl);
-      try (HttpClient httpClient = httpClientBuilder.build()) {
+      try (HttpClient httpClient = getHttpClientBuilder().build()) {
         HttpRequest.Builder builder = HttpRequest.newBuilder();
         setCloudHeaders(builder);
         HttpRequest request = builder.uri(URI.create(callbackUrl)).build();
 
-        httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-        try (CloseableHttpResponse resp = httpClient.execute(httpGet)) {
-          HttpEntity ent = resp.getEntity();
-          try (InputStream inStr = ent.getContent()) {
+        try (InputStream inStr = response.body()) {
             responseJson = JSON.parse(inStr);
-          }
         }
       }
 

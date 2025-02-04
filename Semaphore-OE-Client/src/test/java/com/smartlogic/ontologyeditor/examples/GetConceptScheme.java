@@ -19,9 +19,7 @@ public class GetConceptScheme extends ModelManipulation {
 		Concept returnedConcept = oeClient.getConcept("http://example.com/APITest#Cheese");
 		System.err.println(returnedConcept.getPrefLabels());
 
-
-	ConceptScheme returnedConceptScheme = oeClient.getConceptScheme("http://example.com/APITest#ConceptScheme/NewConcept");
-//      	ConceptScheme returnedConceptScheme = oeClient.getConceptScheme("http://ontology.meta.com/people#ConceptScheme/JaimeConceptScheme");
+		ConceptScheme returnedConceptScheme = oeClient.getConceptScheme("http://example.com/APITest#ConceptScheme/NewConcept");
 		System.err.println(returnedConceptScheme);
 
 	}
