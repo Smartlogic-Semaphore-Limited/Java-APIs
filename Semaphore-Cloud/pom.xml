@@ -4,7 +4,7 @@
 	<groupId>com.smartlogic.cloud</groupId>
 	<artifactId>Semaphore-Cloud-Client</artifactId>
 	<name>Cloud Client</name>
-	<description>Client for the Smartlogic Semaphore Cloud Environment</description>
+	<description>Client for the Progress Data Cloud Environment</description>
 
 	<packaging>jar</packaging>
 
@@ -15,6 +15,11 @@
 	</parent>
 	<dependencies>
 		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>com.smartlogic.csclient</groupId>
 			<artifactId>Semaphore-CS-Client</artifactId>
 			<scope>test</scope>
@@ -23,14 +28,6 @@
 			<groupId>com.smartlogic.sesclient</groupId>
 			<artifactId>Semaphore-SES-Client</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
 		</dependency>
 	</dependencies>
 
