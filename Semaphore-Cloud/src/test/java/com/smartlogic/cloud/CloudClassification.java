@@ -51,7 +51,7 @@ public class CloudClassification {
 //		classificationClient.setProxyPort(8888);
 
 			// Classify a document stored as a file
-			Result result = classificationClient.getClassifiedDocument(new File("./data/SampleData.txt"), null);
+			Result result = classificationClient.getClassifiedDocument(new File("./Semaphore-Cloud/data/SampleData.txt"), null);
 			for (Entry<String, Collection<ClassificationScore>> entry : result.getAllClassifications().entrySet()) {
 				System.out.println(entry.getKey() + ":");
 				for (ClassificationScore classificationScore : entry.getValue()) {
@@ -64,7 +64,7 @@ public class CloudClassification {
 
 			// Classify a document created from a body and a title string
 			Result result2 = classificationClient.getClassifiedDocument(new Body("This is a document about Renault"),
-					new Title("This is a front doucment about cars and Money"));
+					new Title("This is a front document about cars and Money"));
 			for (Entry<String, Collection<ClassificationScore>> entry : result2.getAllClassifications().entrySet()) {
 				System.out.println(entry.getKey() + ":");
 				for (ClassificationScore classificationScore : entry.getValue()) {

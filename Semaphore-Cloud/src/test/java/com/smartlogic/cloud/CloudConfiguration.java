@@ -1,5 +1,6 @@
 package com.smartlogic.cloud;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -23,12 +24,13 @@ public class CloudConfiguration {
 	
 	private static Properties properties = null;
 	public static synchronized String get(String name) throws IOException {
+		File file = new File("config.properties");
 		if (properties == null) {
-			try (FileInputStream propertiesInputStream = new FileInputStream("config.properties")) {
+			try (FileInputStream propertiesInputStream = new FileInputStream(file)) {
 				properties = new Properties();
 				properties.load(propertiesInputStream);
 			} catch (IOException e) {
-				System.err.println("Error attempting to read properties from file \"config.properties\"");
+				System.err.println("Error attempting to read properties from file " + file.getAbsolutePath());
 				throw e;
 			}
 		}
