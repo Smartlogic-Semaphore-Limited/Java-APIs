@@ -21,13 +21,18 @@ public class AddConceptToReview extends ModelManipulation {
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 		oeClient.setKRTClient(true);
+		oeClient.setProxyHost("localhost");
+		oeClient.setProxyPort(8888);
+
 
 		ConceptScheme newlyAddedConceptScheme = oeClient.getConceptSchemeByName("Concept Review - Newly Added", "en");
 
-		addConcept(oeClient, newlyAddedConceptScheme, "Paddington");
+		Concept addedConcept = addConcept(oeClient, newlyAddedConceptScheme, "Existance");
+
+		oeClient.createMetadata(addedConcept, "skos:note", "I thought, therefore I was.", "en");
 	}
 
-	private void addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {
+	private Concept addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {
 
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", label));
@@ -36,6 +41,7 @@ public class AddConceptToReview extends ModelManipulation {
 				"http://example.com/APITest#Concept1" + urlEncode(label.replaceAll(" ", "")), labels);
 
 		oeClient.createConcept(conceptScheme.getUri(), concept);
+		return concept;
 	}
 
 }

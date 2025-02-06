@@ -1,6 +1,13 @@
 package com.smartlogic.ontologyeditor;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.ProxySelector;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +16,6 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.Response;
 
-import jakarta.ws.rs.client.Invocation;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 import org.json.simple.JSONArray;
@@ -257,11 +263,36 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		Date startDate = new Date();
 		logger.info("createConcept making call  : {}", startDate.getTime());
-		Response response = invocationBuilder.post(Entity.entity(conceptSchemePayload, "application/ld+json"));
+
+		HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+		if (getProxyHost() != null && getProxyPort() != 0) {
+			httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(getProxyHost(), getProxyPort())));
+		}
+		HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(conceptSchemePayload);
+		HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(getModelURL())).method("PATCH", bodyPublisher)
+				.header("Accept", "application/ld+json,application/json")
+				.header("Content-Type", "application/ld+json");
+		if (getCloudToken() != null) {
+			requestBuilder.header("Authorization", getCloudTokenValue());
+		}
+		if (getHeaderToken() != null) {
+			requestBuilder.header("X-Api-Key", getHeaderToken() );
+		}
+		if (isKRTClient()) {
+			requestBuilder.header("x-change-accepted", "false");
+			requestBuilder.header("x-split-change", "true");
+		}
+		HttpResponse<String> response = null;
+		try {
+			response = httpClientBuilder.build().send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+		} catch (IOException | InterruptedException e) {
+			throw new OEClientException(e.getMessage());
+		}
 
 		checkResponseStatus("createConcept", response);
 
 	}
+
 
 	public void createConceptBelowConcept(String parentConceptUri, Concept concept) throws OEClientException {
 		logger.info("createConceptBelowConcept entry: {} {}", parentConceptUri, concept.getUri());
@@ -312,12 +343,24 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 	private void checkResponseStatus(String callingMethod, Response response) throws OEClientException {
 		if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
-			logger.info("{} call completed successfully: {}", callingMethod);
+			logger.info("{} call completed successfully", callingMethod);
 		} else {
 			String message = String.format("%s call returned error %s: %s", 
 					callingMethod, response.getStatus(), response.readEntity(String.class));
 			logger.warn(message);
 			throw new OEClientException(message);
+		}
+	}
+
+	private void checkResponseStatus(String callingMethod, HttpResponse<String> response) throws OEClientException {
+		if (response.statusCode() == HttpURLConnection.HTTP_OK) {
+			logger.info("{} call completed successfully", callingMethod);
+		} else {
+			String message = String.format("%s call returned error %s: %s",
+					callingMethod, response.statusCode(), response.body());
+			logger.warn(message);
+			throw new OEClientException(message);
+
 		}
 	}
 
