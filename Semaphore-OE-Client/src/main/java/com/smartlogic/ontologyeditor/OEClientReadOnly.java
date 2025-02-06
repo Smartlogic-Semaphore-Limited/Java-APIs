@@ -112,7 +112,7 @@ public class OEClientReadOnly {
     this.cloudToken = cloudToken;
   }
 
-  private String getCloudTokenValue() {
+  protected String getCloudTokenValue() {
     if (cloudToken == null) {
       return "";
     }
