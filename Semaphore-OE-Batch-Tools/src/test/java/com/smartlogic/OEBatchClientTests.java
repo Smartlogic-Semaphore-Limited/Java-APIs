@@ -5,7 +5,8 @@ import com.smartlogic.rdfdiff.RDFDifference;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.system.IRIResolver;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.SKOS;
 import org.junit.After;
@@ -13,6 +14,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.net.URI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,9 +40,9 @@ public class OEBatchClientTests {
   @Before
   public void setUp() throws Exception {
     model = ModelFactory.createDefaultModel();
-    model.read("Playpen2.ttl", "TTL");
+    model = RDFDataMgr.loadModel("Playpen2.ttl", Lang.TTL);
     OEModelEndpoint endpoint = new OEModelEndpoint();
-    endpoint.modelIri = IRIResolver.parseIRI("urn:test:model-x").toString();
+    endpoint.modelIri = URI.create("urn:test:model-x").toString();
     client = new OEBatchClient(endpoint);
 
   }
@@ -52,7 +55,7 @@ public class OEBatchClientTests {
   @Test
   public void testLocalDiff() throws Exception {
     Model firstModel = ModelFactory.createDefaultModel();
-    firstModel.read("Playpen2.ttl", "TTL");
+    firstModel = RDFDataMgr.loadModel("Playpen2.ttl");
 
     Model secondModel = ModelFactory.createDefaultModel();
     secondModel.add(firstModel);

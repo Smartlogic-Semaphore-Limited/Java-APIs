@@ -2,8 +2,8 @@ package com.smartlogic.tools;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.tdb.TDBFactory;
-import org.apache.jena.tdb.TDBLoader;
+import org.apache.jena.tdb1.TDB1Factory;
+import org.apache.jena.tdb1.TDB1Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +24,10 @@ public class SKOSTDBLoader {
     System.out.println("Model URI    : " + args[1]);
     System.out.println("Model tdb dir: " + args[2]);
 
-    Dataset dataset = TDBFactory.createDataset(args[2]);
+    Dataset dataset = TDB1Factory.createDataset(args[2]);
     try {
       Model model = dataset.getNamedModel(args[1]);
-      TDBLoader.loadModel(model, args[0]);
+      TDB1Loader.loadModel(model, args[0]);
     } finally {
       dataset.close();
     }

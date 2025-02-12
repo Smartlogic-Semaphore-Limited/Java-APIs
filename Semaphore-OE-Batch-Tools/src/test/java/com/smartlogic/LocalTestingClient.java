@@ -1,7 +1,7 @@
 package com.smartlogic;
 
-import org.apache.jena.ext.com.google.common.collect.Lists;
-import org.apache.jena.ext.com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,14 +39,25 @@ public class LocalTestingClient {
 
 	public static void main(String[] args) {
 		try {
+			Properties config = TestConfig.getConfig();
 			OEModelEndpoint endpoint = new OEModelEndpoint();
-			endpoint.setAccessToken("WyJHb2QiLDE5NjE5NTA1NTIsWyJTZW1hcGhvcmVBdXRoZW50aWNhdGVkVXNlcnMiLCJTZW1hcGhvcmVTdXBlckFkbWluaXN0cmF0b3JzIl0sIk1FVUNJR1A5bXVWcEVISm16V2pTZm5ZK0IvZGM5Y2l3VnZnZ2xBQTBoT2lobWRWd0FpRUE2Vm8vSVZrblkySU9BdExHSjlOOUdXUTdjSVN4bUpNc2g1ejlPaVgrZzNVPSJd");
-			endpoint.setBaseUrl("http://localhost:5080");
+			endpoint.setAccessToken(config.getProperty("accesstoken"));
+			endpoint.setBaseUrl(config.getProperty("studiourl"));
 			endpoint.setModelIRI("model:BatchTest");
+
+			{
+				var rs = endpoint.runSparqlQuery("PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nselect * where {?s a skos:Concept } limit 10");
+				while (rs.hasNext()) {
+					var qs = rs.next();
+					System.out.println("solution: " + qs.get("s"));
+				}
+			}
+
 			try (OEBatchClient client = new OEBatchClient(endpoint)) {
 				client.getSparqlUpdateOptions().runCheckConstraints = false;
 				client.getSparqlUpdateOptions().runEditRules = false;
 				client.getSparqlUpdateOptions().acceptWarnings = true;
+
 				client.loadCurrentModelFromOE();
 				Model m = client.getPendingModel();
 
@@ -57,7 +69,17 @@ public class LocalTestingClient {
 //				deleteConcepts(m);
 
 				client.commit();
+
 			}
+
+			{
+				var rs = endpoint.runSparqlQuery("PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nselect * where {?s a skos:Concept } limit 10");
+				while (rs.hasNext()) {
+					var qs = rs.next();
+					System.out.println("solution: " + qs.get("s"));
+				}
+			}
+
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -109,7 +131,7 @@ public class LocalTestingClient {
 	}
 
 	public static void addConcepts(Model m) {
-		for ( int i = 0; i < 54231; i++) {
+		for ( int i = 0; i < 5001; i++) {
 			addConcept(m, i);
 		}
 	}

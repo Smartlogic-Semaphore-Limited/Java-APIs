@@ -4,7 +4,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
-import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFDataMgr;
@@ -15,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 /**
@@ -26,7 +25,6 @@ import java.util.function.Consumer;
 public class TTLDiff {
 
   static Logger logger = LoggerFactory.getLogger(TTLDiff.class);
-  static OutputStreamWriter osw = null;
 
   public static void main(String[] args) {
 
@@ -43,53 +41,51 @@ public class TTLDiff {
         System.exit(-1);
       }
 
-      if (cmd.hasOption("o")) {
-        osw = new OutputStreamWriter(
-            new BufferedOutputStream(
-                new FileOutputStream(cmd.getOptionValue("o"), false)), Charset.forName("utf-8"));
-      } else {
-        osw = new OutputStreamWriter(System.out);
+      try (OutputStreamWriter osw = new OutputStreamWriter(
+              cmd.hasOption("o") ?
+                      new BufferedOutputStream(new FileOutputStream(cmd.getOptionValue("o"), false))
+                      :
+                      new BufferedOutputStream(System.out),
+              StandardCharsets.UTF_8
+              )) {
+
+        Model model_left = RDFDataMgr.loadModel(cmd.getOptionValue("lf"));
+        Model model_right = RDFDataMgr.loadModel(cmd.getOptionValue("rf"));
+
+        Consumer<Statement> out;
+        if (cmd.hasOption("sparql"))
+          out = s -> JenaUtil.printSPARQLStatement(s, osw);
+        else {
+          out = s -> JenaUtil.printStatement(s, osw);
+        }
+
+        if (cmd.hasOption("sparql")) {
+          osw.append("DELETE {\n");
+        } else {
+          osw.append("<\n");
+        }
+
+        model_left.listStatements().toList()
+                .stream()
+                .filter(stmt -> !model_right.contains(stmt))
+                .forEach(out);
+        if (cmd.hasOption("sparql"))
+          osw.append("} WHERE {}\n");
+
+        if (cmd.hasOption("sparql")) {
+          osw.append("INSERT {\n");
+        } else {
+          osw.append("<");
+        }
+        model_right.listStatements().toList()
+                .stream()
+                .filter(stmt -> !model_left.contains(stmt))
+                .forEach(out);
+        if (cmd.hasOption("sparql"))
+          osw.append("} WHERE {}\b");
       }
-
-      Model model_left = RDFDataMgr.loadModel(cmd.getOptionValue("lf"));
-      Model model_right = RDFDataMgr.loadModel(cmd.getOptionValue("rf"));
-
-      Consumer<Statement> out = null;
-      if (cmd.hasOption("sparql"))
-        out = s -> JenaUtil.printSPARQLStatement(s, osw);
-      else {
-        out = s -> JenaUtil.printStatement(s, osw);
-      }
-
-      if (cmd.hasOption("sparql")) {
-        osw.append("DELETE {\n");
-      } else {
-        osw.append("<\n");
-      }
-
-      model_left.listStatements().toList()
-          .stream()
-          .filter(stmt -> !model_right.contains(stmt))
-          .forEach(out);
-      if (cmd.hasOption("sparql"))
-        osw.append("} WHERE {}\n");
-
-      if (cmd.hasOption("sparql")) {
-        osw.append("INSERT {\n");
-      } else {
-        osw.append("<");
-      }
-      model_right.listStatements().toList()
-          .stream()
-          .filter(stmt -> !model_left.contains(stmt))
-          .forEach(out);
-      if (cmd.hasOption("sparql"))
-        osw.append("} WHERE {}\b");
-
     } catch (Exception e) {
       e.printStackTrace();
-    } finally {
-      IOUtils.closeQuietly(osw);
     }
   }
 

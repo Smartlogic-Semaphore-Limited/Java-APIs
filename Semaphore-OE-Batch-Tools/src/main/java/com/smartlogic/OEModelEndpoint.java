@@ -2,10 +2,10 @@ package com.smartlogic;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.net.HttpHeaders;
 import com.smartlogic.cloud.CloudException;
 import com.smartlogic.cloud.Token;
 import com.smartlogic.cloud.TokenFetcher;
+import org.apache.http.HttpHeaders;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.query.Query;
@@ -18,6 +18,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
+import org.apache.jena.sparql.exec.http.QueryExecutionHTTP;
 import org.apache.jena.sparql.exec.http.QueryExecutionHTTPBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -65,8 +65,16 @@ public class OEModelEndpoint {
   protected Integer proxyPort;
 
   protected HttpClient.Builder httpClientBuilder;
+  protected HttpClient httpClient;
 
   public OEModelEndpoint() {
+  }
+
+  private synchronized HttpClient getHttpClient() {
+    if (httpClient == null) {
+      httpClient = getHttpClientBuilder().build();
+    }
+    return httpClient;
   }
 
   private synchronized HttpClient.Builder  getHttpClientBuilder() {
@@ -154,11 +162,15 @@ public class OEModelEndpoint {
     }
 
     Query query = QueryFactory.create(sparql);
-    ResultSet results = null;
-    try (HttpClient client = getHttpClientBuilder().build()) {
+    ResultSet results;
+    try {
+      HttpClient client = getHttpClient();
       QueryExecutionHTTPBuilder builder = QueryExecution.service(buildSPARQLUrl(null)).httpClient(client).query(query);
       setCloudHeaders(builder);
-      results = ResultSetFactory.copyResults(builder.build().execSelect());
+      try (QueryExecutionHTTP httpExecHttp = builder.build()) {
+        results = ResultSetFactory.copyResults(httpExecHttp.execSelect());
+      }
+    } finally {
     }
     return results;
   }
@@ -436,9 +448,12 @@ public class OEModelEndpoint {
 
     String formData = "update=" + URLEncoder.encode(sparqlString, StandardCharsets.UTF_8);
 
-    try (HttpClient httpClient = getHttpClientBuilder().build()) {
+    try {
+      HttpClient httpClient = getHttpClient();
+      HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(formData);
       HttpRequest.Builder builder = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(formData));
       setCloudHeaders(builder);
+      builder.setHeader(HttpHeaders.CONTENT_TYPE, WebContent.contentTypeHTMLForm);
       HttpRequest request = builder.uri(URI.create(sparqlUpdateUrl)).build();
 
       HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
@@ -473,6 +488,8 @@ public class OEModelEndpoint {
         }
        } catch (InterruptedException e) {
         throw new RuntimeException(e);
+    } finally {
+
     }
     return jobId;
   }
@@ -481,9 +498,10 @@ public class OEModelEndpoint {
 
     String initiateExportUrl = buildOEExportApiUrl();
 
-    String jobId = null;
+    String jobId;
 
-    try (HttpClient httpClient = getHttpClientBuilder().build()) {
+    try {
+      HttpClient httpClient = getHttpClient();
       HttpRequest.Builder builder = HttpRequest.newBuilder().header(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
       setCloudHeaders(builder);
       HttpRequest request = builder.uri(URI.create(initiateExportUrl)).build();
@@ -569,12 +587,14 @@ public class OEModelEndpoint {
 
     String jobResultUrl = getJobCallbackUrl(jobId) + "/result";
 
-    try (HttpClient httpClient = getHttpClientBuilder().build()) {
+    try {
+      HttpClient httpClient = getHttpClient();
       HttpRequest.Builder builder = HttpRequest.newBuilder();
       setCloudHeaders(builder);
 
-      HttpRequest request = builder.uri(URI.create(jobResultUrl)).build();
-      request.headers().map().put(HttpHeaders.ACCEPT, Arrays.asList(new String[] { WebContent.contentTypeNTriples }));
+      HttpRequest request = builder.uri(URI.create(jobResultUrl))
+          .setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples)
+          .build();
 
       HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
@@ -593,6 +613,8 @@ public class OEModelEndpoint {
       try (InputStream is = response.body()) {
         RDFDataMgr.read(model, is, RDFFormat.NT.getLang());
       }
+    } finally {
+
     }
     return model;
   }
@@ -614,7 +636,8 @@ public class OEModelEndpoint {
     try {
       JsonObject responseJson;
 
-      try (HttpClient httpClient = getHttpClientBuilder().build()) {
+      try {
+        HttpClient httpClient = getHttpClient();
         HttpRequest.Builder builder = HttpRequest.newBuilder();
         setCloudHeaders(builder);
         HttpRequest request = builder.uri(URI.create(callbackUrl)).build();
@@ -624,6 +647,8 @@ public class OEModelEndpoint {
         try (InputStream inStr = response.body()) {
             responseJson = JSON.parse(inStr);
         }
+      } finally {
+
       }
 
       if (responseJson == null) {
