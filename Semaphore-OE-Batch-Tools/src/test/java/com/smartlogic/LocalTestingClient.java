@@ -16,6 +16,7 @@ import org.apache.jena.vocabulary.SKOSXL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -44,7 +45,8 @@ public class LocalTestingClient {
 			endpoint.setAccessToken(config.getProperty("accesstoken"));
 			endpoint.setBaseUrl(config.getProperty("studiourl"));
 			endpoint.setModelIRI("model:BatchTest");
-
+			endpoint.setRequestTimeout(Duration.ofSeconds(10));
+			endpoint.setConnectTimeout(Duration.ofHours(2));
 			{
 				var rs = endpoint.runSparqlQuery("PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nselect * where {?s a skos:Concept } limit 10");
 				while (rs.hasNext()) {
@@ -131,7 +133,7 @@ public class LocalTestingClient {
 	}
 
 	public static void addConcepts(Model m) {
-		for ( int i = 0; i < 5001; i++) {
+		for ( int i = 0; i < 5; i++) {
 			addConcept(m, i);
 		}
 	}

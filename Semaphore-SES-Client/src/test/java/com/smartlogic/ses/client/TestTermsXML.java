@@ -1,17 +1,14 @@
 package com.smartlogic.ses.client;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class TestTermsXML extends SESServerMockTestCase {
-  protected final Log logger = LogFactory.getLog(getClass());
+  protected static final Logger logger = LoggerFactory.getLogger(TestTermsXML.class);
   private static SESClient sesClient;
 
   private static String xml;

@@ -5,8 +5,8 @@
 // ----------------------------------------------------------------------
 package com.smartlogic.ses.client;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -24,7 +24,7 @@ import java.util.Map;
 @XmlRootElement(name = "statisticsInfo")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class StatisticsInfo implements Serializable {
-  protected final static Log logger = LogFactory.getLog(Terms.class);
+  protected static final Logger logger = LoggerFactory.getLogger(StatisticsInfo.class);
   private static final long serialVersionUID = 6729391679309758805L;
   private static final XPath xPath = XPathFactory.newInstance().newXPath();
 

@@ -1,15 +1,15 @@
 package com.smartlogic.ses.client;
 
 import com.smartlogic.ses.client.exceptions.SESException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class TestStats extends SESServerMockTestCase {
-  protected final Log logger = LogFactory.getLog(getClass());
+  protected static final Logger logger = LoggerFactory.getLogger(TestStats.class);
   private static SESClient sesClient;
 
   private static final String IPSV_MODEL_NAME = "IPSV";
@@ -43,7 +43,7 @@ public class TestStats extends SESServerMockTestCase {
       assertEquals(info.getTermCount(IPSV_MODEL_NAME), IPSV_MODEL_TERM_COUNT.intValue());
 
     } catch (SESException sese) {
-      logger.error(sese);
+      logger.error("SESException", sese);
     }
   }
 }

@@ -11,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.URI;
+import java.time.Duration;
 
 import static org.junit.Assert.assertEquals;
 
@@ -61,6 +62,16 @@ public class OEModelEndpointTests {
     assertEquals("http://myserver.mydomain.com:9999/t/ACCESSTOKEN/kmm/api", ep.buildApiUrl().toString());
     assertEquals(
             "http://myserver.mydomain.com:9999/t/ACCESSTOKEN/kmm/api/model:TestID/sparql", ep.buildSPARQLUrl(null));
+
+    ep.setConnectTimeout(Duration.ofMinutes(11));
+    assertEquals(ep.getConnectTimeout(), Duration.ofMinutes(11));
+    ep.setConnectTimeout(Duration.ofMinutes(7));
+    assertEquals(ep.getConnectTimeout(), Duration.ofMinutes(7));
+
+    ep.setRequestTimeout(Duration.ofMinutes(33));
+    assertEquals(ep.getRequestTimeout(), Duration.ofMinutes(33));
+    ep.setRequestTimeout(Duration.ofMinutes(7));
+    assertEquals(ep.getRequestTimeout(), Duration.ofMinutes(7));
 
   }
 

@@ -13,8 +13,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -24,7 +24,7 @@ import org.w3c.dom.NodeList;
 @XmlRootElement(name = "parameters")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Parameters implements Serializable {
-  protected final static Log logger = LogFactory.getLog(Parameters.class);
+  protected static final Logger logger = LoggerFactory.getLogger(Parameters.class);
   private static final long serialVersionUID = -3626466302252949328L;
 
   // This is required by the XML Marshalling/Unmarshalling

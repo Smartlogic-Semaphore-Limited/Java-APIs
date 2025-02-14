@@ -2,10 +2,10 @@ package com.smartlogic;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.net.HttpHeaders;
 import com.smartlogic.cloud.CloudException;
 import com.smartlogic.cloud.Token;
 import com.smartlogic.cloud.TokenFetcher;
-import org.apache.http.HttpHeaders;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.query.Query;
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 
@@ -175,6 +176,21 @@ public class OEModelEndpoint {
     return results;
   }
 
+  private Duration connectTimeout = Duration.of(60, SECONDS);
+  public Duration getConnectTimeout() {
+    return connectTimeout;
+  }
+  public void setConnectTimeout(Duration connectTimeout) {
+    this.connectTimeout = connectTimeout;
+  }
+
+  private Duration requestTimeout = Duration.of(60, MINUTES);
+  public Duration getRequestTimeout() {
+    return requestTimeout;
+  }
+  public void setRequestTimeout(Duration requestTimeout) {
+    this.requestTimeout = requestTimeout;
+  }
 
   private Token cloudToken = null;
   private QueryExecutionHTTPBuilder setCloudHeaders(QueryExecutionHTTPBuilder builder) {
@@ -187,7 +203,7 @@ public class OEModelEndpoint {
     }
     String cloudTokenString = cloudToken.getAccess_token();
     if (!Strings.isNullOrEmpty(cloudTokenString)) {
-      builder.httpHeader("Authorization", cloudTokenString);
+      builder.httpHeader(HttpHeaders.AUTHORIZATION, cloudTokenString);
     }
     return builder;
   }
@@ -201,7 +217,7 @@ public class OEModelEndpoint {
     }
     String cloudTokenString = cloudToken.getAccess_token();
     if (!Strings.isNullOrEmpty(cloudTokenString)) {
-      builder.header("Authorization", cloudTokenString);
+      builder.header(HttpHeaders.AUTHORIZATION, cloudTokenString);
     }
     return builder;
   }
