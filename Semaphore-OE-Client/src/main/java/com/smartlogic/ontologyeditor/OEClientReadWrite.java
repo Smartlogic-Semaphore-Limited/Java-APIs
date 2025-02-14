@@ -862,15 +862,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throw new OEClientException(String.format("Attempting to remove class (%s) that doesn't exist on this concept (%s)", classUri, concept.getUri()));
 		}
 		
-		String url = getApiURL();
-		
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
-		queryParameters.put("path", path);
-		
+		String url = getApiURL() + "/" + path;
+
+
 		logger.info("addClass - URL: {}", url);
-		logger.info("addClass - parameters: {}", queryParameters);
-		Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
 		JsonArray operationList = new JsonArray();
 		JsonObject testOperation = new JsonObject();
@@ -892,13 +889,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			operationList.add(addOperation);
 		}
 		
-		String removeClassPayload = operationList.toJSONString().replaceAll("\\/", "/");
+		String removeClassPayload = operationList.toString();
 		logger.info("removeClass payload: {}", removeClassPayload);
-		Invocation invocation = invocationBuilder.build("PATCH",
-				Entity.entity(removeClassPayload, "application/json-patch+json"));
-		Response response = invocation.invoke();
-
-		checkResponseStatus("deleteRelationship", response);
+		makeRequest(getModelURL(),removeClassPayload, RequestType.PATCH );
 	}
 
 }
