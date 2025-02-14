@@ -27,7 +27,7 @@ public class AddConceptToReview extends ModelManipulation {
 
 		ConceptScheme newlyAddedConceptScheme = oeClient.getConceptSchemeByName("Concept Review - Newly Added", "en");
 
-		Concept addedConcept = addConcept(oeClient, newlyAddedConceptScheme, "Existance");
+		Concept addedConcept = addConcept(oeClient, newlyAddedConceptScheme, "Existence");
 
 		oeClient.createMetadata(addedConcept, "skos:note", "I thought, therefore I was.", "en");
 	}

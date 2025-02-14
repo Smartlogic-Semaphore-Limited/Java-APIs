@@ -1,7 +1,11 @@
 package com.smartlogic.ontologyeditor;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.IOException;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -10,13 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.client.Invocation.Builder;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
+import com.smartlogic.cloud.Token;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
@@ -30,12 +28,9 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.apache.jena.vocabulary.SKOSXL;
 import org.apache.jena.vocabulary.XSD;
-import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.glassfish.jersey.uri.UriComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.smartlogic.cloud.Token;
 import com.smartlogic.ontologyeditor.beans.ChangeRecord;
 import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptClass;
@@ -176,41 +171,6 @@ public class OEClientReadOnly {
     }
   }
 
-  protected Builder getInvocationBuilder(String url) {
-    return getInvocationBuilder(url, null);
-  }
-
-  protected Builder getInvocationBuilder(String url, Map<String, String> queryParameters) {
-
-    Client client;
-    if (!StringUtils.isEmpty(proxyHost) && (proxyPort > 0)) {
-      client = JerseyClientBuilder.newBuilder().property("org.jboss.resteasy.jaxrs.client.proxy.host", proxyHost).property("org.jboss.resteasy.jaxrs.client.proxy.port", proxyPort).build();
-    } else {
-      client = JerseyClientBuilder.newBuilder().build();
-    }
-    WebTarget webTarget = client.target(url);
-
-    if (queryParameters != null) {
-      for (Map.Entry<String, String> queryParameter : queryParameters.entrySet()) {
-        webTarget = webTarget.queryParam(queryParameter.getKey(), queryParameter.getValue());
-      }
-    }
-    if (warningsAccepted) {
-      webTarget = webTarget.queryParam("warningsAccepted", "true");
-    }
-
-    Builder builder = webTarget.request(MediaType.APPLICATION_JSON).accept("application/ld+json")
-        .header("Authorization", getCloudTokenValue());
-    if (headerToken != null) {
-      builder.header("X-Api-Key", headerToken);
-    }
-    if (isKRTClient) {
-      builder.header("x-change-accepted", "false");
-      builder.header("x-split-change", "true");
-    }
-    return builder;
-  }
-
   private String modelURL = null;
 
   protected String getModelURL() {
@@ -268,10 +228,7 @@ public class OEClientReadOnly {
   }
 
   protected String getTaskSysURL(Task task) {
-    StringBuilder stringBuilder = new StringBuilder(getApiURL());
-    stringBuilder.append("sys/");
-    stringBuilder.append(task.getGraphUri());
-    return stringBuilder.toString();
+    return getApiURL() + "sys/" + task.getGraphUri();
   }
 
   public Collection<Model> getAllModels() throws OEClientException {
@@ -282,16 +239,12 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties", "meta:displayName,meta:graphUri");
 
-    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
-
     Date startDate = new Date();
     logger.info("getAllModels making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(url, queryParameters);
     logger.info("getAllModels call complete: {}", startDate.getTime());
 
-    logger.info("getAllModels - status: {}", response.getStatus());
-
-    JsonObject jsonResponse = getJsonResponse("getAllModels", response);
+    JsonObject jsonResponse = JSON.parse(response);
 
     JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
     Collection<Model> models = new ArrayList<>();
@@ -321,13 +274,12 @@ public class OEClientReadOnly {
     queryParameters.put("filters", "subject_hasTask(notExists rdf:type sem:ORTTask)");
     logger.info("getAllTasks queryParameters: {}", queryParameters);
 
-    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
     Date startDate = new Date();
     logger.info("getAllTasks making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(url, queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("getAllTasks", response);
+    JsonObject jsonResponse = JSON.parse(response);
     JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
     Collection<Task> tasks = new ArrayList<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
@@ -360,13 +312,11 @@ public class OEClientReadOnly {
         date.toInstant().toString()));
     queryParameters.put("sort", "sem:committed");
 
-    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
-
     Date startDate = new Date();
     logger.info("getChangesSince making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(url, queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("getChangesSince", response);
+    JsonObject jsonResponse = JSON.parse(response);
     JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
     Collection<ChangeRecord> changeRecords = new ArrayList<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
@@ -388,14 +338,14 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties",
         "rdfs:label,owl:inverseOf,rdfs:subPropertyOf,owl:inverseOf/rdfs:label,owl:inverseOf/rdfs:subPropertyOf");
-    Invocation.Builder invocationBuilder = getInvocationBuilder(
-        getModelURL() + "/" + parentType + "/meta:transitiveSubProperty", queryParameters);
+
+    String url = getModelURL() + "/" + parentType + "/meta:transitiveSubProperty";
 
     Date startDate = new Date();
     logger.info("getRelationshipTypes making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(url, queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("getRelationshipTypes", response);
+    JsonObject jsonResponse = JSON.parse( response);
     JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
     Collection<RelationshipType> relationshipTypes = new HashSet<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
@@ -441,14 +391,13 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties", "rdfs:label,rdfs:subClassOf");
     queryParameters.put("limit", Integer.toString(limit));
-    Invocation.Builder invocationBuilder = getInvocationBuilder(
-        getModelURL() + "/skos:Concept/meta:transitiveSubClass", queryParameters);
+    String url = getModelURL() + "/skos:Concept/meta:transitiveSubClass";
 
     Date startDate = new Date();
     logger.info("getConceptClasses making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(url, queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("getConceptClasses", response);
+    JsonObject jsonResponse = JSON.parse(response);
     JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
     Collection<ConceptClass> conceptClasses = new HashSet<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
@@ -474,13 +423,12 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties", basicProperties);
     queryParameters.put("path", getPathParameter(conceptUri));
-    Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
     Date startDate = new Date();
     logger.info("getConcept making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(getApiURL(), queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("getConcept", response);
+    JsonObject jsonResponse = JSON.parse( response);
     return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
   }
 
@@ -490,13 +438,12 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties", conceptSchemeProperties);
     queryParameters.put("path", getPathParameter(conceptSchemeUri));
-    Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
     Date startDate = new Date();
     logger.info("getConceptScheme making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(getApiURL(), queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("getConceptScheme", response);
+    JsonObject jsonResponse = JSON.parse( response);
     return new ConceptScheme(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
   }
 
@@ -533,13 +480,12 @@ public class OEClientReadOnly {
     queryParameters.put("filters", String.format("subject(exists %s \"%s\")",
         getWrappedUri(identifier.getUri()), identifier.getValue()));
     logger.info("getConceptByIdentifier queryParameters: {}", queryParameters);
-    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
     Date startDate = new Date();
     logger.info("getConceptByIdentifier making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(url, queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("getConceptByIdentifier", response);
+    JsonObject jsonResponse = JSON.parse(response);
     return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
   }
 
@@ -604,13 +550,12 @@ public class OEClientReadOnly {
       queryParameters.put("language", language);
     }
     logger.info("getConceptByNameResponse queryParameters: {}", queryParameters);
-    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
     Date startDate = new Date();
     logger.info("getConceptByNameResponse making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(url, queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("getConceptByName", response);
+    JsonObject jsonResponse = JSON.parse(response);
     return jsonResponse;
   }
   private JsonObject getConceptSchemeByNameResponse(String labelValue, String language) throws OEClientException {
@@ -627,13 +572,12 @@ public class OEClientReadOnly {
       queryParameters.put("language", language);
     }
     logger.info("getConceptSchemeByNameResponse queryParameters: {}", queryParameters);
-    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
     Date startDate = new Date();
     logger.info("getConceptSchemeByNameResponse making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(url, queryParameters);
 
-    return  getJsonResponse("getConceptSchemeByNameResponse", response);
+    return  JSON.parse( response);
   }
 
   public Collection<Concept> getAllConcepts() throws OEClientException {
@@ -653,12 +597,11 @@ public class OEClientReadOnly {
           String.format("subject(rdf:type=%s)", getWrappedUri(oeFilter.getConceptClass())));
     }
 
-    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
 
     Date startDate = new Date();
     logger.info("getFilteredConcepts making call  : {} {}", startDate.getTime(), url);
-    Response response = invocationBuilder.get();
-    JsonObject jsonResponse = getJsonResponse("getFilteredConcepts", response);
+    String response = getResponse(url, queryParameters);
+    JsonObject jsonResponse = JSON.parse(response);
 
     JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
     Collection<Concept> concepts = new HashSet<>();
@@ -677,12 +620,10 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties", "sem:guid,rdfs:label,skos:hasTopConcept");
 
-    Invocation.Builder invocationBuilder = getInvocationBuilder(url, queryParameters);
-
     Date startDate = new Date();
     logger.info("getAllConceptSchemes making call  : {} {}", startDate.getTime(), url);
-    Response response = invocationBuilder.get();
-    JsonObject jsonResponse = getJsonResponse("getAllConceptSchemes", response);
+    String response = getResponse(url, queryParameters);
+    JsonObject jsonResponse = JSON.parse(response);
 
     JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
     Collection<ConceptScheme> conceptSchemes = new HashSet<>();
@@ -699,14 +640,13 @@ public class OEClientReadOnly {
 
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("path", getPathParameter(concept.getUri(), relationshipUri));
-    Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
     Date startDate = new Date();
     logger.info("populateRelatedConceptUris making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(getApiURL(), queryParameters);
     logger.info("populateRelatedConceptUris call complete: {}", startDate.getTime());
 
-    JsonObject jsonResponse = getJsonResponse("populateRelatedConceptUris", response);
+    JsonObject jsonResponse = JSON.parse(response);
     concept.populateRelatedConceptUris(relationshipUri, jsonResponse.get("@graph"));
   }
 
@@ -716,13 +656,12 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("path", getPathParameter(concept.getUri(), altLabelTypeUri));
     queryParameters.put("properties", "[]");
-    Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
 
     Date startDate = new Date();
     logger.info("populateAltLabels making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(getApiURL(), queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("populateAltLabels", response);
+    JsonObject jsonResponse = JSON.parse(response);
     concept.populateAltLabels(altLabelTypeUri, jsonResponse.get("@graph"));
   }
 
@@ -738,13 +677,11 @@ public class OEClientReadOnly {
     logger.info("populateMetadata uri: {}", getApiURL());
     logger.info("populateMetadata queryParameters: {}", queryParameters);
 
-    Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
-
     Date startDate = new Date();
     logger.info("populateMetadata making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(getApiURL(), queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("populateMetadata", response);
+    JsonObject jsonResponse = JSON.parse(response);
     concept.populateMetadata(metadataUri,
         jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
   }
@@ -762,13 +699,11 @@ public class OEClientReadOnly {
     logger.info("populateBooleanMetadata uri: {}", getApiURL());
     logger.info("populateBooleanMetadata queryParameters: {}", queryParameters);
 
-    Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
-
     Date startDate = new Date();
     logger.info("populateBooleanMetadata making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(getApiURL(), queryParameters);
 
-    JsonObject jsonResponse = getJsonResponse("populateBooleanMetadata", response);
+    JsonObject jsonResponse = JSON.parse(response);
     concept.populateBooleanMetadata(metadataUri,
         jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
 
@@ -786,41 +721,31 @@ public class OEClientReadOnly {
     logger.info("populateClasses uri: {}", getApiURL());
     logger.info("populateClasses queryParameters: {}", queryParameters);
 
-    Invocation.Builder invocationBuilder = getInvocationBuilder(getApiURL(), queryParameters);
-
     Date startDate = new Date();
     logger.info("populateClasses making call  : {}", startDate.getTime());
-    Response response = invocationBuilder.get();
+    String response = getResponse(getApiURL(), queryParameters);
     logger.info("populateClasses call complete: {}", startDate.getTime());
 
-    JsonObject jsonResponse = getJsonResponse("populateClasses", response);
+    JsonObject jsonResponse = JSON.parse(response);
     concept.populateClasses(jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
 
   }
 
-  private JsonObject getJsonResponse(String callingMethod, Response response)
+  private JsonObject getJsonResponse(String callingMethod, String stringResponse)
       throws OEClientException {
-    if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
-      String stringResponse = response.readEntity(String.class);
-      logger.info("{}: jsonResponse {}", callingMethod, stringResponse);
-      return JSON.parse(stringResponse);
-    } else {
-      String message = String.format("%s call returned error %s: %s", callingMethod,
-          response.getStatus(), response.readEntity(String.class));
-      logger.warn(message);
-      throw new OEClientException(message);
-    }
+
+    return JSON.parse(stringResponse);
   }
 
   // Concept uri needs to be encoded to be used in path
-  protected String getResourceURL(String resourceUri) {
+  protected String getResourceURL(String resourceUri) throws OEClientException {
     logger.info("getResourceURL - entry: {}", resourceUri);
     String resourceURL = getModelURL() + "/" + getPath(resourceUri);
     logger.info("getResourceURL - exit: {}", resourceURL);
     return resourceURL;
   }
 
-  private String getPath(String resourceUri) {
+  private String getPath(String resourceUri) throws OEClientException {
 
     logger.info("getPath - entry: {}", resourceUri);
     boolean matching =
@@ -834,14 +759,14 @@ public class OEClientReadOnly {
     return escapedUri;
   }
 
-  protected String getPathParameter(String conceptUri) {
+  protected String getPathParameter(String conceptUri) throws OEClientException {
     logger.info("getPath - entry: {}", conceptUri);
     String pathParameter = (modelUri + "/" + getPath(conceptUri)).replaceAll("%", "%25");
     logger.info("getPath - exit: {}", pathParameter);
     return pathParameter;
   }
 
-  protected String getPathParameter(String conceptUri, String relationshipUrl) {
+  protected String getPathParameter(String conceptUri, String relationshipUrl) throws OEClientException {
     logger.info("getPath - entry: {}", conceptUri);
     String pathParameter = (modelUri + "/" + getPath(conceptUri) + "/" + getPath(relationshipUrl))
         .replaceAll("%", "%25");
@@ -857,8 +782,12 @@ public class OEClientReadOnly {
    *          - the URI that is to be escaped
    * @return - the URI supplied encoded so that it can be used as part of a URL
    */
-  protected String getEscapedUri(String uriToEscape) {
-    return UriComponent.encode(uriToEscape, UriComponent.Type.PATH_SEGMENT);
+  protected String getEscapedUri(String uriToEscape) throws OEClientException {
+    try {
+      return new URI(null, null, uriToEscape, null).toASCIIString();
+    } catch (URISyntaxException e) {
+      throw new OEClientException(e.getClass().getSimpleName() + ": Error encolding \"" + uriToEscape + "\": " + e.getMessage());
+    }
   }
 
   /**
@@ -870,6 +799,107 @@ public class OEClientReadOnly {
    */
   protected String getTildered(String wrappedUri) {
     return wrappedUri.replaceAll("~", "~0").replaceAll("/", "~1");
+  }
+
+  protected enum RequestType { POST, DELETE, PATCH }
+  protected void makeRequest(String url, String payload, RequestType requestType) throws OEClientException {
+
+    HttpRequest.BodyPublisher bodyPublisher = StringUtils.isEmpty(payload)
+            ? HttpRequest.BodyPublishers.noBody()
+            : HttpRequest.BodyPublishers.ofString(payload);
+
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(url))
+            .header("Accept", "application/ld+json,application/json");
+    addHeaders(requestBuilder);
+
+    if (RequestType.POST == requestType) {
+      requestBuilder.method("POST", bodyPublisher)
+              .header("Content-Type", "application/ld+json");
+    } else if (RequestType.PATCH == requestType) {
+      requestBuilder.method("PATCH", bodyPublisher)
+              .header("Content-Type", "application/json-patch+json");
+    } else if (RequestType.DELETE == requestType) {
+      requestBuilder.method("DELETE", bodyPublisher);
+    }
+
+    HttpResponse<String> response = null;
+    try {
+      response = getHttpClient().send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+    } catch (IOException | InterruptedException e) {
+      throw new OEClientException(e.getClass().getSimpleName() + ": " + e.getMessage());
+    }
+
+    checkResponseStatus(response);
+
+  }
+  protected String getResponse(String url, Map<String, String> queryParameters) throws OEClientException {
+    StringBuilder stringBuilder = new StringBuilder(url);
+    String separator = "?";
+    if ((queryParameters != null) && !queryParameters.isEmpty()) {
+      for (Map.Entry<String, String> parameter: queryParameters.entrySet()) {
+        stringBuilder.append(separator)
+                .append(URLEncoder.encode(parameter.getKey(), StandardCharsets.UTF_8))
+                .append("=")
+                .append(URLEncoder.encode(parameter.getValue(), StandardCharsets.UTF_8));
+        separator = "&";
+      }
+    }
+    String urlToUser = stringBuilder.toString();
+
+
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(urlToUser)).header("Accept", "application/ld+json,application/json");
+    addHeaders(requestBuilder);
+    HttpResponse<String> response = null;
+    try {
+      response = getHttpClient().send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+    } catch (IOException | InterruptedException e) {
+      throw new OEClientException(e.getClass().getSimpleName() + ": " + e.getMessage());
+    }
+
+    checkResponseStatus(response);
+
+    return response.body();
+  }
+
+  private void addHeaders(HttpRequest.Builder requestBuilder) {
+    if (getCloudToken() != null) {
+      requestBuilder.header("Authorization", getCloudTokenValue());
+    }
+    if (getHeaderToken() != null) {
+      requestBuilder.header("X-Api-Key", getHeaderToken() );
+    }
+    if (isKRTClient()) {
+      requestBuilder.header("x-change-accepted", "false");
+      requestBuilder.header("x-split-change", "true");
+    }
+  }
+
+  private HttpClient httpClient = null;
+  private HttpClient getHttpClient() {
+    if (httpClient == null) {
+      HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+      if (getProxyHost() != null && getProxyPort() != 0) {
+        httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(getProxyHost(), getProxyPort())));
+      }
+      httpClient = httpClientBuilder.build();
+    }
+    return httpClient;
+  }
+
+  private void checkResponseStatus(HttpResponse<String> response) throws OEClientException {
+    if (isSuccess(response)) {
+      logger.info("Call completed successfully");
+    } else {
+      String message = String.format("Call returned error %s: %s",
+              response.statusCode(), response.body());
+      logger.warn(message);
+      throw new OEClientException(message);
+
+    }
+  }
+
+  private <T> boolean isSuccess(HttpResponse<T> response) {
+    return ((response.statusCode() > 199) || (response.statusCode() < 300));
   }
 
 }
