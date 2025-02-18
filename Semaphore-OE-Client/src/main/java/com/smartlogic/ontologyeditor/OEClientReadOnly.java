@@ -826,7 +826,7 @@ public class OEClientReadOnly {
     try {
       response = getHttpClient().send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
     } catch (IOException | InterruptedException e) {
-      throw new OEClientException(e.getClass().getSimpleName() + ": " + e.getMessage());
+      throw new OEClientException(e.getClass().getSimpleName() + ": " + url + " - " + e.getMessage());
     }
 
     checkResponseStatus(response);

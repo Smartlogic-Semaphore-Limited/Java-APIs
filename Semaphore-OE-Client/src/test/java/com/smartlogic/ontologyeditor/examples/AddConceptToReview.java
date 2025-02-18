@@ -21,9 +21,6 @@ public class AddConceptToReview extends ModelManipulation {
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 		oeClient.setKRTClient(true);
-		oeClient.setProxyHost("localhost");
-		oeClient.setProxyPort(8888);
-
 
 		ConceptScheme newlyAddedConceptScheme = oeClient.getConceptSchemeByName("Concept Review - Newly Added", "en");
 
