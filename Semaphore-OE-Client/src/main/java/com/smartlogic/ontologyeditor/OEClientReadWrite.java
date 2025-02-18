@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 
@@ -442,39 +443,23 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void createLabel(Concept concept, String relationshipTypeUri, Label label) throws OEClientException {
 		logger.info("createLabel entry: {} {} {}", concept.getUri(), relationshipTypeUri, label);
 
-		JsonArray operationList = new JsonArray();
-		JsonObject testOperation = new JsonObject();
-		testOperation.put("op", "test");
-		testOperation.put("path", "@graph/0");
-		JsonObject testValue = new JsonObject();
-		testValue.put("@id", concept.getUri());
-		testOperation.put("value", testValue);
-		operationList.add(testOperation);
+		JsonObject addObject = new JsonObject();
+		addObject.put("@id", concept.getUri());
 
-		JsonObject addOperation = new JsonObject();
-		addOperation.put("op", "add");
-		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(relationshipTypeUri)));
-
-		JsonArray valueArray = new JsonArray();
-		JsonObject valueObject = new JsonObject();
-		JsonArray typeArray = new JsonArray();
-		typeArray.add("skosxl:Label");
-		valueObject.put("@type", typeArray);
-
-		JsonArray labelArray = new JsonArray();
 		JsonObject labelObject = new JsonObject();
-		if ((label.getUri() != null) && (label.getUri().trim().length() > 0))
+		labelObject.put("@type", "skosxl:Label");
+		if (!StringUtils.isEmpty(label.getUri())) {
 			labelObject.put("@id", label.getUri());
-		labelObject.put("@language", label.getLanguageCode());
-		labelObject.put("@value", label.getValue());
-		labelArray.add(labelObject);
-		valueObject.put("skosxl:literalForm", labelArray);
+		}
 
-		valueArray.add(valueObject);
-		addOperation.put("value", valueArray);
-		operationList.add(addOperation);
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@language", label.getLanguageCode());
+		valueObject.put("@value", label.getValue());
+		labelObject.put("skosxl:literalForm", valueObject);
 
-		String createLabelPayload = operationList.toString();
+		addObject.put(relationshipTypeUri, labelObject);
+
+		String createLabelPayload = addObject.toString();
 		logger.info("createLabel payload: {}", createLabelPayload);
 		makeRequest(getModelURL(), createLabelPayload, RequestType.POST);
 	}

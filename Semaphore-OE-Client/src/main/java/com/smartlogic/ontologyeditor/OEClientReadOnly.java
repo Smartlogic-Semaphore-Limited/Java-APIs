@@ -753,7 +753,7 @@ public class OEClientReadOnly {
 
     String processedUri =
         (matching ? "" : "<") + FmtUtils.stringEsc(resourceUri) + (matching ? "" : ">");
-    String escapedUri = getEscapedUri(processedUri);
+    String escapedUri = URLEncoder.encode(processedUri, StandardCharsets.UTF_8);
 
     logger.info("getPath - exit: {}", escapedUri);
     return escapedUri;
@@ -761,7 +761,7 @@ public class OEClientReadOnly {
 
   protected String getPathParameter(String conceptUri) throws OEClientException {
     logger.info("getPath - entry: {}", conceptUri);
-    String pathParameter = (modelUri + "/" + getPath(conceptUri)).replaceAll("%", "%25");
+    String pathParameter = (modelUri + "/" + getPath(conceptUri));
     logger.info("getPath - exit: {}", pathParameter);
     return pathParameter;
   }
@@ -899,7 +899,7 @@ public class OEClientReadOnly {
   }
 
   private <T> boolean isSuccess(HttpResponse<T> response) {
-    return ((response.statusCode() > 199) || (response.statusCode() < 300));
+    return ((response.statusCode() > 199) && (response.statusCode() < 300));
   }
 
 }
