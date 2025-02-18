@@ -8,5 +8,8 @@ smartlogic([
       sh "gpg --import " + env.GPG_FILE
     }
     it()
-  }
+  },
+  settings: [
+    polaris: [scan: [buildTool: "mvn"]]
+  ]
 ])
