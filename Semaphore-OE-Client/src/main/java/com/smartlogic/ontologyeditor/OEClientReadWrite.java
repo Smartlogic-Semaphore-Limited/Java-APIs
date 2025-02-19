@@ -178,7 +178,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		Date startDate = new Date();
 		logger.info("commitTask making call  : {} {}", taskPayload, startDate.getTime());
-		makeRequest(url, taskPayload, RequestType.POST);
+		makeRequest(url, queryParameters, taskPayload, RequestType.POST);
 
 	}
 
@@ -581,7 +581,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		String createMetadataPayload = operationList.toString();
 		logger.info("createMetadata payload: {}", createMetadataPayload);
 
-		makeRequest(getModelURL(),createMetadataPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -619,7 +619,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String createMetadataPayload = operationList.toString();
 		logger.info("updateMetadata payload: {}", createMetadataPayload);
-		makeRequest(getModelURL(),createMetadataPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
 
 	}
 	
@@ -655,7 +655,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 		String createMetadataPayload = operationList.toString();
 		logger.info("deleteMetadata payload: {}", createMetadataPayload);
-		makeRequest(getModelURL(),createMetadataPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
 	}
 	
 	public void deleteConcept(Concept concept) throws OEClientException {
@@ -675,7 +675,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("deleteConcept - path: {}", path);
 		queryParameters.put("path", path);
 
-		makeRequest(url, null, RequestType.DELETE );
+		makeRequest(url, queryParameters, null, RequestType.DELETE );
 
 	}
 
@@ -714,7 +714,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 		String deleteRelationshipPayload = operationList.toString();
 		logger.info("deleteRelationship payload: {}", deleteRelationshipPayload);
-		makeRequest(getModelURL(),deleteRelationshipPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), deleteRelationshipPayload, RequestType.PATCH );
 	}
 
 	@SuppressWarnings("unchecked")
@@ -753,7 +753,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 		String deleteRelationshipPayload = operationList.toString();
 		logger.info("deleteMetadata payload: {}", deleteRelationshipPayload);
-		makeRequest(getModelURL(),deleteRelationshipPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), deleteRelationshipPayload, RequestType.PATCH );
 
 	}
 
@@ -800,7 +800,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String deleteLabelPayload = operationList.toString();
 		logger.info("deleteLabel payload: {}", deleteLabelPayload);
-		makeRequest(getModelURL(),deleteLabelPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), deleteLabelPayload, RequestType.PATCH );
 	}
 
 	@SuppressWarnings("unchecked")
@@ -809,9 +809,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		populateClasses(concept);
 		
 		Map<String, String> queryParameters = new HashMap<String, String>();
-		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
-
-		String url = getApiURL() + "/" + path;
+		queryParameters.put("path", getPathParameter(concept.getUri()));
 
 		JsonArray operationList = new JsonArray();
 		if (concept.getClassUris().contains("skos:Concept")) {
@@ -834,7 +832,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 		String addClassPayload = operationList.toString();
 		logger.info("addClass payload: {}", addClassPayload);
-		makeRequest(getModelURL(),addClassPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), queryParameters, addClassPayload, RequestType.PATCH );
 
 	}
 
@@ -876,7 +874,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 		String removeClassPayload = operationList.toString();
 		logger.info("removeClass payload: {}", removeClassPayload);
-		makeRequest(getModelURL(),removeClassPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), queryParameters, removeClassPayload, RequestType.PATCH );
 	}
 
 }

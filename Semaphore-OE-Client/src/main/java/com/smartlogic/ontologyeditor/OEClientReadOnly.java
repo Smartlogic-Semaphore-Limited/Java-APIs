@@ -714,9 +714,7 @@ public class OEClientReadOnly {
 
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties", getEscapedUri(getWrappedUri("rdf:type")));
-
-    String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
-    queryParameters.put("path", path);
+    queryParameters.put("path", getPathParameter(concept.getUri()));
 
     logger.info("populateClasses uri: {}", getApiURL());
     logger.info("populateClasses queryParameters: {}", queryParameters);
@@ -802,13 +800,19 @@ public class OEClientReadOnly {
   }
 
   protected enum RequestType { POST, DELETE, PATCH }
+
   protected void makeRequest(String url, String payload, RequestType requestType) throws OEClientException {
+    makeRequest(url, null, payload, requestType);
+  }
+    protected void makeRequest(String url, Map<String, String> queryParameters, String payload, RequestType requestType) throws OEClientException {
+
+    String urlToUse = getURLwithParameters(url, queryParameters);
 
     HttpRequest.BodyPublisher bodyPublisher = StringUtils.isEmpty(payload)
             ? HttpRequest.BodyPublishers.noBody()
             : HttpRequest.BodyPublishers.ofString(payload);
 
-    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(url))
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(urlToUse))
             .header("Accept", "application/ld+json,application/json");
     addHeaders(requestBuilder);
 
@@ -833,6 +837,25 @@ public class OEClientReadOnly {
 
   }
   protected String getResponse(String url, Map<String, String> queryParameters) throws OEClientException {
+
+    String urlToUse = getURLwithParameters(url, queryParameters);
+
+
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(urlToUse)).header("Accept", "application/ld+json,application/json");
+    addHeaders(requestBuilder);
+    HttpResponse<String> response = null;
+    try {
+      response = getHttpClient().send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+    } catch (IOException | InterruptedException e) {
+      throw new OEClientException(e.getClass().getSimpleName() + ": " + e.getMessage());
+    }
+
+    checkResponseStatus(response);
+
+    return response.body();
+  }
+
+  private static String getURLwithParameters(String url, Map<String, String> queryParameters) {
     StringBuilder stringBuilder = new StringBuilder(url);
     String separator = "?";
     if ((queryParameters != null) && !queryParameters.isEmpty()) {
@@ -845,20 +868,7 @@ public class OEClientReadOnly {
       }
     }
     String urlToUser = stringBuilder.toString();
-
-
-    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(urlToUser)).header("Accept", "application/ld+json,application/json");
-    addHeaders(requestBuilder);
-    HttpResponse<String> response = null;
-    try {
-      response = getHttpClient().send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
-    } catch (IOException | InterruptedException e) {
-      throw new OEClientException(e.getClass().getSimpleName() + ": " + e.getMessage());
-    }
-
-    checkResponseStatus(response);
-
-    return response.body();
+    return urlToUser;
   }
 
   private void addHeaders(HttpRequest.Builder requestBuilder) {
