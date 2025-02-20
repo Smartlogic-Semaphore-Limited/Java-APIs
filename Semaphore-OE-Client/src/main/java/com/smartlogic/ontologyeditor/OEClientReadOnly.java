@@ -195,12 +195,12 @@ public class OEClientReadOnly {
       if (!baseURL.endsWith("/")) {
         stringBuilder.append("/");
       }
-      stringBuilder.append("api/");
       if (!StringUtils.isEmpty(token)) {
         stringBuilder.append("t/");
         stringBuilder.append(token);
         stringBuilder.append("/");
       }
+      stringBuilder.append("kmm/api/");
 
       apiURL = stringBuilder.toString();
       if (logger.isDebugEnabled()) {
@@ -671,7 +671,7 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties", getEscapedUri(getWrappedUri(metadataUri)));
 
-    String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
+    String path = getModelUri() + "/" + getEscapedUri("<" + concept.getUri() + ">");
     queryParameters.put("path", path);
 
     logger.info("populateMetadata uri: {}", getApiURL());
@@ -782,9 +782,9 @@ public class OEClientReadOnly {
    */
   protected String getEscapedUri(String uriToEscape) throws OEClientException {
     try {
-      return new URI(null, null, uriToEscape, null).toASCIIString();
-    } catch (URISyntaxException e) {
-      throw new OEClientException(e.getClass().getSimpleName() + ": Error encolding \"" + uriToEscape + "\": " + e.getMessage());
+      return URLEncoder.encode(uriToEscape, StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      throw new OEClientException("Exception when encoding URI " + uriToEscape, e);
     }
   }
 

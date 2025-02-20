@@ -1,20 +1,15 @@
 package com.smartlogic.ontologyeditor;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.smartlogic.ontologyeditor.beans.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
-
-import com.smartlogic.ontologyeditor.beans.Concept;
-import com.smartlogic.ontologyeditor.beans.ConceptScheme;
-import com.smartlogic.ontologyeditor.beans.Identifier;
-import com.smartlogic.ontologyeditor.beans.Label;
-import com.smartlogic.ontologyeditor.beans.Model;
-import com.smartlogic.ontologyeditor.beans.Task;
 
 public class OEClientReadWrite extends OEClientReadOnly {
 
@@ -182,6 +177,21 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
+	/**
+	 * createConcept - create a concept as a topConcept of a Concept Scheme
+	 *
+	 * @param conceptSchemeUri
+	 *            - the URI of the concept scheme for which the new concept will
+	 *            become a new concept
+	 * @param concept
+	 *            - the concept to create. The preferred labels and class of
+	 *            this concept will be added
+	 * @throws OEClientException
+	 */
+	public void createConcept(String conceptSchemeUri, Concept concept) throws OEClientException {
+		logger.info("createConcept entry: {} {}", conceptSchemeUri, concept.getUri());
+		createConcept(conceptSchemeUri, concept, null);
+	}
 
 	/**
 	 * createConcept - create a concept as a topConcept of a Concept Scheme
@@ -192,9 +202,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param concept
 	 *            - the concept to create. The preferred labels and class of
 	 *            this concept will be added
-	 * @throws OEClientException 
+	 * @param metadata
+	 *            - optional map of metadata key,value pairs to be added to the concept when it is created.
+	 * @throws OEClientException
 	 */
-	public void createConcept(String conceptSchemeUri, Concept concept) throws OEClientException {
+	public void createConcept(String conceptSchemeUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
 		logger.info("createConcept entry: {} {}", conceptSchemeUri, concept.getUri());
 
 		JsonArray conceptTypeList = new JsonArray();
@@ -229,6 +241,21 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		for (Identifier identifier : concept.getIdentifiers())
 			conceptDetails.put(identifier.getUri(), identifier.getValue());
 
+		if (metadata != null && !metadata.isEmpty()) {
+			metadata.forEach((key, mdCollectionValue) -> {
+				JsonArray jsonMetadataArray = new JsonArray();
+				if (mdCollectionValue != null && !mdCollectionValue.isEmpty()) {
+					mdCollectionValue.forEach(mdValue -> {
+						JsonObject mdObject = new JsonObject();
+						mdObject.put("@value", mdValue.getValue());
+						mdObject.put("@language", mdValue.getLanguageCode());
+						jsonMetadataArray.add(mdObject);
+					});
+					conceptDetails.put(key, jsonMetadataArray);
+				}
+			});
+		}
+
 		String conceptSchemePayload = conceptDetails.toString();
 
 		Date startDate = new Date();
@@ -237,11 +264,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
 	}
 
-
-
-
 	public void createConceptBelowConcept(String parentConceptUri, Concept concept) throws OEClientException {
-		logger.info("createConceptBelowConcept entry: {} {}", parentConceptUri, concept.getUri());
+		createConceptBelowConcept(parentConceptUri, concept, null);
+	}
+
+	public void createConceptBelowConcept(String parentConceptUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
+		logger.info("createConceptBelowConcept entry: {} {} {}", parentConceptUri, concept.getUri(), metadata == null ? "" : metadata.keySet());
 
 		JsonArray conceptTypeList = new JsonArray();
 		conceptTypeList.add("skos:Concept");
@@ -276,6 +304,21 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		conceptDetails.put("@id", concept.getUri());
 		for (Identifier identifier : concept.getIdentifiers())
 			conceptDetails.put(identifier.getUri(), identifier.getValue());
+
+		if (metadata != null && !metadata.isEmpty()) {
+			metadata.forEach((key, mdCollectionValue) -> {
+				JsonArray jsonMetadataArray = new JsonArray();
+				if (mdCollectionValue != null && !mdCollectionValue.isEmpty()) {
+					mdCollectionValue.forEach(mdValue -> {
+						JsonObject mdObject = new JsonObject();
+						mdObject.put("@value", mdValue.getValue());
+						mdObject.put("@language", mdValue.getLanguageCode());
+						jsonMetadataArray.add(mdObject);
+					});
+					conceptDetails.put(key, jsonMetadataArray);
+				}
+			});
+		}
 
 		String conceptPayload = conceptDetails.toString();
 

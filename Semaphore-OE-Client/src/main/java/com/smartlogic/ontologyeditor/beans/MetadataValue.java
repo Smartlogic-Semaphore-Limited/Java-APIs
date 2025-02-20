@@ -18,6 +18,9 @@ public class MetadataValue {
 	
 	@Override
 	public String toString() {
-		return String.format("\"%s\"@%s", value, languageCode);
+
+		return (languageCode == null || languageCode.isEmpty()) ?
+				String.format("\"%s\"", value) :
+				String.format("\"%s\"@%s", value, languageCode);
 	}
 }
