@@ -1,20 +1,19 @@
 package com.smartlogic.classificationserver.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.URL;
-import java.nio.charset.Charset;
+import java.io.*;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -28,28 +27,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Consts;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.FormBodyPart;
-import org.apache.http.entity.mime.FormBodyPartBuilder;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -64,7 +42,34 @@ import com.smartlogic.classificationserver.client.utils.XMLFeatureConst;
  *
  */
 public class ClassificationClient implements AutoCloseable {
-  public static Logger logger = LoggerFactory.getLogger(ClassificationClient.class);
+  public static final Logger logger = LoggerFactory.getLogger(ClassificationClient.class);
+
+  public static final int SC_INTERNAL_SERVER_ERROR = 500;
+  public static final int SC_OK = 200;
+  public static final String MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream";
+
+  private HttpClient httpClient;
+
+  protected synchronized void initHttpClient() {
+    if (this.httpClient == null) {
+      HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+      if (getClassificationConfiguration().getConnectionTimeoutMS() > 0)
+        httpClientBuilder.connectTimeout(Duration.ofMillis(getClassificationConfiguration().getConnectionTimeoutMS()));
+
+      /* first check the proxyURL and if that's not set, then check the proxyHost and proxyPort */
+      if (proxyURL != null && !proxyURL.isEmpty()) {
+        try {
+          URL url = new URL(proxyURL);
+          httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(url.getHost(), url.getPort())));
+        } catch (MalformedURLException e) {
+          throw new RuntimeException("Invalid proxy URL: " + proxyURL);
+        }
+      } else if (proxyHost != null && proxyPort != 0) {
+          httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort)));
+      }
+      this.httpClient = httpClientBuilder.build();
+    }
+  }
 
   /* Methods that are classification requests */
 
@@ -159,7 +164,7 @@ public class ClassificationClient implements AutoCloseable {
   }
 
   /**
-   * Remove a particular publish set from the classification servers rulebase set.
+   * Deactivate (remove) a particular publish set from the classification servers rulebase set.
    *
    * @param publishSetName
    *          - the name of the publish set to deactivate
@@ -168,6 +173,19 @@ public class ClassificationClient implements AutoCloseable {
    */
   public void deactivatePublishSet(String publishSetName) throws ClassificationException {
     String commandString = getCommandXML("publish_set_deactivate", publishSetName);
+    sendPostRequest(commandString, null);
+  }
+
+  /**
+   * Deletes a deactivated publish set from classification server.
+   *
+   * @param publishSetName
+   *          - the name of the deactivated publish set to delete
+   * @throws ClassificationException
+   *           - There has been a connectivity issue
+   */
+  public void deletePublishSet(String publishSetName) throws ClassificationException {
+    String commandString = getCommandXML("publish_set_delete", publishSetName);
     sendPostRequest(commandString, null);
   }
 
@@ -426,21 +444,21 @@ public class ClassificationClient implements AutoCloseable {
     return new Result(getStructuredDocument(fileName, body, title, metadata));
   }
 
-  public Document getStructuredDocument(FileName fileName, Body body, Title title,
+  public Document  getStructuredDocument(FileName fileName, Body body, Title title,
       Map<String, Collection<String>> metadata) throws ClassificationException {
-    logger.debug("Treating document: '" + title.getValue() + "'");
+    logger.debug("Treating document: '{}'", title.getValue());
 
     // If there is no body, then don't bother attempting to classify the document
     if ((body == null) || (body.getValue() == null) || (body.getValue().trim().length() == 0)) {
       return getBlankStructuredDocument();
     }
 
-    Collection<FormBodyPart> parts = new ArrayList<>();
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
 
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    addByteArray(parts, body, fileName);
-    return XMLReader.getDocument(getClassifications(parts));
+    addTitle(bodyPublisher, title);
+    addMetadata(bodyPublisher, metadata);
+    addByteArray(bodyPublisher, body, fileName);
+    return XMLReader.getDocument(getClassifications(bodyPublisher));
   }
 
   public byte[] getClassificationServerResponse(FileName filename, Body body, Title title,
@@ -453,12 +471,12 @@ public class ClassificationClient implements AutoCloseable {
       return new byte[0];
     }
 
-    Collection<FormBodyPart> parts = new ArrayList<>();
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
 
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    addByteArray(parts, body, filename);
-    return getClassificationServerResponse(parts);
+    addTitle(bodyPublisher, title);
+    addMetadata(bodyPublisher, metadata);
+    addByteArray(bodyPublisher, body, filename);
+    return getClassificationServerResponse(bodyPublisher);
   }
 
   /**
@@ -521,11 +539,11 @@ public class ClassificationClient implements AutoCloseable {
 
   public Document getStructuredDocument(URL url, Title title,
       Map<String, Collection<String>> metadata) throws ClassificationException {
-    Collection<FormBodyPart> parts = new ArrayList<>();
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    parts.add(getFormPart("path", url.toExternalForm()));
-    return XMLReader.getDocument(getClassifications(parts));
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    addTitle(bodyPublisher, title);
+    addMetadata(bodyPublisher, metadata);
+    bodyPublisher.addPart("path", url.toExternalForm());
+    return XMLReader.getDocument(getClassifications(bodyPublisher));
   }
 
   private final static SimpleDateFormat simpleDateFormat =
@@ -546,13 +564,13 @@ public class ClassificationClient implements AutoCloseable {
       throws ClassificationException {
     logger.info("getClassificationHistory - entry");
 
-    ArrayList<FormBodyPart> partsList = new ArrayList<>();
-    partsList.add(getFormPart("start_time", simpleDateFormat.format(startTime)));
-    partsList.add(getFormPart("finish_time", simpleDateFormat.format(endTime)));
-    partsList.add(getFormPart("operation", "getclassificationhistory"));
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    bodyPublisher.addPart("start_time", simpleDateFormat.format(startTime));
+    bodyPublisher.addPart("finish_time", simpleDateFormat.format(endTime));
+    bodyPublisher.addPart("operation", "getclassificationhistory");
 
     ClassificationHistory classificationHistory =
-        new ClassificationHistory(getClassificationServerResponse(partsList));
+        new ClassificationHistory(getClassificationServerResponse(bodyPublisher));
     return classificationHistory.getClassificationRecords();
   }
 
@@ -565,21 +583,21 @@ public class ClassificationClient implements AutoCloseable {
       return new byte[0];
     }
 
-    Collection<FormBodyPart> parts = new ArrayList<>();
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
 
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    addByteArray(parts, body, null);
-    return getClassifications(parts);
+    addTitle(bodyPublisher, title);
+    addMetadata(bodyPublisher, metadata);
+    addByteArray(bodyPublisher, body, null);
+    return getClassifications(bodyPublisher);
   }
 
   public byte[] getClassifiedBytes(URL url, Title title, Map<String, Collection<String>> metadata)
       throws ClassificationException {
-    Collection<FormBodyPart> parts = new ArrayList<>();
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    parts.add(getFormPart("path", url.toExternalForm()));
-    return getClassifications(parts);
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    addTitle(bodyPublisher, title);
+    addMetadata(bodyPublisher, metadata);
+    bodyPublisher.addPart("path", url.toExternalForm());
+    return getClassifications(bodyPublisher);
   }
 
   public byte[] getClassificationServerResponse(Body body, Title title)
@@ -621,15 +639,15 @@ public class ClassificationClient implements AutoCloseable {
 
   public Document getStructuredDocument(byte[] data, String fileName)
       throws ClassificationException {
-    Collection<FormBodyPart> parts = new ArrayList<>();
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
 
     if ((data == null) || (data.length == 0)) {
       return getBlankStructuredDocument();
     }
 
-    addByteArray(parts, data, fileName);
+    addByteArray(bodyPublisher, data, fileName);
 
-    return XMLReader.getDocument(getClassificationServerResponse(parts));
+    return XMLReader.getDocument(getClassificationServerResponse(bodyPublisher));
   }
 
   /**
@@ -655,13 +673,14 @@ public class ClassificationClient implements AutoCloseable {
   public Document getStructuredDocument(byte[] data, String fileName, Title title,
       Map<String, Collection<String>> metadata) throws ClassificationException {
     logger.debug("Treating file: '" + fileName + "'");
-    Collection<FormBodyPart> parts = new ArrayList<>();
 
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    addByteArray(parts, data, fileName);
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
 
-    return XMLReader.getDocument(getClassificationServerResponse(parts));
+    addTitle(bodyPublisher, title);
+    addMetadata(bodyPublisher, metadata);
+    addByteArray(bodyPublisher, data, fileName);
+
+    return XMLReader.getDocument(getClassificationServerResponse(bodyPublisher));
   }
 
   /**
@@ -687,34 +706,36 @@ public class ClassificationClient implements AutoCloseable {
 
   public Document getStructuredDocument(File inputFile, String fileType, Title title,
       Map<String, Collection<String>> metadata) throws ClassificationException {
-    Collection<FormBodyPart> parts = new ArrayList<>();
 
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    addFile(parts, inputFile, fileType);
+    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    addTitle(bodyPublisher, title);
+    addMetadata(bodyPublisher, metadata);
+    addFile(bodyPublisher, inputFile, fileType);
 
-    return XMLReader.getDocument(getClassificationServerResponse(parts));
+    return XMLReader.getDocument(getClassificationServerResponse(bodyPublisher));
   }
 
-  private void addTitle(Collection<FormBodyPart> parts, Title title) {
-    if ((title != null) && (title.getValue() != null) && (title.getValue().length() > 0)) {
-      parts.add(title.asFormPart());
+  private void addTitle(MultipartFormDataBodyPublisher publisher, Title title) {
+    if ((title != null) && (title.getValue() != null) && (!title.getValue().isEmpty())) {
+      publisher.addPart(title.getParameterName(), title.getValue());
     }
   }
 
-  private void addByteArray(Collection<FormBodyPart> parts, Body body, FileName filename) {
+  private void addByteArray(MultipartFormDataBodyPublisher publisher, Body body, FileName filename) {
     if (filename == null) {
-      parts.add(body.asFormPart());
+      publisher.addPart(body.getParameterName(), body.getValue());
     } else {
-      addByteArray(parts, body.getValue().getBytes(Charset.forName("UTF-8")), filename.getValue());
+      Supplier<InputStream> supplier = () -> new ByteArrayInputStream(body.getValue().getBytes(StandardCharsets.UTF_8));
+      publisher.addPart(body.getParameterName(), supplier, filename.getValue(), MIME_TYPE_APPLICATION_OCTET_STREAM);
     }
   }
 
-  private void addByteArray(Collection<FormBodyPart> parts, byte[] data, String fileName) {
-    parts.add(FormBodyPartBuilder.create("UploadFile", new ByteArrayBody(data, fileName)).build());
+  private void addByteArray(MultipartFormDataBodyPublisher publisher, byte[] data, String fileName) {
+      Supplier<InputStream> supplier = () -> new ByteArrayInputStream(data);
+      publisher.addPart("UploadFile", supplier, fileName, MIME_TYPE_APPLICATION_OCTET_STREAM);
   }
 
-  private void addFile(Collection<FormBodyPart> parts, File inputFile, String fileType)
+  private void addFile(MultipartFormDataBodyPublisher publisher, File inputFile, String fileType)
       throws ClassificationException {
     if (inputFile == null) {
       throw new ClassificationException("Null input file provided");
@@ -723,20 +744,26 @@ public class ClassificationClient implements AutoCloseable {
       throw new ClassificationException("Input file not found: " + inputFile.getAbsolutePath());
     }
 
-    parts.add(getFormPart("UploadFile", inputFile));
+    try {
+      byte[] fileBytes = Files.readAllBytes(inputFile.toPath());
+      addFileContent(publisher, fileBytes, inputFile.getName());
+    } catch (IOException ioe) {
+      throw new ClassificationException("Error reading file: " + inputFile.getAbsolutePath(), ioe);
+    }
   }
 
-  private void addFileContent(Collection<FormBodyPart> parts, byte[] fileContent, String fileName)
+  private void addFileContent(MultipartFormDataBodyPublisher publisher, byte[] fileContent, String fileName)
       throws ClassificationException {
     if (fileContent == null) {
       throw new ClassificationException("Null input file provided");
     }
-    parts.add(
-        FormBodyPartBuilder.create("UploadFile", new ByteArrayBody(fileContent, fileName)).build());
+
+    Supplier<InputStream> supplier = () -> new ByteArrayInputStream(fileContent);
+    publisher.addPart("UploadFile", supplier, fileName, MIME_TYPE_APPLICATION_OCTET_STREAM);
   }
 
-  private void addMetadata(Collection<FormBodyPart> parts,
-      Map<String, Collection<String>> metadata) {
+  private void addMetadata(MultipartFormDataBodyPublisher publisher,
+                           Map<String, Collection<String>> metadata) {
     if (metadata != null) {
       for (String name : metadata.keySet()) {
         Collection<String> values = metadata.get(name);
@@ -744,9 +771,9 @@ public class ClassificationClient implements AutoCloseable {
           int m = 0;
           for (String value : values) {
             if (m == 0) {
-              parts.add(getFormPart("meta_" + name, value));
+              publisher.addPart("meta_" + name, value);
             } else {
-              parts.add(getFormPart("meta_" + name + "__" + m, value));
+              publisher.addPart("meta_" + name + "__" + m, value);
             }
             m++;
           }
@@ -755,71 +782,57 @@ public class ClassificationClient implements AutoCloseable {
     }
   }
 
-  private MultipartEntityBuilder getDefaultParts() {
-    MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+  private MultipartFormDataBodyPublisher getDefaultParts() {
+    MultipartFormDataBodyPublisher multiPartBodyPublisher = new MultipartFormDataBodyPublisher();
     for (String parameterName : classificationConfiguration.getAdditionalParameters().keySet()) {
       String value = classificationConfiguration.getAdditionalParameters().get(parameterName);
-      if ((value != null) && (value.length() > 0)) {
-        multipartEntityBuilder.addPart(getFormPart(parameterName, value));
+      if ((value != null) && (!value.isEmpty())) {
+        multiPartBodyPublisher.addPart(parameterName, value);
       }
     }
     if (classificationConfiguration.isSingleArticle()) {
-      multipartEntityBuilder.addPart(getFormPart("singlearticle", "on"));
+      multiPartBodyPublisher.addPart("singlearticle", "true");
     }
     if (classificationConfiguration.isMultiArticle()) {
-      multipartEntityBuilder.addPart(getFormPart("multiarticle", "on"));
+      multiPartBodyPublisher.addPart("multiarticle", "true");
     }
     if (classificationConfiguration.isFeedback()) {
-      multipartEntityBuilder.addPart(getFormPart("feedback", "on"));
+      multiPartBodyPublisher.addPart("feedback", "true");
     }
     if (classificationConfiguration.isStylesheet()) {
-      multipartEntityBuilder.addPart(getFormPart("stylesheet", "on"));
+      multiPartBodyPublisher.addPart("stylesheet", "true");
     }
     if (classificationConfiguration.isUseGeneratedKeys()) {
-      multipartEntityBuilder.addPart(getFormPart("use_generated_keys", "on"));
+      multiPartBodyPublisher.addPart("use_generated_keys", "on");
     }
     if (classificationConfiguration.isReturnHashCode()) {
-      multipartEntityBuilder.addPart(getFormPart("return_hash", "on"));
+      multiPartBodyPublisher.addPart("return_hash", "true");
     }
-    return multipartEntityBuilder;
+    return multiPartBodyPublisher;
   }
 
-  private final static ContentType contentType = ContentType.create("text/plain", Consts.UTF_8);
-
-  private static FormBodyPart getFormPart(String name, String value) {
-    return FormBodyPartBuilder.create(name, new StringBody(value, contentType)).build();
-  }
-
-  private static FormBodyPart getFormPart(String name, File file) {
-    return FormBodyPartBuilder.create(name, new FileBody(file)).build();
-  }
-
-  private byte[] getClassificationServerResponse(Collection<FormBodyPart> parts)
+  private byte[] getClassificationServerResponse(MultipartFormDataBodyPublisher publisher)
       throws ClassificationException {
 
-    MultipartEntityBuilder multipartEntityBuilder = getDefaultParts();
-    for (FormBodyPart part : parts) {
-      multipartEntityBuilder.addPart(part);
-    }
 
     if (this.getAuditUUID() != null) {
-      multipartEntityBuilder.addPart(getFormPart("audit_tag", this.getAuditUUID().toString()));
+      publisher.addPart("audit_tag", this.getAuditUUID().toString());
     }
 
-    byte[] returnedData = sendPostRequest(multipartEntityBuilder.build());
+    byte[] returnedData = sendPostRequest(publisher);
 
     logger.debug("getClassificationServerResponse - exit: " + returnedData.length);
     return returnedData;
   }
 
-  private byte[] getClassifications(Collection<FormBodyPart> partsList)
+  private byte[] getClassifications(MultipartFormDataBodyPublisher publisher)
       throws ClassificationException {
-    return getClassifications(partsList, null);
+    return getClassifications(publisher, null);
   }
 
-  private byte[] getClassifications(Collection<FormBodyPart> partsList, Map<String, String> outMeta)
+  private byte[] getClassifications(MultipartFormDataBodyPublisher publisher, Map<String, String> outMeta)
       throws ClassificationException {
-    byte[] returnedData = getClassificationServerResponse(partsList);
+    byte[] returnedData = getClassificationServerResponse(publisher);
     if ((returnedData != null) && (outMeta != null)) {
       Result result = new Result(XMLReader.getDocument(returnedData));
       if (result.getMetadata() != null) {
@@ -835,24 +848,24 @@ public class ClassificationClient implements AutoCloseable {
       Map<String, Collection<String>> metadata) throws ClassificationException {
     logger.debug("Treating file: '" + inputFile + "'");
 
-    Collection<FormBodyPart> parts = new ArrayList<>();
-    addFile(parts, inputFile, fileType);
+    MultipartFormDataBodyPublisher multiPartBodyPublisher = getDefaultParts();
+    addFile(multiPartBodyPublisher, inputFile, fileType);
 
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    return getClassificationServerResponse(parts);
+    addTitle(multiPartBodyPublisher, title);
+    addMetadata(multiPartBodyPublisher, metadata);
+    return getClassificationServerResponse(multiPartBodyPublisher);
   }
 
   public byte[] getClassificationServerResponse(byte[] fileContent, String fileName, Title title,
       Map<String, Collection<String>> metadata) throws ClassificationException {
     logger.debug("Treating raw bytes: '" + title + "'");
 
-    Collection<FormBodyPart> parts = new ArrayList<>();
-    addFileContent(parts, fileContent, fileName);
+    MultipartFormDataBodyPublisher multiPartBodyPublisher = getDefaultParts();
+    addFileContent(multiPartBodyPublisher, fileContent, fileName);
 
-    addTitle(parts, title);
-    addMetadata(parts, metadata);
-    return getClassificationServerResponse(parts);
+    addTitle(multiPartBodyPublisher, title);
+    addMetadata(multiPartBodyPublisher, metadata);
+    return getClassificationServerResponse(multiPartBodyPublisher);
   }
 
   private DocumentBuilder documentBuilder = null;
@@ -907,23 +920,23 @@ public class ClassificationClient implements AutoCloseable {
   private byte[] sendPostRequest(String commandString, File pakFile)
       throws ClassificationException {
 
-    MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+    initHttpClient();
+
+    MultipartFormDataBodyPublisher multiPartBodyPublisher = new MultipartFormDataBodyPublisher();
 
     if (pakFile != null) {
-      FormBodyPart filePart =
-          FormBodyPartBuilder.create("UploadFile", new FileBody(pakFile)).build();
-      multipartEntityBuilder.addPart(filePart);
+      try {
+        byte[] fileBytes = Files.readAllBytes(pakFile.toPath());
+        addFileContent(multiPartBodyPublisher, fileBytes, pakFile.getName());
+      } catch (IOException e) {
+        throw new ClassificationException("Failed to read file: " + pakFile.getName(), e);
+      }
     }
 
-    FormBodyPart commandPart = FormBodyPartBuilder
-        .create("XML_INPUT", new StringBody(commandString, ContentType.TEXT_XML)).build();
-    multipartEntityBuilder.addPart(commandPart);
+    multiPartBodyPublisher.addPart("XML_INPUT", commandString);
 
-    return sendPostRequest(multipartEntityBuilder.build());
+    return sendPostRequest(multiPartBodyPublisher);
   }
-
-  private PoolingHttpClientConnectionManager poolingConnectionManager;
-  private RequestConfig requestConfig;
 
   private int clientPoolSize = 2;
 
@@ -935,107 +948,72 @@ public class ClassificationClient implements AutoCloseable {
     this.clientPoolSize = clientPoolSize;
   }
 
-  private CloseableHttpClient httpClient = null;
-  private IdleConnectionMonitorThread idleConnectionMonitorThread;
-
   private synchronized void initialize() {
-    if (httpClient == null) {
-      httpClient = getHttpClient();
-    }
-  }
-
-  private CloseableHttpClient getHttpClient() {
-
-    poolingConnectionManager = new PoolingHttpClientConnectionManager();
-    poolingConnectionManager.setValidateAfterInactivity(0);
-    poolingConnectionManager.setDefaultMaxPerRoute(clientPoolSize);
-    poolingConnectionManager.setMaxTotal(clientPoolSize);
-
-    // Make sure that idle and stale connections are discarded
-    idleConnectionMonitorThread = new IdleConnectionMonitorThread(poolingConnectionManager);
-    idleConnectionMonitorThread.start();
-
-    RequestConfig.Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
-        .setSocketTimeout(classificationConfiguration.getSocketTimeoutMS())
-        .setConnectTimeout(classificationConfiguration.getConnectionTimeoutMS())
-        .setConnectionRequestTimeout(classificationConfiguration.getConnectionTimeoutMS());
-    if (getProxyURL() != null) {
-      HttpHost proxy = HttpHost.create(getProxyURL());
-      requestConfigBuilder.setProxy(proxy);
-    }
-    requestConfig = requestConfigBuilder.build();
-
-    return HttpClients.custom().setDefaultRequestConfig(requestConfig)
-        .setSSLHostnameVerifier(new DefaultHostnameVerifier())
-        .setConnectionManager(poolingConnectionManager).build();
+    initHttpClient();
   }
 
   @Override
   public void close() {
-    if (null != idleConnectionMonitorThread) {
-      idleConnectionMonitorThread.shutdown();
-    }
-    if (httpClient != null) {
-      try {
-        httpClient.close();
-      } catch (IOException ioe) {
-        throw new RuntimeException("HTTP client close failed.", ioe);
-      }
-    }
+    // no cleanup now
   }
 
-  private byte[] sendPostRequest(HttpEntity requestEntity) throws ClassificationException {
+  private byte[] sendPostRequest(MultipartFormDataBodyPublisher publisher) throws ClassificationException {
     initialize();
 
-    HttpPost httpPost = null;
     byte[] responseData;
     try {
-      httpPost = new HttpPost(classificationConfiguration.getUrl());
-      addHeaders(httpPost);
-      httpPost.setEntity(requestEntity);
+      HttpRequest.BodyPublisher bp = HttpRequest.BodyPublishers.ofByteArray(publisher.build());
+      HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+          .version(HttpClient.Version.HTTP_1_1)
+          .setHeader("Content-Type", "multipart/form-data; boundary=" + publisher.getBoundary())
+          .uri(new URI(classificationConfiguration.getUrl()))
+          .POST(bp)
+          ;
+      if (classificationConfiguration.getSocketTimeoutMS() > 0) {
+        requestBuilder.timeout(Duration.ofMillis(classificationConfiguration.getSocketTimeoutMS()));
+      }
+      addHeaders(requestBuilder);
 
-      try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-        if (response == null) {
-          throw new ClassificationException(
-              "Null response from http client: " + classificationConfiguration.getUrl());
-        }
-        if (response.getStatusLine() == null) {
-          throw new ClassificationException(
-              "Null status line from http client: " + classificationConfiguration.getUrl());
-        }
+      HttpRequest request = requestBuilder.build();
 
-        int statusCode = response.getStatusLine().getStatusCode();
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-        HttpEntity responseEntity = response.getEntity();
+      if (response == null) {
+        throw new ClassificationException(
+            "Null response from http client: " + classificationConfiguration.getUrl());
+      }
 
-        logger.debug("Status: " + statusCode);
+      int statusCode = response.statusCode();
+      logger.debug("HTTP response code: {}", statusCode);
+
+      try(InputStream responseInputStream = response.body()) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        try (InputStream responseInputStream = responseEntity.getContent()) {
-          IOUtils.copy(responseInputStream, byteArrayOutputStream);
-        }
+        IOUtils.copy(responseInputStream, byteArrayOutputStream);
         responseData = byteArrayOutputStream.toByteArray();
-        if (statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+
+        if (statusCode == SC_INTERNAL_SERVER_ERROR) {
           throw new ClassificationException(
-              "Internal classification server error: " + new String(responseData, "UTF-8"));
-        } else if (statusCode != HttpStatus.SC_OK) {
+              "Internal classification server error: " + new String(responseData, StandardCharsets.UTF_8));
+        } else if (statusCode != SC_OK) {
           throw new ClassificationException("HttpStatus: " +
               statusCode +
               " received from classification server (" +
               classificationConfiguration.getUrl() +
               ") " +
-              new String(responseData, "UTF-8"));
+              new String(responseData, StandardCharsets.UTF_8));
         }
       }
-    } catch (ClientProtocolException e) {
-      throw new ClassificationException(
-          "ClientProtocolException talking to classification server" + e.getMessage());
+
     } catch (IOException e) {
       throw new ClassificationException(
-          "IOException talking to classification server" + e.getMessage());
-    } finally {
-      if (httpPost != null) {
-        httpPost.abort();
-      }
+          "IOException talking to classification server: " + e.getMessage());
+    } catch (InterruptedException e) {
+      throw new ClassificationException(
+          "InterruptedException talking to classification server: " + e.getMessage());
+    } catch (URISyntaxException e) {
+      throw new ClassificationException(
+          "URISyntaxException talking to classification server: " + e.getMessage()
+      );
     }
 
     return responseData;
@@ -1043,7 +1021,7 @@ public class ClassificationClient implements AutoCloseable {
 
   private static Document blankDocument = null;
 
-  private final Document getBlankStructuredDocument() throws ClassificationException {
+  private static Document getBlankStructuredDocument() throws ClassificationException {
     if (blankDocument == null) {
       blankDocument = XMLReader.getDocument(
           "<response><STRUCTUREDDOCUMENT/></response>".getBytes(StandardCharsets.UTF_8));
@@ -1051,10 +1029,10 @@ public class ClassificationClient implements AutoCloseable {
     return blankDocument;
   }
 
-  private void addHeaders(HttpRequest httpRequest) {
+  private void addHeaders(HttpRequest.Builder httpRequestBuilder) {
     if (classificationConfiguration.getApiToken() != null) {
       logger.trace("Adding authorization header: {}", classificationConfiguration.getApiToken());
-      httpRequest.addHeader("Authorization", classificationConfiguration.getApiToken());
+      httpRequestBuilder.setHeader("Authorization", classificationConfiguration.getApiToken());
     }
   }
 
@@ -1078,42 +1056,5 @@ public class ClassificationClient implements AutoCloseable {
     stringBuilder.append("  Proxy Host: '" + this.getProxyHost() + "'\n");
     stringBuilder.append("  Proxy Port: '" + this.getProxyPort() + "'\n");
     return stringBuilder.toString();
-  }
-
-  public static class IdleConnectionMonitorThread extends Thread {
-
-    private final HttpClientConnectionManager connMgr;
-    private volatile boolean shutdown;
-
-    public IdleConnectionMonitorThread(HttpClientConnectionManager connMgr) {
-      super();
-      this.connMgr = connMgr;
-    }
-
-    @Override
-    public void run() {
-      try {
-        while (!shutdown) {
-          synchronized (this) {
-            wait(5000);
-            // Close expired connections
-            connMgr.closeExpiredConnections();
-            // Optionally, close connections
-            // that have been idle longer than 30 sec
-            connMgr.closeIdleConnections(30, TimeUnit.SECONDS);
-          }
-        }
-      } catch (InterruptedException ex) {
-        // terminate
-      }
-    }
-
-    public void shutdown() {
-      shutdown = true;
-      synchronized (this) {
-        notifyAll();
-      }
-    }
-
   }
 }

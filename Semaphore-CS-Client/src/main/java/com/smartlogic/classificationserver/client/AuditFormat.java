@@ -8,10 +8,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.ibm.icu.text.SimpleDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Audit Format that will be used to return the data from the Classification History method.
@@ -22,7 +21,7 @@ import com.ibm.icu.text.SimpleDateFormat;
  *
  */
 public class AuditFormat {
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected static final Logger logger = LoggerFactory.getLogger(AuditFormat.class);
 
 	public final static String defaultDateFormat = "eee LLL dd hh:mm:ss yyyy";
 

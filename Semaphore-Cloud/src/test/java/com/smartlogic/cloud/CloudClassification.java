@@ -8,8 +8,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Map.Entry;
 
-import org.apache.http.client.ClientProtocolException;
-
 import com.smartlogic.classificationserver.client.Body;
 import com.smartlogic.classificationserver.client.ClassificationClient;
 import com.smartlogic.classificationserver.client.ClassificationConfiguration;
@@ -30,7 +28,7 @@ import com.smartlogic.classificationserver.client.Title;
  */
 public class CloudClassification {
 
-	public static void main(String[] args) throws ClientProtocolException, IOException, CloudException,
+	public static void main(String[] args) throws IOException, CloudException,
 			ClassificationException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
 
 		// Create the Cloud Access API Token from the supplied key

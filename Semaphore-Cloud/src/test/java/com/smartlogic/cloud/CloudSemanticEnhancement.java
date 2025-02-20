@@ -6,8 +6,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-import org.apache.http.client.ClientProtocolException;
-
 import com.smartlogic.ses.client.SESClient;
 import com.smartlogic.ses.client.Term;
 import com.smartlogic.ses.client.exceptions.SESException;
@@ -25,7 +23,7 @@ import com.smartlogic.ses.client.exceptions.SESException;
 public class CloudSemanticEnhancement {
 
   public static void main(String[] args)
-      throws SESException, KeyManagementException, ClientProtocolException,
+      throws SESException, KeyManagementException,
       NoSuchAlgorithmException, KeyStoreException, IOException, CloudException {
 
     // Create the Cloud Access API Token from the supplied key

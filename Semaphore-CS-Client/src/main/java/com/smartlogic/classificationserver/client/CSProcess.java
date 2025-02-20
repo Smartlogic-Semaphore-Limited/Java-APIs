@@ -2,14 +2,14 @@ package com.smartlogic.classificationserver.client;
 
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 
 public class CSProcess {
-	protected final static Log logger = LogFactory.getLog(CSProcess.class);
+	protected static final Logger logger = LoggerFactory.getLogger(CSProcess.class);
 
 	
 	public CSProcess(Element element) {

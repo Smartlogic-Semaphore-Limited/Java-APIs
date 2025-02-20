@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -18,7 +18,7 @@ import org.w3c.dom.NodeList;
  *
  */
 public abstract class ClassifiableObject extends MetadataHoldingObject {
-	protected static final Log logger = LogFactory.getLog(ClassifiableObject.class);
+	protected static final Logger logger = LoggerFactory.getLogger(ClassifiableObject.class);
 
 	protected void addMetadata(Element element) {
 		NodeList childNodeList = element.getChildNodes();
