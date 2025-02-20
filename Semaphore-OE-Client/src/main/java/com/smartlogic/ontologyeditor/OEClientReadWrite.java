@@ -832,7 +832,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 		String addClassPayload = operationList.toString();
 		logger.info("addClass payload: {}", addClassPayload);
-		makeRequest(getModelURL(), queryParameters, addClassPayload, RequestType.PATCH );
+		makeRequest(getApiURL(), queryParameters, addClassPayload, RequestType.PATCH );
 
 	}
 
@@ -844,13 +844,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		if (!concept.getClassUris().contains(classUri)) {
 			throw new OEClientException(String.format("Attempting to remove class (%s) that doesn't exist on this concept (%s)", classUri, concept.getUri()));
 		}
-		
+
 		Map<String, String> queryParameters = new HashMap<String, String>();
-		String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
-		String url = getApiURL() + "/" + path;
+		queryParameters.put("path", getPathParameter(concept.getUri()));
 
-
-		logger.info("addClass - URL: {}", url);
 
 		JsonArray operationList = new JsonArray();
 		JsonObject testOperation = new JsonObject();
@@ -874,7 +871,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		
 		String removeClassPayload = operationList.toString();
 		logger.info("removeClass payload: {}", removeClassPayload);
-		makeRequest(getModelURL(), queryParameters, removeClassPayload, RequestType.PATCH );
+		makeRequest(getApiURL(), queryParameters, removeClassPayload, RequestType.PATCH );
 	}
 
 }
