@@ -453,7 +453,7 @@ public class ClassificationClient implements AutoCloseable {
       return getBlankStructuredDocument();
     }
 
-    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    MultipartFormDataBodyPublisher bodyPublisher = getDefaultParts();
 
     addTitle(bodyPublisher, title);
     addMetadata(bodyPublisher, metadata);
@@ -471,7 +471,7 @@ public class ClassificationClient implements AutoCloseable {
       return new byte[0];
     }
 
-    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    MultipartFormDataBodyPublisher bodyPublisher = getDefaultParts();
 
     addTitle(bodyPublisher, title);
     addMetadata(bodyPublisher, metadata);
@@ -539,7 +539,7 @@ public class ClassificationClient implements AutoCloseable {
 
   public Document getStructuredDocument(URL url, Title title,
       Map<String, Collection<String>> metadata) throws ClassificationException {
-    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    MultipartFormDataBodyPublisher bodyPublisher = getDefaultParts();
     addTitle(bodyPublisher, title);
     addMetadata(bodyPublisher, metadata);
     bodyPublisher.addPart("path", url.toExternalForm());
@@ -583,7 +583,7 @@ public class ClassificationClient implements AutoCloseable {
       return new byte[0];
     }
 
-    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    MultipartFormDataBodyPublisher bodyPublisher = getDefaultParts();
 
     addTitle(bodyPublisher, title);
     addMetadata(bodyPublisher, metadata);
@@ -593,7 +593,7 @@ public class ClassificationClient implements AutoCloseable {
 
   public byte[] getClassifiedBytes(URL url, Title title, Map<String, Collection<String>> metadata)
       throws ClassificationException {
-    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    MultipartFormDataBodyPublisher bodyPublisher = getDefaultParts();
     addTitle(bodyPublisher, title);
     addMetadata(bodyPublisher, metadata);
     bodyPublisher.addPart("path", url.toExternalForm());
@@ -639,7 +639,7 @@ public class ClassificationClient implements AutoCloseable {
 
   public Document getStructuredDocument(byte[] data, String fileName)
       throws ClassificationException {
-    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    MultipartFormDataBodyPublisher bodyPublisher = getDefaultParts();
 
     if ((data == null) || (data.length == 0)) {
       return getBlankStructuredDocument();
@@ -674,7 +674,7 @@ public class ClassificationClient implements AutoCloseable {
       Map<String, Collection<String>> metadata) throws ClassificationException {
     logger.debug("Treating file: '" + fileName + "'");
 
-    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    MultipartFormDataBodyPublisher bodyPublisher = getDefaultParts();
 
     addTitle(bodyPublisher, title);
     addMetadata(bodyPublisher, metadata);
@@ -707,7 +707,7 @@ public class ClassificationClient implements AutoCloseable {
   public Document getStructuredDocument(File inputFile, String fileType, Title title,
       Map<String, Collection<String>> metadata) throws ClassificationException {
 
-    MultipartFormDataBodyPublisher bodyPublisher = new MultipartFormDataBodyPublisher();
+    MultipartFormDataBodyPublisher bodyPublisher = getDefaultParts();
     addTitle(bodyPublisher, title);
     addMetadata(bodyPublisher, metadata);
     addFile(bodyPublisher, inputFile, fileType);
