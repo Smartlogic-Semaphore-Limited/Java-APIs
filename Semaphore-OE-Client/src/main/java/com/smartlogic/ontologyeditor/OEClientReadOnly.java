@@ -200,7 +200,7 @@ public class OEClientReadOnly {
         stringBuilder.append(token);
         stringBuilder.append("/");
       }
-      stringBuilder.append("kmm/api/");
+      stringBuilder.append("api/");
 
       apiURL = stringBuilder.toString();
       if (logger.isDebugEnabled()) {
