@@ -693,8 +693,9 @@ public class OEClientReadOnly {
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("properties", getEscapedUri(getWrappedUri(metadataUri)));
 
-    String path = getModelUri() + "/" + getEscapedUri(getEscapedUri("<" + concept.getUri() + ">"));
+    String path = getModelUri() + "/" + getEscapedUri("<" + concept.getUri() + ">");
     queryParameters.put("path", path);
+
 
     logger.info("populateBooleanMetadata uri: {}", getApiURL());
     logger.info("populateBooleanMetadata queryParameters: {}", queryParameters);
