@@ -578,6 +578,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, uri.toString());
 
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("path", getPathParameter(concept.getUri()));
 
 		JsonArray operationList = new JsonArray();
 		JsonObject addOperation = new JsonObject();
@@ -593,7 +595,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String createMetadataPayload = operationList.toString();
 		logger.info("createMetadata payload: {}", createMetadataPayload);
-		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH);
+		makeRequest(getModelURL(), queryParameters, createMetadataPayload, RequestType.PATCH);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -855,7 +855,7 @@ public class OEClientReadOnly {
     return response.body();
   }
 
-  private static String getURLwithParameters(String url, Map<String, String> queryParameters) {
+  private String getURLwithParameters(String url, Map<String, String> queryParameters) {
     StringBuilder stringBuilder = new StringBuilder(url);
     String separator = "?";
     if ((queryParameters != null) && !queryParameters.isEmpty()) {
@@ -867,8 +867,10 @@ public class OEClientReadOnly {
         separator = "&";
       }
     }
-    String urlToUser = stringBuilder.toString();
-    return urlToUser;
+    if (warningsAccepted) {
+      stringBuilder.append(separator).append("warningsAccepted=true");
+    }
+    return stringBuilder.toString();
   }
 
   private void addHeaders(HttpRequest.Builder requestBuilder) {
