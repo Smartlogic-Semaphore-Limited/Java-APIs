@@ -19,10 +19,10 @@ import java.util.function.Supplier;
  * to add name value pairs. Supports standard string, stream or byte arrays.
  * The body is constructed and serialized into a byte array using UTF-8 character encoding.
  *
- * <p>The caller <em>must</em> set the boundary string in the Content-Type header of the POST request.
+ * The caller <em>must</em> set the boundary string in the Content-Type header of the POST request.
  * Fetch the boundary using getBoundary method.
  * Example:
- * <pre>
+ *
  *  HttpRequest.BodyPublisher bp = HttpRequest.BodyPublishers.ofByteArray(publisher.build());
  *  HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
  *      .version(HttpClient.Version.HTTP_1_1)
@@ -30,8 +30,8 @@ import java.util.function.Supplier;
  *      .uri(new URI(url))
  *      .POST(bp)
  *      ;
- * </pre>
- * </p>
+ * 
+ *
  * @author stevebio
  */
 public class MultipartFormDataBodyPublisher {
