@@ -37,9 +37,14 @@ public class AddConceptLabel extends ModelManipulation {
     Label label = new Label("fr", "Concept Une");
     oeClient.createLabel(concept, relationshipType, label);
 
+    oeClient.setWarningsAccepted(true);
     String relationshipType2 = "http://example.com/APITest#CodeName";
     Label label2 = new Label("de", "Die Code");
     oeClient.createLabel(concept, relationshipType2, label2);
+
+    String relationshipType3 = "skosxl:altLabel";
+    Label label3 = new Label(null, "Lang Neutral Label");
+    oeClient.createLabel(concept, relationshipType3, label3);
 
   }
 }

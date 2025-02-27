@@ -70,7 +70,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonObject labelObject = new JsonObject();
 		labelObject.put("@value", model.getLabel().getValue());
-		labelObject.put("@language", model.getLabel().getLanguageCode());
+		if (model.getLabel().getLanguageCode() != null) {
+			labelObject.put("@language", model.getLabel().getLanguageCode());
+		}
 		modelObject.put("rdfs:label", labelObject);
 		
 		JsonArray defaultNamespaceList = new JsonArray();
@@ -123,7 +125,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonObject labelObject = new JsonObject();
 		labelObject.put("@value", task.getLabel().getValue());
-		labelObject.put("@language", task.getLabel().getLanguageCode());
+		if (task.getLabel().getLanguageCode() != null) {
+			labelObject.put("@language", task.getLabel().getLanguageCode());
+		}
 		taskObject.put("rdfs:label", labelObject);
 
 		String taskPayload = taskObject.toString();
@@ -157,7 +161,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	    commitObject.put("@type", typeArray);
 		JsonArray labelArray = new JsonArray();
 		JsonObject labelObject = new JsonObject();
-		labelObject.put("@language", label.getLanguageCode());
+		if (label.getLanguageCode() != null) {
+			labelObject.put("@language", label.getLanguageCode());
+		}
 		labelObject.put("@value", label.getValue());
 		labelArray.add(labelObject);
 		commitObject.put("rdfs:label", labelArray);
@@ -219,7 +225,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		for (Label label : concept.getPrefLabels()) {
 			JsonObject labelLiteralFormData = new JsonObject();
 			labelLiteralFormData.put("@value", label.getValue());
-			labelLiteralFormData.put("@language", label.getLanguageCode());
+			if (label.getLanguageCode() != null) {
+				labelLiteralFormData.put("@language", label.getLanguageCode());
+			}
 			labelLiteralFormDataList.add(labelLiteralFormData);
 		}
 
@@ -248,7 +256,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 					mdCollectionValue.forEach(mdValue -> {
 						JsonObject mdObject = new JsonObject();
 						mdObject.put("@value", mdValue.getValue());
-						mdObject.put("@language", mdValue.getLanguageCode());
+						if (mdValue.getLanguageCode() != null) {
+							mdObject.put("@language", mdValue.getLanguageCode());
+						}
 						jsonMetadataArray.add(mdObject);
 					});
 					conceptDetails.put(key, jsonMetadataArray);
@@ -281,7 +291,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		for (Label label : concept.getPrefLabels()) {
 			JsonObject labelLiteralFormData = new JsonObject();
 			labelLiteralFormData.put("@value", label.getValue());
-			labelLiteralFormData.put("@language", label.getLanguageCode());
+			if (label.getLanguageCode() != null) {
+				labelLiteralFormData.put("@language", label.getLanguageCode());
+			}
 			labelLiteralFormDataList.add(labelLiteralFormData);
 		}
 
@@ -312,7 +324,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 					mdCollectionValue.forEach(mdValue -> {
 						JsonObject mdObject = new JsonObject();
 						mdObject.put("@value", mdValue.getValue());
-						mdObject.put("@language", mdValue.getLanguageCode());
+						if (mdValue.getLanguageCode() != null) {
+							mdObject.put("@language", mdValue.getLanguageCode());
+						}
 						jsonMetadataArray.add(mdObject);
 					});
 					conceptDetails.put(key, jsonMetadataArray);
@@ -349,7 +363,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		for (Label label : conceptScheme.getPrefLabels()) {
 			JsonObject newconceptSchemeLabelData = new JsonObject();
 			newconceptSchemeLabelData.put("@value", label.getValue());
-			newconceptSchemeLabelData.put("@language", label.getLanguageCode());
+			if (label.getLanguageCode() != null) {
+				newconceptSchemeLabelData.put("@language", label.getLanguageCode());
+			}
 			newconceptSchemeLabelDataList.add(newconceptSchemeLabelData);
 		}
 
@@ -402,8 +418,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		testOperation2.put("path",pathToUpdate);
 		JsonArray valueArray2 = new JsonArray();
 		JsonObject value2 = new JsonObject();
-		value2.put("@language", label.getLanguageCode()); 
-		value2.put("@value", label.getValue()); 
+		if (label.getLanguageCode() != null) {
+			value2.put("@language", label.getLanguageCode());
+		}
+		value2.put("@value", label.getValue());
 		valueArray2.add(value2);
 		testOperation2.put("value", value2);
 		operationList.add(testOperation2);
@@ -418,8 +436,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addOperation.put("path", pathToUpdate);
 		JsonArray valueArray3 = new JsonArray();
 		JsonObject value3 = new JsonObject();
-		value3.put("@language", newLabelLanguage); 
-		value3.put("@value", newLabelValue); 
+		if (label.getLanguageCode() != null) {
+			value3.put("@language", newLabelLanguage);
+		}
+		value3.put("@value", newLabelValue);
 		valueArray3.add(value3);
 		addOperation.put("value", valueArray3);
 		operationList.add(addOperation);
@@ -465,7 +485,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 			JsonObject literalFormObject = new JsonObject();
 			literalFormObject.put("@value", label.getValue());
-			literalFormObject.put("@language", label.getLanguageCode());
+			if (label.getLanguageCode() != null) {
+				literalFormObject.put("@language", label.getLanguageCode());
+			}
 			JsonArray literalFormArray = new JsonArray();
 			literalFormArray.add(literalFormObject);
 			labelObject.put("skosxl:literalForm", literalFormArray);
@@ -496,7 +518,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		}
 
 		JsonObject valueObject = new JsonObject();
-		valueObject.put("@language", label.getLanguageCode());
+		if (label.getLanguageCode() != null) {
+			valueObject.put("@language", label.getLanguageCode());
+		}
 		valueObject.put("@value", label.getValue());
 		labelObject.put("skosxl:literalForm", valueObject);
 
@@ -830,7 +854,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		JsonArray labelArray = new JsonArray();
 		JsonObject labelObject = new JsonObject();
 		labelObject.put("@value", label.getValue());
-		labelObject.put("@language", label.getLanguageCode()); 
+		if (label.getLanguageCode() != null ) {
+			labelObject.put("@language", label.getLanguageCode());
+		}
 		labelArray.add(labelObject);
 		value2.put("skosxl:literalForm", labelArray); 
 		valueArray2.add(value2);

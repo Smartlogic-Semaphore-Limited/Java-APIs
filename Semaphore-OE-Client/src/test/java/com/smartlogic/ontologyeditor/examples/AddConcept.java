@@ -43,7 +43,7 @@ public class AddConcept extends ModelManipulation {
 		Concept concept3 = new Concept(oeClient, "http://example.com/APITest#MyAddedConcept3",
 				cLabels3);
 		Map<String, Collection<MetadataValue>> mdMap = new HashMap<>();
-		mdMap.put("skos:note", List.of(new MetadataValue("", "How many wives did Henry VIII have over the course of his life?")));
+		mdMap.put("skos:note", List.of(new MetadataValue(null, "How many wives did Henry VIII have over the course of his life?")));
 		oeClient.createConcept(conceptScheme.getUri(), concept3, mdMap);
 
 		/* populate the note data in the concept */
@@ -56,7 +56,7 @@ public class AddConcept extends ModelManipulation {
 			Concept concept4 = new Concept(oeClient, "http://example.com/APITest#MyAddedConcept4",
 					cLabels4);
 			Map<String, Collection<MetadataValue>> mdMap1 = new HashMap<>();
-			mdMap1.put("skos:note", List.of(new MetadataValue("", "How many of his wives did Henry VIII execute?")));
+			mdMap1.put("skos:note", List.of(new MetadataValue(null, "How many of his wives did Henry VIII execute?")));
 			oeClient.createConceptBelowConcept(concept3.getUri(), concept4, mdMap1);
 
 			/* populate the note data in the concept */
@@ -64,6 +64,7 @@ public class AddConcept extends ModelManipulation {
 			oeClient.populateMetadata("skos:note", returnedConcept4);
 			System.out.println(returnedConcept4.getMetadata("skos:note").stream().findFirst().orElse(null).toString());
 		}
+
 	}
 
 }
