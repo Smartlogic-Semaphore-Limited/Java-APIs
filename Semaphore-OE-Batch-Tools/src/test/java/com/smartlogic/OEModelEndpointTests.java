@@ -40,28 +40,28 @@ public class OEModelEndpointTests {
     ep.setAccessToken("ACCESSTOKEN");
     ep.setBaseUrl("http://localhost:5080");
 
-    assertEquals("http://localhost:5080/t/ACCESSTOKEN/kmm/api", ep.buildApiUrl().toString());
-    assertEquals("http://localhost:5080/t/ACCESSTOKEN/kmm/api/model:ModelID/sparql", ep.buildSPARQLUrl(null));
+    assertEquals("http://localhost:5080/kmm/api/", ep.buildApiUrl().toString());
+    assertEquals("http://localhost:5080/kmm/api/model:ModelID/sparql", ep.buildSPARQLUrl(null));
 
     ep.setBaseUrl("http://localhost:5080/");
     ep.setModelIRI("model:TestAnotherModelID");
-    assertEquals("http://localhost:5080/t/ACCESSTOKEN/kmm/api", ep.buildApiUrl().toString());
+    assertEquals("http://localhost:5080/kmm/api/", ep.buildApiUrl().toString());
     assertEquals(
-            "http://localhost:5080/t/ACCESSTOKEN/kmm/api/model:TestAnotherModelID/sparql", ep.buildSPARQLUrl(null));
+            "http://localhost:5080/kmm/api/model:TestAnotherModelID/sparql", ep.buildSPARQLUrl(null));
     assertEquals(
-            "http://localhost:5080/t/ACCESSTOKEN/kmm/api/model:TestAnotherModelID/sparql?async=true&runEditRules=true&checkConstraints=true",
+            "http://localhost:5080/kmm/api/model:TestAnotherModelID/sparql?async=true&runEditRules=true&checkConstraints=true",
             ep.buildSPARQLUrl());
     SparqlUpdateOptions options = new SparqlUpdateOptions();
     options.setAcceptWarnings(true);
     assertEquals(
-            "http://localhost:5080/t/ACCESSTOKEN/kmm/api/model:TestAnotherModelID/sparql?async=true&warningsAccepted=true&runEditRules=true&checkConstraints=true",
+            "http://localhost:5080/kmm/api/model:TestAnotherModelID/sparql?async=true&warningsAccepted=true&runEditRules=true&checkConstraints=true",
             ep.buildSPARQLUrl(options));
 
     ep.setBaseUrl("http://myserver.mydomain.com:9999/");
     ep.setModelIRI("model:TestID");
-    assertEquals("http://myserver.mydomain.com:9999/t/ACCESSTOKEN/kmm/api", ep.buildApiUrl().toString());
+    assertEquals("http://myserver.mydomain.com:9999/kmm/api/", ep.buildApiUrl().toString());
     assertEquals(
-            "http://myserver.mydomain.com:9999/t/ACCESSTOKEN/kmm/api/model:TestID/sparql", ep.buildSPARQLUrl(null));
+            "http://myserver.mydomain.com:9999/kmm/api/model:TestID/sparql", ep.buildSPARQLUrl(null));
 
     ep.setConnectTimeout(Duration.ofMinutes(11));
     assertEquals(ep.getConnectTimeout(), Duration.ofMinutes(11));
@@ -99,7 +99,7 @@ public class OEModelEndpointTests {
 
     assertEquals("my-api-key", ep.getCloudAPIKey());
     assertEquals("https://cloud.smartlogic.com/token", ep.getCloudTokenFetchUrl());
-    assertEquals("http://localhost:5080/kmm/api", ep.buildApiUrl().toString());
+    assertEquals("http://localhost:5080/kmm/api/", ep.buildApiUrl().toString());
     assertEquals("http://localhost:5080/kmm/api/model:ModelID/sparql?async=true&runEditRules=true&checkConstraints=true", ep.buildSPARQLUrl());
     assertEquals("http://localhost:5080/kmm/api/model:ModelID/sparql", ep.buildSPARQLUrl(null));
     SparqlUpdateOptions options = new SparqlUpdateOptions();
