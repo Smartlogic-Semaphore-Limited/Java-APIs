@@ -6,15 +6,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import com.smartlogic.cloud.Token;
+import com.smartlogic.ontologyeditor.beans.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
@@ -30,15 +25,6 @@ import org.apache.jena.vocabulary.SKOSXL;
 import org.apache.jena.vocabulary.XSD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.smartlogic.ontologyeditor.beans.ChangeRecord;
-import com.smartlogic.ontologyeditor.beans.Concept;
-import com.smartlogic.ontologyeditor.beans.ConceptClass;
-import com.smartlogic.ontologyeditor.beans.ConceptScheme;
-import com.smartlogic.ontologyeditor.beans.Identifier;
-import com.smartlogic.ontologyeditor.beans.Model;
-import com.smartlogic.ontologyeditor.beans.RelationshipType;
-import com.smartlogic.ontologyeditor.beans.Task;
 
 public class OEClientReadOnly {
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -56,6 +42,12 @@ public class OEClientReadOnly {
     prefixMapping.put("skos:", SKOS.getURI());
     prefixMapping.put("skosxl:", SKOSXL.getURI());
   }
+
+  /* KRT scheme URIs to cache values */
+  protected String krtModifiedConceptSchemeUri = null;
+  protected String krtNewlyAddedConceptSchemeUri = null;
+  protected String krtToDoConceptSchemeUri = null;
+
 
   private String baseURL;
 
@@ -173,9 +165,20 @@ public class OEClientReadOnly {
 
   private String modelURL = null;
 
+  protected String getModelAndConceptURL(String conceptUri) {
+    StringBuilder stringBuilder = new StringBuilder(getModelURL());
+    stringBuilder.append("/");
+    stringBuilder.append(URLEncoder.encode(String.format("<%s>", conceptUri), StandardCharsets.UTF_8));
+    if (logger.isDebugEnabled()) {
+      logger.debug("modelAndConceptURI: {}", stringBuilder);
+    }
+    return stringBuilder.toString();
+  }
+
   protected String getModelURL() {
     if (modelURL == null) {
       StringBuilder stringBuilder = new StringBuilder(getApiURL());
+//      stringBuilder.append("?path=");
       stringBuilder.append(modelUri);
       modelURL = stringBuilder.toString();
 
@@ -744,6 +747,48 @@ public class OEClientReadOnly {
     return resourceURL;
   }
 
+  /**
+   * Returns the KRT modified concept scheme. This returns a value when KRT is enabled
+   * in a task.
+   * @return null or the task-specific modified concept scheme for KRT
+   * @throws OEClientException exception
+   */
+  protected String getKRTModifiedSchemeUri() throws OEClientException {
+    if (null != krtModifiedConceptSchemeUri)
+      return krtModifiedConceptSchemeUri;
+
+    final Optional<ConceptScheme> modifiedConceptScheme = getAllConceptSchemes().stream()
+            .filter(cs -> cs.getUri().endsWith("ConceptReview-Modified"))
+            .findFirst();
+    if (modifiedConceptScheme.isPresent()) {
+      krtModifiedConceptSchemeUri = modifiedConceptScheme.get().getUri();
+      return krtModifiedConceptSchemeUri;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the KRT modified concept scheme. This returns a value when KRT is enabled
+   * in a task.
+   * @return null or the task-specific modified concept scheme for KRT
+   * @throws OEClientException exception
+   */
+  protected String getKRTNewlyAddedSchemeUri() throws OEClientException {
+    if (null != krtNewlyAddedConceptSchemeUri)
+      return krtNewlyAddedConceptSchemeUri;
+
+    final Optional<ConceptScheme> newlyAddedConceptScheme = getAllConceptSchemes().stream()
+        .filter(cs -> cs.getUri().endsWith("ConceptReview-NewlyAdded"))
+        .findFirst();
+    if (newlyAddedConceptScheme.isPresent()) {
+      krtNewlyAddedConceptSchemeUri = newlyAddedConceptScheme.get().getUri();
+      return krtNewlyAddedConceptSchemeUri;
+    } else {
+      return null;
+    }
+  }
+
   private String getPath(String resourceUri) throws OEClientException {
 
     logger.info("getPath - entry: {}", resourceUri);
@@ -767,8 +812,7 @@ public class OEClientReadOnly {
 
   protected String getPathParameter(String conceptUri, String relationshipUrl) throws OEClientException {
     logger.info("getPath - entry: {}", conceptUri);
-    String pathParameter = (modelUri + "/" + getPath(conceptUri) + "/" + getPath(relationshipUrl))
-        .replaceAll("%", "%25");
+    String pathParameter = (modelUri + "/" + getPath(conceptUri) + "/" + getPath(relationshipUrl));
     logger.info("getPath - exit: {}", pathParameter);
     return pathParameter;
   }

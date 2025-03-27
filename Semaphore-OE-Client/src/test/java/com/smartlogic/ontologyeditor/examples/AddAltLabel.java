@@ -35,7 +35,7 @@ public class AddAltLabel extends ModelManipulation {
 
 		Concept returnedConcept = oeClient.getConcept(newConceptURI);
 		oeClient.createLabel(returnedConcept , "skosxl:altLabel" , new Label("", "Hello Alternative World"));
-		oeClient.createLabel(returnedConcept , "http://example.com/SPindle#ASpecialLabelType" , new Label("", "Carlsberg Special Brew"));
+		oeClient.createLabel(returnedConcept , "http://example.com/APITest#CodeName" , new Label("", "Carlsberg Special Brew"));
 	}
 
 }

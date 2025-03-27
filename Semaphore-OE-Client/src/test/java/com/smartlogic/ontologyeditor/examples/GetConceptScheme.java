@@ -5,8 +5,11 @@ import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
+import com.smartlogic.ontologyeditor.beans.Label;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GetConceptScheme extends ModelManipulation {
 	public static void main(String args[]) throws IOException, CloudException, OEClientException {
@@ -16,10 +19,13 @@ public class GetConceptScheme extends ModelManipulation {
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
-		Concept returnedConcept = oeClient.getConcept("http://example.com/APITest#Cheese");
-		System.err.println(returnedConcept.getPrefLabels());
+		List<Label> csLabels = new ArrayList<Label>();
+		csLabels.add(new Label("en", "Concept Scheme for Get Concept Scheme"));
+		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#ConceptSchemeForGetConceptScheme",
+				csLabels);
+		oeClient.createConceptScheme(conceptScheme);
 
-		ConceptScheme returnedConceptScheme = oeClient.getConceptScheme("http://example.com/APITest#ConceptScheme/NewConcept");
+		ConceptScheme returnedConceptScheme = oeClient.getConceptScheme("http://example.com/APITest#ConceptSchemeForGetConceptScheme");
 		System.err.println(returnedConceptScheme);
 
 	}

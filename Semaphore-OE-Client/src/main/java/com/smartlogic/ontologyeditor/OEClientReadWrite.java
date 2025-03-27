@@ -1,15 +1,13 @@
 package com.smartlogic.ontologyeditor;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import com.smartlogic.ontologyeditor.beans.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
+
+import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 
 public class OEClientReadWrite extends OEClientReadOnly {
 
@@ -184,6 +182,49 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	/**
+	 * Helper method to add multiple concepts to model in one method call including metadata.
+	 * The concept and metadata lists must be the same size. The correlation between a concept
+	 * and a metadata map is by list ordinal.
+	 * @param conceptSchemeUri the concept scheme under which the concepts should be added.
+	 * @param concepts the List of Concept objects to add.
+	 * @param mds the List of optional metadata values to add to each concept. If there is no metadata for a concept,
+	 *            add an empty map.
+	 */
+	public void createConcepts(String conceptSchemeUri, List<Concept> concepts, List<Map<String, Collection<MetadataValue>>> mds) throws OEClientException {
+		logger.info("createConcepts entry: scheme uri: {}, concepts: {}, mds: {}", conceptSchemeUri,
+				concepts != null ? concepts.toString() : "null",
+				mds != null ? mds.toString() : "null");
+
+		if (concepts == null || mds == null) {
+			throw new OEClientException("concepts set and/or metadata set cannot be null");
+		}
+
+		if (concepts.size() != mds.size()) {
+			throw new OEClientException("The concept list and the metadata list are not the same size.");
+		}
+
+		for (int n = 0; n < concepts.size(); n++) {
+			createConcept(conceptSchemeUri, concepts.get(n), mds.get(n));
+		}
+	}
+
+	/**
+	 * Helper method to add multiple concepts to model in one method call.
+	 * @param conceptSchemeUri the concept scheme under which the concepts should be added.
+	 * @param concepts the set of Concept objects to add.
+	 */
+	public void createConcepts(String conceptSchemeUri, Set<Concept> concepts) throws OEClientException {
+		logger.info("createConcepts entry: scheme uri: {}, concepts: {}", conceptSchemeUri,
+				concepts != null ? concepts.toString() : "null");
+		if (concepts == null) {
+			throw new OEClientException("concepts set cannot be null");
+		}
+		for (Concept concept : concepts) {
+			createConcept(conceptSchemeUri, concept);
+		}
+	}
+
+	/**
 	 * createConcept - create a concept as a topConcept of a Concept Scheme
 	 *
 	 * @param conceptSchemeUri
@@ -200,7 +241,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	/**
-	 * createConcept - create a concept as a topConcept of a Concept Scheme
+	 * createConcept - create a concept as a topConcept of a Concept Scheme.
+	 * If client is in KRT mode, will also add the new concept to the Newly Created KRT concept scheme,
+	 * making it eligible for review.
 	 *
 	 * @param conceptSchemeUri
 	 *            - the URI of the concept scheme for which the new concept will
@@ -266,12 +309,66 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			});
 		}
 
+		/* if in KRT mode, add new concept to NewlyCreated KRT concept scheme as a top concept */
+		if (isKRTClient()) {
+			String newlyAddedConceptSchemeUri = getKRTNewlyAddedSchemeUri();
+			if (newlyAddedConceptSchemeUri != null) {
+				JsonObject newlyCreatedConceptSchemeData = new JsonObject();
+				newlyCreatedConceptSchemeData.put("@id", newlyAddedConceptSchemeUri);
+				conceptDetails.put("skos:topConceptOf", newlyCreatedConceptSchemeData);
+			}
+		}
+
 		String conceptSchemePayload = conceptDetails.toString();
 
 		Date startDate = new Date();
 		logger.info("createConcept making call  : {}", startDate.getTime());
 
 		makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
+	}
+
+	/**
+	 * Helper method to add multiple concepts to model in one method call including metadata.
+	 * The concept and metadata lists must be the same size. The correlation between a concept
+	 * and a metadata map is by list ordinal.
+	 * @param parentConceptUri the URI of the parent concept under which the concepts should be added.
+	 * @param concepts the List of Concept objects to add.
+	 * @param mds the List of optional metadata values to add to each concept. If there is no metadata for a concept,
+	 *            add an empty map.
+	 */
+	public void createConceptsBelowConcept(String parentConceptUri, List<Concept> concepts, List<Map<String, Collection<MetadataValue>>> mds) throws OEClientException {
+		logger.info("createConcepts entry: parent concept uri: {}, concepts: {}, mds: {}", parentConceptUri,
+				concepts != null ? concepts.toString() : "null",
+				mds != null ? mds.toString() : "null");
+
+		if (concepts == null) {
+			throw new OEClientException("concepts set cannot be null");
+		}
+
+		if (mds != null && (concepts.size() != mds.size())) {
+			throw new OEClientException("The concept list and the metadata list are not the same size.");
+		}
+
+		for (int n = 0; n < concepts.size(); n++) {
+			createConceptBelowConcept(parentConceptUri, concepts.get(n), mds != null ? mds.get(n) : null);
+		}
+	}
+
+	/**
+	 * Create multiple concepts below the specified concept.
+	 * @param parentConceptUri the pareant concept uri
+	 * @param concepts the set of concepts to create below the parent
+	 * @throws OEClientException excetion
+	 */
+	public void createConceptsBelowConcept(String parentConceptUri, Set<Concept> concepts) throws OEClientException {
+		logger.info("createConceptsBelowConcept entry: parent concept uri: {}, concepts: {}", parentConceptUri,
+				concepts != null ? concepts.toString() : "null");
+		if (concepts == null) {
+			throw new OEClientException("concepts set cannot be null");
+		}
+		for (Concept concept : concepts) {
+			createConceptBelowConcept(parentConceptUri, concept);
+		}
 	}
 
 	public void createConceptBelowConcept(String parentConceptUri, Concept concept) throws OEClientException {
@@ -334,6 +431,16 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			});
 		}
 
+		/* if in KRT mode, add new concept to NewlyCreate KRT concept scheme as a top concept */
+		if (isKRTClient()) {
+			String newlyAddedConceptSchemeUri = getKRTNewlyAddedSchemeUri();
+			if (newlyAddedConceptSchemeUri != null) {
+				JsonObject newlyCreatedConceptSchemeData = new JsonObject();
+				newlyCreatedConceptSchemeData.put("@id", newlyAddedConceptSchemeUri);
+				conceptDetails.put("skos:topConceptOf", newlyCreatedConceptSchemeData);
+			}
+		}
+
 		String conceptPayload = conceptDetails.toString();
 
 		logger.info("createConceptBelowConcept making call with payload: {}", conceptPayload);
@@ -379,10 +486,84 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
 	}
 
+	/**
+	 * Update a label object of a specified label type.
+	 * This version of the  method works with KRT mode enabled.
+	 *
+	 * @param label
+	 *            - the label to be updated. The URI, language and value of this
+	 *            label must be defined. The value and language code must match
+	 *            the values in the Ontology.
+	 * @param relationshipTypeUri the URI of the label type
+	 * @param newLabelLanguage
+	 *            - the new language for the label
+	 * @param newLabelValue
+	 *            - the new value for the label
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	@SuppressWarnings({ "unchecked" })
+	public void updateLabel(Label label, String conceptUri, String relationshipTypeUri, String newLabelLanguage, String newLabelValue) throws OEClientException {
+		logger.info("updateLabel (with type) entry: {}, rel type uri: {}", label.getUri(), relationshipTypeUri);
+
+
+		Map<String, String> queryParameters = new HashMap<>();
+		queryParameters.put("path", getPathParameter(conceptUri));
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path",String.format("@graph/0/%s/1", relationshipTypeUri));
+		JsonArray valueArray1 = new JsonArray();
+		JsonObject value1 = new JsonObject();
+		value1.put("@id", label.getUri());
+		valueArray1.add(value1);
+		testOperation1.put("value", value1);
+		operationList.add(testOperation1);
+
+		String pathToRemove = String.format("@graph/0/%s/1/skosxl:literalForm/2", relationshipTypeUri);
+		String pathToAdd = String.format("@graph/0/%s/1/skosxl:literalForm/3", relationshipTypeUri);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path",pathToRemove);
+		JsonArray valueArray2 = new JsonArray();
+		JsonObject value2 = new JsonObject();
+		if (label.getLanguageCode() != null) {
+			value2.put("@language", label.getLanguageCode());
+		}
+		value2.put("@value", label.getValue());
+		valueArray2.add(value2);
+		testOperation2.put("value", value2);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", pathToRemove);
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", pathToAdd);
+		JsonObject value3 = new JsonObject();
+		if (label.getLanguageCode() != null) {
+			value3.put("@language", newLabelLanguage);
+		}
+		value3.put("@value", newLabelValue);
+		addOperation.put("value", value3);
+		operationList.add(addOperation);
+
+		checkKRTModified(operationList, "0", "4");
+
+		String updateLabelPayload = operationList.toString();
+		logger.info("updateLabel payload: {}", updateLabelPayload);
+		makeRequest(getApiURL(), queryParameters, updateLabelPayload, RequestType.PATCH);
+	}
 
 
 	/**
-	 * Update a label object
+	 * Update a label object. This method does NOT work with KRT. Use the variant of the method
+	 * where the label type is specified.
 	 *
 	 * @param label
 	 *            - the label to be updated. The URI, language and value of this
@@ -443,8 +624,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		valueArray3.add(value3);
 		addOperation.put("value", valueArray3);
 		operationList.add(addOperation);
-		
-		
+
 		String updateLabelPayload = operationList.toString();
 		logger.info("updateLabel payload: {}", updateLabelPayload);
 		makeRequest(getModelURL(), updateLabelPayload, RequestType.PATCH);
@@ -494,6 +674,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 			instanceObject.put("skosxl:prefLabel", labelObject);
 
+			/* if a KRT client, add the parent concept to the Modified scheme */
+			if (isKRTClient()) {
+				String modifiedSchemeUri = getKRTModifiedSchemeUri();
+				if (null != modifiedSchemeUri) {
+					instanceObject.put("skos:topConceptOf", modifiedSchemeUri);
+				}
+			}
+
 			dataArray.add(instanceObject);
 		}
 		graphObject.put("@graph", dataArray);
@@ -504,31 +692,66 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Create/add a label to an existing concept. This call dispatches to method of same
+	 * name with concept URI as first argument. It is a wrapper.
+	 *
+	 * @param concept the concept
+	 * @param relationshipTypeUri the relationship type uri
+	 * @param label the label object
+	 * @throws OEClientException the exception
+	 */
 	public void createLabel(Concept concept, String relationshipTypeUri, Label label) throws OEClientException {
-		logger.info("createLabel entry: {} {} {}", concept.getUri(), relationshipTypeUri, label);
+		logger.info("createLabel entry: {} {} {}", concept, relationshipTypeUri, label);
+		createLabel(concept.getUri(), relationshipTypeUri, label);
+	}
 
-		JsonObject addObject = new JsonObject();
-		addObject.put("@id", concept.getUri());
+	/**
+	 * Create/add a label to an existing concept with the specified URI.
+	 * @param conceptUri the concept URI
+	 * @param relationshipTypeUri the relationship type URI
+	 * @param label the label object
+	 * @throws OEClientException exception
+	 */
+	public void createLabel(String conceptUri, String relationshipTypeUri, Label label) throws OEClientException {
+		logger.info("createLabel entry: {} {} {}", conceptUri, relationshipTypeUri, label);
 
-		JsonObject labelObject = new JsonObject();
-		labelObject.put("@type", "skosxl:Label");
-		if (!StringUtils.isEmpty(label.getUri())) {
-			labelObject.put("@id", label.getUri());
-		}
-
+		JsonArray operationList = new JsonArray();
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
 		JsonObject valueObject = new JsonObject();
+		valueObject.put("@id", conceptUri);
+		testOperation.put("value", valueObject);
+		operationList.add(testOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(relationshipTypeUri)));
+
+		JsonObject value2Object = new JsonObject();
+		JsonArray value2Typearray = new JsonArray();
+		value2Typearray.add("skosxl:Label");
+		value2Object.put("@type", value2Typearray);
+
+		JsonArray litFormArray = new JsonArray();
+		JsonObject litFormObject = new JsonObject();
+		litFormObject.put("@value", label.getValue());
 		if (label.getLanguageCode() != null) {
-			valueObject.put("@language", label.getLanguageCode());
+			litFormObject.put("@language", label.getLanguageCode());
 		}
-		valueObject.put("@value", label.getValue());
-		labelObject.put("skosxl:literalForm", valueObject);
+		litFormArray.add(litFormObject);
+		value2Object.put("skosxl:literalForm", litFormArray);
+		addOperation.put("value", value2Object);
 
-		addObject.put(relationshipTypeUri, labelObject);
+		operationList.add(addOperation);
 
-		String createLabelPayload = addObject.toString();
-		logger.info("createLabel payload: {}", createLabelPayload);
-		makeRequest(getModelURL(), createLabelPayload, RequestType.POST);
+		checkKRTModified(operationList, "0");
+
+		String createRelationshipPayload = operationList.toString();
+		logger.info("createRelationship payload: {}", createRelationshipPayload);
+		makeRequest(getModelURL(), createRelationshipPayload, RequestType.PATCH);
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -557,6 +780,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addOperation.put("value", targetArray);
 
 		operationList.add(addOperation);
+
+		checkKRTModified(operationList, "0");
 
 		String createRelationshipPayload = operationList.toString();
 		logger.info("createRelationship payload: {}", createRelationshipPayload);
@@ -591,6 +816,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addOperation.put("value", valueArray);
 		operationList.add(addOperation);
 
+		checkKRTModified(operationList, "0");
+
 		String createMetadataPayload = operationList.toString();
 		logger.info("createMetadata payload: {}", createMetadataPayload);
 
@@ -606,20 +833,31 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		queryParameters.put("path", getPathParameter(concept.getUri()));
 
 		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", concept.getUri());
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
+
 		JsonObject addOperation = new JsonObject();
 		addOperation.put("op", "add");
 		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataTypeUri)));
 
 		JsonObject valueObject = new JsonObject();
 		valueObject.put("@value", uri.toString());
-		valueObject.put("@type", "http://www.w3.org/2001/XMLSchema#anyURI");
+		valueObject.put("@type", "xsd:anyURI");
 		addOperation.put("value", valueObject);
 
 		operationList.add(addOperation);
 
+		checkKRTModified(operationList, "0");
+
 		String createMetadataPayload = operationList.toString();
 		logger.info("createMetadata payload: {}", createMetadataPayload);
-		makeRequest(getModelURL(), queryParameters, createMetadataPayload, RequestType.PATCH);
+		makeRequest(getApiURL(), queryParameters, createMetadataPayload, RequestType.PATCH);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -647,12 +885,61 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		operationList.add(addOperation);
 
+		checkKRTModified(operationList, "0");
+
 		String createMetadataPayload = operationList.toString();
 		logger.info("createMetadata payload: {}", createMetadataPayload);
 
 		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
 	}
-	
+
+	public void updateMetadata(Concept concept, String metadataTypeUri, String oldValueLanguage, String oldValue, String newValueLanguage, String newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/1");
+
+		JsonObject testObject1 = new JsonObject();
+		testObject1.put("@id", concept.getUri());
+		testOperation1.put("value", testObject1);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		JsonObject oldValueJsonObject = new JsonObject();
+		if (oldValueLanguage != null)
+			oldValueJsonObject.put("@language", oldValueLanguage);
+		oldValueJsonObject.put("@value", oldValue);
+		testOperation2.put("value", oldValueJsonObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", String.format("@graph/1/%s/2", getTildered(metadataTypeUri)));
+		JsonObject newValueJsonObject = new JsonObject();
+		if (newValueLanguage != null)
+			newValueJsonObject.put("@language", newValueLanguage);
+		newValueJsonObject.put("@value", newValue);
+		addOperation.put("value", newValueJsonObject);
+		operationList.add(addOperation);
+
+		checkKRTModified(operationList, "1");
+
+		String createMetadataPayload = operationList.toString();
+		logger.info("updateMetadata payload: {}", createMetadataPayload);
+		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
+
+	}
+
 	@SuppressWarnings("unchecked")
 	public void updateMetadata(Concept concept, String metadataTypeUri, boolean oldValue, boolean newValue) throws OEClientException {
 		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
@@ -685,6 +972,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addOperation.put("path", String.format("@graph/1/%s/2", getTildered(metadataTypeUri)));
 		addOperation.put("value", newValue);
 		operationList.add(addOperation);
+
+		checkKRTModified(operationList, "1");
 
 		String createMetadataPayload = operationList.toString();
 		logger.info("updateMetadata payload: {}", createMetadataPayload);
@@ -829,7 +1118,6 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	@SuppressWarnings("unchecked")
 	public void deleteLabel(String relationshipTypeUri, Concept concept, Label label) throws OEClientException {
 		logger.info("deleteLabel entry: {} {} {} {}", relationshipTypeUri, concept.getUri(), label);
-		
 
 		JsonArray operationList = new JsonArray();
 
@@ -900,7 +1188,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addOperation.put("path","@graph/0/@type/1");
 		addOperation.put("value", classUri);
 		operationList.add(addOperation);
-		
+
+		checkKRTModified(operationList, "0");
+
 		String addClassPayload = operationList.toString();
 		logger.info("addClass payload: {}", addClassPayload);
 		makeRequest(getApiURL(), queryParameters, addClassPayload, RequestType.PATCH );
@@ -945,4 +1235,66 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getApiURL(), queryParameters, removeClassPayload, RequestType.PATCH );
 	}
 
+	/**
+	 * Checks if the client is in KRT mode, and if so, add the concept to the Modified KRT concept scheme.
+	 * @param operationList the JSON PATCH operation list object
+	 * @param conceptIndex the JSON PATCH index of the concept.
+	 * @throws OEClientException exception
+	 */
+	protected void checkKRTModified(JsonArray operationList, String conceptIndex) throws OEClientException {
+
+		if (conceptIndex != null && !isDigits(conceptIndex)) throw new OEClientException("Invalid concept index: " + conceptIndex);
+
+		/* if a KRT client, add the parent concept to the Modified scheme */
+		if (isKRTClient()) {
+			String modifiedSchemeUri = getKRTModifiedSchemeUri();
+			if (null != modifiedSchemeUri) {
+				addToKRTModified(modifiedSchemeUri, operationList, conceptIndex, "-");
+			}
+		}
+
+	}
+
+	/**
+	 * Checks if the client is in KRT mode, and if so, add the concept to the Modified KRT concept scheme.
+	 * @param operationList the JSON PATCH operation list object
+	 * @param conceptIndex the JSON PATCH index of the concept.
+	 * @throws OEClientException exception
+	 */
+	protected void checkKRTModified(JsonArray operationList, String conceptIndex, String schemeIndex) throws OEClientException {
+
+		if (conceptIndex != null && !isDigits(conceptIndex)) throw new OEClientException("Invalid concept index: " + conceptIndex);
+
+		/* if a KRT client, add the parent concept to the Modified scheme */
+		if (isKRTClient()) {
+			String modifiedSchemeUri = getKRTModifiedSchemeUri();
+			if (null != modifiedSchemeUri) {
+				addToKRTModified(modifiedSchemeUri, operationList, conceptIndex, schemeIndex);
+			}
+		}
+
+	}
+
+	/**
+	 * Add an operation for JSON patch to attach the concept context to the specified concept scheme URI.
+	 * @param conceptSchemeUri the KRT concept scheme to attach the concept to
+	 * @param operationList the operation list being used for call construction.
+	 * @param conceptIndex the JSON-PATCH index of the concept. Defaults to zero.
+	 * @param schemeIndex the concept scheme index in the JSON PATCH
+	 */
+	protected void addToKRTModified(String conceptSchemeUri, JsonArray operationList, String conceptIndex, String schemeIndex) throws OEClientException {
+		if (null == conceptIndex || conceptIndex.isEmpty() || !isDigits(conceptIndex)) {
+			throw new OEClientException("Invalid concept index: " + conceptIndex);
+		}
+		if (null == schemeIndex || schemeIndex.isEmpty() || (!schemeIndex.equals("-") && !isDigits(schemeIndex))) {
+			throw new OEClientException("Invalid concept scheme index: " + schemeIndex);
+		}
+		JsonObject addTopConceptObject = new JsonObject();
+		addTopConceptObject.put("op", "add");
+		addTopConceptObject.put("path", String.format("@graph/%s/skos:topConceptOf/%s", conceptIndex, schemeIndex));
+		JsonObject addTopConceptValueObject = new JsonObject();
+		addTopConceptValueObject.put("@id", conceptSchemeUri);
+		addTopConceptObject.put("value", addTopConceptValueObject);
+		operationList.add(addTopConceptObject);
+	}
 }

@@ -1,0 +1,144 @@
+@prefix afn:               <http://jena.apache.org/ARQ/function#> .
+@prefix arg:               <http://spinrdf.org/arg#> .
+@prefix dc:                <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms:           <http://purl.org/dc/terms/> .
+@prefix evnimport:         <urn:x-tb:evnimport#> .
+@prefix evntask:           <urn:x-evn-tag:> .
+@prefix example:           <http://proto.smartlogic.com/example#> .
+@prefix fn:                <http://www.w3.org/2005/xpath-functions#> .
+@prefix foaf:              <http://xmlns.com/foaf/0.1/> .
+@prefix lang:              <http://id.loc.gov/vocabulary/iso639-1/> .
+@prefix list:              <http://jena.hpl.hp.com/ARQ/list#> .
+@prefix meta:              <http://www.smartlogic.com/2014/10/semaphore-meta#> .
+@prefix model:             <urn:x-evn-master:> .
+@prefix owl:               <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:               <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:              <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix recservice:        <http://www.smartlogic.com/2021/05/reconciliation-services#> .
+@prefix role:              <urn:x-tb-role:> .
+@prefix sem:               <http://www.smartlogic.com/2014/08/semaphore-core#> .
+@prefix semalerting:       <http://www.smartlogic.com/2023/06/semaphore-alerting#> .
+@prefix semalertingfun:    <http://www.smartlogic.com/2023/11/semaphore-alerting-spin-functions-tch#> .
+@prefix semcommands:       <http://www.smartlogic.com/2019/04/semaphore-commands#> .
+@prefix semfun:            <http://www.smartlogic.com/2015/02/semaphore-functions#> .
+@prefix semgroups:         <http://www.smartlogic.com/2018/04/semaphore-groups#> .
+@prefix semgroupsfun:      <http://www.smartlogic.com/2018/04/semaphore-groups-functions#> .
+@prefix semlang:           <http://www.smartlogic.com/2015/03/semaphore-languages#> .
+@prefix semlisteners:      <http://www.smartlogic.com/2016/10/semaphore-listeners#> .
+@prefix semmaprel:         <http://www.smartlogic.com/2021/03/semaphore-mapping-relationship#> .
+@prefix semmonitoring:     <http://www.smartlogic.com/2019/02/semaphore-monitoring#> .
+@prefix semord:            <http://www.smartlogic.com/2018/03/semaphore-ordering#> .
+@prefix semordfun:         <http://www.smartlogic.com/2018/03/semaphore-ordering-functions#> .
+@prefix semordrules:       <http://www.smartlogic.com/2018/03/semaphore-ordering-rules#> .
+@prefix sempath:           <http://www.smartlogic.com/2016/01/semaphore-path#> .
+@prefix sempermissions:    <http://www.smartlogic.com/2015/11/semaphore-permissions#> .
+@prefix semplugin:         <http://www.smartlogic.com/2018/06/semaphore-plugins#> .
+@prefix sempub:            <http://www.smartlogic.com/2017/06/semaphore-publisher#> .
+@prefix sempubconf:        <http://www.smartlogic.com/2019/04/semaphore-publisher-configuration#> .
+@prefix sempubfun:         <http://www.smartlogic.com/2019/08/semaphore-publisher-functions#> .
+@prefix sempubpermissions: <http://www.smartlogic.com/2019/03/semaphore-publisher-permissions#> .
+@prefix semreports:        <http://www.smartlogic.com/2017/06/semaphore-reports#> .
+@prefix semsh:             <http://www.smartlogic.com/2019/06/semaphore-shacl#> .
+@prefix semshaclgraph:     <urn:x-evn-shacl-graph:> .
+@prefix semshfun:          <http://www.smartlogic.com/2018/03/semaphore-shacl-functions#> .
+@prefix semshreports:      <http://www.smartlogic.com/2018/10/semaphore-shacl-reports#> .
+@prefix semspin:           <http://www.smartlogic.com/2015/02/semaphore-spin-functions#> .
+@prefix semspinadapter:    <http://www.smartlogic.com/2019/08/semaphore-spin-adapter#> .
+@prefix semspincache:      <http://www.smartlogic.com/2018/06/semaphore-spin-cache#> .
+@prefix semspinmap:        <http://www.smartlogic.com/2016/04/semaphore-spinMap#> .
+@prefix semspinx:          <http://www.smartlogic.com/2015/11/semaphore-spin#> .
+@prefix semstatmeta:       <http://www.smartlogic.com/2023/03/semaphore-statements-metadata#> .
+@prefix semstatmetafun:    <http://www.smartlogic.com/2024/02/semaphore-statements-metadata-functions#> .
+@prefix semsys:            <http://www.smartlogic.com/2019/09/semaphore-system#> .
+@prefix semtemplates:      <http://www.smartlogic.com/2016/04/semaphore-templates#> .
+@prefix semui:             <http://www.smartlogic.com/2017/12/semaphore-ui#> .
+@prefix semupdates:        <http://www.smartlogic.com/2019/04/semaphore-updates#> .
+@prefix semupgrade:        <http://www.smartlogic.com/2019/03/semaphore-upgrade#> .
+@prefix semutils:          <http://www.smartlogic.com/2015/09/semaphore-utils#> .
+@prefix semvar:            <http://www.smartlogic.com/2015/10/semaphore-var#> .
+@prefix semvirt:           <http://www.smartlogic.com/2019/01/semaphore-virtualgraph#> .
+@prefix semvirtfun:        <http://www.smartlogic.com/2019/01/semaphore-virtualgraph-functions#> .
+@prefix semwidgets:        <http://www.smartlogic.com/2016/02/semaphore-widgets#> .
+@prefix semworkspace:      <http://www.smartlogic.com/2019/01/semaphore-workspace#> .
+@prefix sh:                <http://www.w3.org/ns/shacl#> .
+@prefix sioc:              <http://rdfs.org/sioc/ns#> .
+@prefix skos:              <http://www.w3.org/2004/02/skos/core#> .
+@prefix skosxl:            <http://www.w3.org/2008/05/skos-xl#> .
+@prefix smf:               <http://topbraid.org/sparqlmotionfunctions#> .
+@prefix sp:                <http://spinrdf.org/sp#> .
+@prefix specialgraph:      <urn:x-special-graph:> .
+@prefix spif:              <http://spinrdf.org/spif#> .
+@prefix spin:              <http://spinrdf.org/spin#> .
+@prefix spinmap:           <http://spinrdf.org/spinmap#> .
+@prefix spl:               <http://spinrdf.org/spl#> .
+@prefix swa:               <http://topbraid.org/swa#> .
+@prefix sys:               <http://www.smartlogic.com/2014/10/semaphore-sys#> .
+@prefix sysmodel:          <urn:x-sys-model:> .
+@prefix systask:           <urn:x-sys-task:> .
+@prefix systaskext:        <urn:x-sys-task-with-master:> .
+@prefix tables:            <http://topbraid.org/tables#> .
+@prefix tag:               <urn:x-tags:> .
+@prefix task:              <urn:x-ort-tag:> .
+@prefix taxonomies:        <http://evn.topbraidlive.org/evnprojects#> .
+@prefix tchmodel:          <urn:x-evn-tch-union:> .
+@prefix teamwork:          <http://topbraid.org/teamwork#> .
+@prefix teamworkrulesx:    <http://www.smartlogic.com/2016/05/semaphore-teamworkrulesx#> .
+@prefix temp:              <urn:x-temp:> .
+@prefix tempgraph:         <urn:x-temp-graph:> .
+@prefix ui:                <http://uispin.org/ui#> .
+@prefix user:              <urn:x-tb-users:> .
+@prefix xsd:               <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.com/APITest#Bluery>
+        rdf:type         owl:Class ;
+        rdfs:label       "Bluery"@en ;
+        rdfs:subClassOf  skos:Concept .
+
+<http://example.com/APITest#CodeName>
+        rdf:type            owl:ObjectProperty ;
+        rdfs:domain         skos:Concept ;
+        rdfs:label          "CodeName"@en ;
+        rdfs:range          skosxl:Label ;
+        rdfs:subPropertyOf  skosxl:altLabel .
+
+<http://example.com/APITest#Greenery>
+        rdf:type         owl:Class ;
+        rdfs:label       "Greenery"@en ;
+        rdfs:subClassOf  skos:Concept .
+
+<http://example.com/APITest#isBiggerThan>
+        rdf:type            owl:ObjectProperty ;
+        rdfs:domain         skos:Concept ;
+        rdfs:label          "isBiggerThan"@en ;
+        rdfs:range          skos:Concept ;
+        rdfs:subPropertyOf  skos:related ;
+        owl:inverseOf       <http://example.com/APITest#isSmallerThan> .
+
+<http://example.com/APITest#isGreen>
+        rdf:type     owl:DatatypeProperty ;
+        rdfs:domain  skos:Concept ;
+        rdfs:label   "isGreen"@en ;
+        rdfs:range   xsd:boolean .
+
+<http://example.com/APITest#isSmallerThan>
+        rdf:type            owl:ObjectProperty ;
+        rdfs:domain         skos:Concept ;
+        rdfs:label          "isSmallerThan"@en ;
+        rdfs:range          skos:Concept ;
+        rdfs:subPropertyOf  skos:related ;
+        owl:inverseOf       <http://example.com/APITest#isBiggerThan> .
+
+<http://example.com/APITest#uriMetadata>
+        rdf:type     owl:DatatypeProperty ;
+        rdfs:domain  skos:Concept ;
+        rdfs:label   "uriMetadata"@en ;
+        rdfs:range   xsd:anyURI .
+
+skos:Concept  rdfs:subClassOf  [ rdf:type            owl:Restriction ;
+                                 owl:maxCardinality  1 ;
+                                 owl:onProperty      <http://example.com/APITest#isGreen>
+                               ] .
+
+model:APITest  rdf:type  teamwork:Vocabulary , owl:Ontology ;
+        spin:imports  <http://www.smartlogic.com/2015/02/semaphore-spin-constraints> , <http://www.smartlogic.com/2015/12/unique-concept-label-constraint> , <http://www.smartlogic.com/2015/12/unique-concept-label-in-class-constraint> , <http://www.smartlogic.com/2018/04/semaphore-ordering-constraints> ;
+        owl:imports   <http://www.smartlogic.com/2014/08/semaphore-core> , semshaclgraph:APITest .
