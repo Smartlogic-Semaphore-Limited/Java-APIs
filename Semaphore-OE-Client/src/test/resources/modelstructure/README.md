@@ -4,3 +4,4 @@ a task called "KRTTest".
 After creating these, create a review in KRTTest. Use defaults.
 Finally set properties in semaphore5.properties to point the tests to your
 model and task. Specify the task model URI if you plan to run the KRT tests.
+Make sure to delete test schemes after running each test.
