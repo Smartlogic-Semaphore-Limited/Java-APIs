@@ -9,15 +9,18 @@ import com.smartlogic.ontologyeditor.beans.Label;
 import org.apache.commons.compress.utils.Sets;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Example of adding multiple concepts in one method call.
  */
-public class KRTAddConcepts extends ModelManipulation {
+public class KRTAddConceptsUnderConcept extends ModelManipulation {
 
   public static void main(String[] args) throws IOException, CloudException, OEClientException {
-    runTests(new KRTAddConcepts());
+    runTests(new KRTAddConceptsUnderConcept());
   }
 
   @Override
@@ -25,13 +28,13 @@ public class KRTAddConcepts extends ModelManipulation {
 
     List<Label> csLabels = new ArrayList<Label>();
     csLabels.add(new Label("en", "Concept Scheme for KRT Add Concepts"));
-    ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#ConceptSchemeForKRTAddConceptsToScheme",
+    ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#ConceptSchemeForKRTAddConcepts",
         csLabels);
     oeClient.createConceptScheme(conceptScheme);
 
     List<Label> parentConceptLabels = new ArrayList<Label>();
     parentConceptLabels.add(new Label("en", "KRT Add Concepts: My Parent concept"));
-    Concept parentConcept1 = new Concept(oeClient, "http://example.com/APITest#KRTAddConceptUnderConcept_MyParentConcept", parentConceptLabels);
+    Concept parentConcept1 = new Concept(oeClient, "http://example.com/APITest#KRTAddConcepts_MyParentConcept", parentConceptLabels);
 
     oeClient.createConcept(conceptScheme.getUri(), parentConcept1);
 

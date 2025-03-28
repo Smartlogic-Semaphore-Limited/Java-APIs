@@ -195,16 +195,20 @@ public class OEClientReadWrite extends OEClientReadOnly {
 				concepts != null ? concepts.toString() : "null",
 				mds != null ? mds.toString() : "null");
 
-		if (concepts == null || mds == null) {
-			throw new OEClientException("concepts set and/or metadata set cannot be null");
+		if (concepts == null) {
+			throw new OEClientException("concepts cannot be null");
 		}
 
-		if (concepts.size() != mds.size()) {
+		if (mds != null && concepts.size() != mds.size()) {
 			throw new OEClientException("The concept list and the metadata list are not the same size.");
 		}
 
 		for (int n = 0; n < concepts.size(); n++) {
-			createConcept(conceptSchemeUri, concepts.get(n), mds.get(n));
+			try {
+				createConcept(conceptSchemeUri, concepts.get(n), mds != null ? mds.get(n) : null);
+			} catch (OEClientException e) {
+				logger.warn("Failed to create concept: {}", concepts.get(n), e);
+			}
 		}
 	}
 
@@ -217,10 +221,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("createConcepts entry: scheme uri: {}, concepts: {}", conceptSchemeUri,
 				concepts != null ? concepts.toString() : "null");
 		if (concepts == null) {
-			throw new OEClientException("concepts set cannot be null");
+			throw new OEClientException("concepts cannot be null");
 		}
 		for (Concept concept : concepts) {
-			createConcept(conceptSchemeUri, concept);
+			try {
+				createConcept(conceptSchemeUri, concept);
+			} catch (OEClientException e) {
+				logger.warn("Failed to create concept: {}", concept, e);
+			}
 		}
 	}
 
@@ -350,7 +358,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		}
 
 		for (int n = 0; n < concepts.size(); n++) {
-			createConceptBelowConcept(parentConceptUri, concepts.get(n), mds != null ? mds.get(n) : null);
+			try {
+				createConceptBelowConcept(parentConceptUri, concepts.get(n), mds != null ? mds.get(n) : null);
+			} catch (OEClientException e) {
+				logger.warn("Failed to create concept: {}", concepts.get(n), e);
+			}
 		}
 	}
 
@@ -367,7 +379,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throw new OEClientException("concepts set cannot be null");
 		}
 		for (Concept concept : concepts) {
-			createConceptBelowConcept(parentConceptUri, concept);
+			try {
+				createConceptBelowConcept(parentConceptUri, concept);
+			} catch (OEClientException e) {
+				logger.warn("Failed to create concept: {}", concept, e);
+			}
 		}
 	}
 
