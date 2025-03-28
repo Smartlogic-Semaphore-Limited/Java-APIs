@@ -5,15 +5,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.smartlogic.classificationserver.client.ClassificationClient;
 import com.smartlogic.classificationserver.client.ClassificationConfiguration;
 import com.smartlogic.classificationserver.client.ClassificationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GetCSReponseDirectory extends DirectoryParser {
-	protected final static Log logger = LogFactory.getLog(GetCSReponseDirectory.class);
+	protected static final Logger logger = LoggerFactory.getLogger(GetCSReponseDirectory.class);
 
 	public GetCSReponseDirectory(ClassificationClient classificationClient) {
 		super(classificationClient);

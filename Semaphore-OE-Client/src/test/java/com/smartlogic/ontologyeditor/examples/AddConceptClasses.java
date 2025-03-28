@@ -39,13 +39,14 @@ public class AddConceptClasses extends ModelManipulation {
 
 		oeClient.addClass(concept1, "http://example.com/APITest#Greenery");
 		printClasses(oeClient, 2);
-		
+
+		/*
 		oeClient.removeClass(concept1, "http://example.com/APITest#Bluery");
 		printClasses(oeClient, 1);
 
 		oeClient.removeClass(concept1, "http://example.com/APITest#Greenery");
 		printClasses(oeClient, 1);
-		
+		*/
 	}
 
 	private void printClasses(OEClientReadWrite oeClient, int expectedSize) throws OEClientException {

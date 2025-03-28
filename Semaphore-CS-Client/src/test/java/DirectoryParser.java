@@ -3,15 +3,14 @@
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.smartlogic.classificationserver.client.ClassificationClient;
 import com.smartlogic.classificationserver.client.ClassificationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract public class DirectoryParser {
-	protected final static Log logger = LogFactory.getLog(DirectoryParser.class);
-	
+	protected static final Logger logger = LoggerFactory.getLogger(DirectoryParser.class);
+
 	
 	protected ClassificationClient classificationClient;
 	public DirectoryParser(ClassificationClient classificationClient) {

@@ -36,7 +36,9 @@ public class AddMetadataURI extends ModelManipulation {
 
 		oeClient.createConcept(conceptScheme.getUri(), concept);
 
-		String metadataType = "skos:related";
+		String metadataType = "http://example.com/APITest#uriMetadata";
+
+		oeClient.setWarningsAccepted(true);
 
 		try {
 			URI uri = new URI("http://smartlogic.com/TestURIAgain");

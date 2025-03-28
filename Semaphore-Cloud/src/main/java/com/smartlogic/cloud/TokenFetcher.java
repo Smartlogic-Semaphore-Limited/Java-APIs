@@ -1,27 +1,21 @@
 package com.smartlogic.cloud;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 public class TokenFetcher {
-  protected final Log logger = LogFactory.getLog(getClass());
+  private Logger logger = LoggerFactory.getLogger(TokenFetcher.class);
 
   private final String tokenUrl;
   private final String key;
@@ -91,6 +85,21 @@ public class TokenFetcher {
     this.connectionRequestTimeoutMS = connectionRequestTimeoutMS;
   }
 
+  protected HttpClient.Builder httpClientBuilder;
+
+  private synchronized HttpClient.Builder  getHttpClientBuilder() {
+    if (httpClientBuilder == null) {
+      httpClientBuilder = HttpClient.newBuilder();
+      httpClientBuilder.connectTimeout(Duration.of(60, SECONDS));
+
+      if (proxyHost != null && proxyPort != 0) {
+        httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort)));
+      }
+    }
+    return httpClientBuilder;
+  }
+
+
   /**
    * Get the access token
    *
@@ -99,70 +108,27 @@ public class TokenFetcher {
    */
   public Token getAccessToken() throws CloudException {
     logger.info("getAccessToken: '" + tokenUrl + "'");
-    HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    setProxyHttpHost(clientBuilder);
 
-    try (CloseableHttpClient httpClient = clientBuilder.build()) {
-      {
+    try {
+      HttpClient httpClient = getHttpClientBuilder().build();
 
-        List<NameValuePair> postParams = new ArrayList<>();
-        postParams.add(new BasicNameValuePair("grant_type", "apikey"));
-        postParams.add(new BasicNameValuePair("key", key));
+      String formData = "grant_type=apikey&key=" + URLEncoder.encode(key, StandardCharsets.UTF_8);
 
-        HttpPost postRequest = new HttpPost(tokenUrl);
-        postRequest.setHeader("Content-Type", "application/x-www-form-urlencoded");
-        postRequest.setEntity(new UrlEncodedFormEntity(postParams));
+      HttpRequest request = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(formData)).uri(URI.create(tokenUrl)).build();
 
-        HttpResponse response = httpClient.execute(postRequest);
-        if (response == null) {
-          throw new CloudException("Null response from http client: " + tokenUrl);
-        }
-        if (response.getStatusLine() == null) {
-          throw new CloudException("Null status line from http client: " + tokenUrl);
+        HttpResponse<String> response = httpClient.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+          throw new CloudException(String.format("Status %d returned by token fetcher", response.statusCode()));
         }
 
-        int statusCode = response.getStatusLine().getStatusCode();
-        logger.info("Status: " + statusCode);
+        return (new ObjectMapper()).readValue(response.body(), Token.class);
 
-        HttpEntity entity = response.getEntity();
-        if (entity == null) {
-          throw new CloudException("Null response from Cloud Server");
-        }
-
-        if (statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-          throw new CloudException("Internal cloud server error: " + entity.toString());
-        } else if (statusCode != HttpStatus.SC_OK) {
-          throw new CloudException("HttpStatus: " +
-              statusCode +
-              " received from cloud server (" +
-              entity.toString() +
-              ")");
-        }
-
-        try (InputStream inputStream = entity.getContent()) {
-          byte[] returnedData = IOUtils.toByteArray(inputStream);
-          if (logger.isDebugEnabled()) {
-            logger.debug("Reponse: " + new String(returnedData, "UTF-8"));
-          }
-
-          ObjectMapper mapper = new ObjectMapper();
-          Token token = mapper.readValue(returnedData, Token.class);
-          return token;
-        }
+      } catch (Exception e) {
+        String message = String.format("%s thrown fetching token: %s", e.getClass().getSimpleName(),
+                e.getMessage());
+        logger.error(message, e);
+        throw new CloudException(message);
       }
-    } catch (Exception e) {
-      String message = String.format("%s thrown fetching token: %s", e.getClass().getSimpleName(),
-          e.getMessage());
-      logger.error(message, e);
-      throw new CloudException(message);
     }
-  }
-
-  private void setProxyHttpHost(HttpClientBuilder clientBuilder) {
-    if (proxyHost != null && proxyPort != 0) {
-      HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-      clientBuilder.setProxy(proxy);
-    }
-  }
 
 }

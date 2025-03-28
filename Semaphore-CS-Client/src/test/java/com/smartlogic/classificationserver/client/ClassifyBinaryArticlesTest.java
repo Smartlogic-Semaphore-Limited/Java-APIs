@@ -1,7 +1,7 @@
 package com.smartlogic.classificationserver.client;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -13,7 +13,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.testng.Assert.assertEquals;
 
 public class ClassifyBinaryArticlesTest extends ClassificationTestCase {
-	protected final static Log logger = LogFactory.getLog(ClassifyBinaryArticlesTest.class);
+	protected static final Logger logger = LoggerFactory.getLogger(ClassifyBinaryArticlesTest.class);
 
 	@Test
 	public void testBinary() throws IOException, ClassificationException {

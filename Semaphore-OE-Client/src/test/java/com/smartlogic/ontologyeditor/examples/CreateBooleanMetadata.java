@@ -47,6 +47,10 @@ public class CreateBooleanMetadata extends ModelManipulation {
 		
 		oeClient.deleteMetadata(concept, metadataType, false);		
 		testMetadataValue(oeClient, null);
+
+		oeClient.createMetadata(concept, metadataType, true);
+		testMetadataValue(oeClient, Boolean.TRUE);
+
 	}
 
 	private void testMetadataValue(OEClientReadOnly oeClient, Boolean expected) throws OEClientException {

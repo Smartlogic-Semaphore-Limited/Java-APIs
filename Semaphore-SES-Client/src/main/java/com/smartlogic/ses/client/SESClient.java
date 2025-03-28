@@ -9,14 +9,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -33,19 +33,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.config.RequestConfig.Builder;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
+import java.net.http.HttpResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -80,13 +69,19 @@ public class SESClient implements AutoCloseable {
 
   private String url;
 
-  private CloseableHttpClient httpClient;
+  private HttpClient httpClient;
 
   public String getUrl() {
     return url;
   }
 
   public void setUrl(String url) {
+    if (url == null) {
+      throw new IllegalArgumentException("url cannot be null");
+    }
+    if (!url.endsWith("/")) {
+      url += "/";
+    }
     this.url = url;
   }
 
@@ -170,6 +165,9 @@ public class SESClient implements AutoCloseable {
   }
 
   public void setPath(String path) {
+    if (this.path != null && !path.endsWith("/")) {
+      path += "/";
+    }
     this.path = path;
   }
 
@@ -225,14 +223,6 @@ public class SESClient implements AutoCloseable {
 
   @Override
   public void close() {
-    if (httpClient != null) {
-      try {
-        httpClient.close();
-      } catch (IOException ioe) {
-        logger.warn("Failed to cleanly close HttpClient.", ioe);
-      }
-      httpClient = null;
-    }
   }
 
   /**
@@ -1256,10 +1246,12 @@ public class SESClient implements AutoCloseable {
   public OMStructure getStructure() throws SESException {
     logger.info("getOMStructure - entry");
 
-    StringBuffer query = new StringBuffer();
-    query.append("/" + getOntology());
+    StringBuilder query = new StringBuilder();
+    if (getPath() != null && getUrl() == null && !getPath().endsWith("/"))
+      query.append("/");
+    query.append(getOntology());
     if (getLanguage() != null) {
-      query.append("/" + getLanguage());
+      query.append("/").append(getLanguage());
     }
 
     Semaphore semaphore = getSemaphore(getURLImpl(query.toString()));
@@ -1297,28 +1289,15 @@ public class SESClient implements AutoCloseable {
     return treeSet;
   }
 
-  protected void initHttpClient() throws NoSuchAlgorithmException, KeyManagementException {
-
+  protected void initHttpClient() throws SESException {
     if (this.httpClient == null) {
-      Builder requestConfigBuilder = RequestConfig.copy(RequestConfig.DEFAULT)
-          .setSocketTimeout(getSocketTimeoutMS()).setConnectTimeout(getConnectionTimeoutMS())
-          .setConnectionRequestTimeout(getConnectionTimeoutMS());
-      if ((getProxyHost() != null) && (getProxyHost().length() > 0) && (getProxyPort() > 0)) {
-        HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort(), "http");
-        requestConfigBuilder.setProxy(proxy);
+      HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+      httpClientBuilder.connectTimeout(Duration.ofSeconds(60));
+
+      if (proxyHost != null && proxyPort != 0) {
+        httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort)));
       }
-      RequestConfig requestConfig = requestConfigBuilder.build();
-
-      SSLContextBuilder builder = new SSLContextBuilder();
-      SSLConnectionSocketFactory sslsf =
-          new SSLConnectionSocketFactory(builder.build(), new DefaultHostnameVerifier());
-
-      PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-      cm.setMaxTotal(this.maxConnections);
-      cm.setDefaultMaxPerRoute(this.maxConnections);
-
-      this.httpClient = HttpClients.custom().setConnectionManager(cm)
-          .setDefaultRequestConfig(requestConfig).setSSLSocketFactory(sslsf).build();
+      this.httpClient = httpClientBuilder.build();
     }
   }
 
@@ -1326,23 +1305,24 @@ public class SESClient implements AutoCloseable {
     if (logger.isInfoEnabled()) {
       logger.info("getSemaphore - entry: '" + url.toExternalForm() + "'");
     }
-    Semaphore semaphore = null;
-    HttpGet httpGet = null;
+    Semaphore semaphore;
 
     try {
 
       initHttpClient();
 
+      HttpRequest.Builder builder = HttpRequest.newBuilder();
+      builder.GET().timeout(Duration.ofSeconds(60)).uri(new URI(url.toExternalForm()));
       if (logger.isDebugEnabled()) {
-        logger.debug("About to make HTTP request: " + url.toExternalForm());
+        logger.debug("About to make HTTP request: {}", url.toExternalForm());
       }
 
-      httpGet = new HttpGet(url.toExternalForm());
       if (getApiToken() != null) {
-        httpGet.addHeader("Authorization", getApiToken());
+        builder.header("Authorization", getApiToken());
       }
 
-      HttpResponse response = httpClient.execute(httpGet);
+      HttpRequest request = builder.build();
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
       if (logger.isDebugEnabled()) {
         logger.debug("HTTP request complete: " + url.toExternalForm());
@@ -1351,27 +1331,24 @@ public class SESClient implements AutoCloseable {
       if (response == null) {
         throw new SESException("Null response from http client: " + url.toExternalForm());
       }
-      if (response.getStatusLine() == null) {
-        throw new SESException("Null status line from http client: " + url.toExternalForm());
-      }
 
-      int statusCode = response.getStatusLine().getStatusCode();
+      int statusCode = response.statusCode();
 
       if (logger.isDebugEnabled()) {
         logger.debug("HTTP request complete: " + statusCode + " " + url.toExternalForm());
       }
 
-      if (statusCode != HttpStatus.SC_OK) {
+      if (statusCode != 200) {
         throw new SESException(
             "Status code " + statusCode + " received from URL: " + url.toExternalForm());
       }
 
-      HttpEntity entity = response.getEntity();
-
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      entity.writeTo(byteArrayOutputStream);
-      if (saveFile != null) {
-        saveRequestAndResponse(saveFile, url, byteArrayOutputStream.toByteArray());
+      try(InputStream responseInputStream = response.body()){
+        responseInputStream.transferTo(byteArrayOutputStream);
+        if (saveFile != null) {
+          saveRequestAndResponse(saveFile, url, byteArrayOutputStream.toByteArray());
+        }
       }
 
       InputSource inputSource =
@@ -1388,16 +1365,13 @@ public class SESClient implements AutoCloseable {
       throw new SESException("IOException: " + e.getMessage());
     } catch (SAXException e) {
       throw new SESException("SAXException: " + e.getMessage());
-    } catch (KeyManagementException e) {
-      throw new SESException("KeyManagementException: " + e.getMessage());
-    } catch (NoSuchAlgorithmException e) {
-      throw new SESException("NoSuchAlgorithmException: " + e.getMessage());
+    } catch (URISyntaxException e) {
+      throw new SESException("URISyntaxException: " + e.getMessage());
+    } catch (InterruptedException e) {
+      throw new SESException("InterruptedException: " + e.getMessage());
     } finally {
       if (logger.isDebugEnabled()) {
         logger.debug("getSemaphore - about to abort the connection " + url.toExternalForm());
-      }
-      if (httpGet != null) {
-        httpGet.abort();
       }
       if (logger.isDebugEnabled()) {
         logger.debug("getSemaphore - about to release connection " + url.toExternalForm());

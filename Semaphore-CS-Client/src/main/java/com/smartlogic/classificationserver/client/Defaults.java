@@ -3,13 +3,14 @@ package com.smartlogic.classificationserver.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class Defaults extends XMLReader {
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected static final Logger logger = LoggerFactory.getLogger(Defaults.class);
+
 	public Defaults(byte[] data) throws ClassificationException {
 		// If there is no data provided, then throw an exception
 		defaults = new HashMap<String, Parameter>();

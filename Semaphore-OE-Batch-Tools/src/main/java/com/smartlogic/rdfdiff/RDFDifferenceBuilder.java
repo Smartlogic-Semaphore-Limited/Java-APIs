@@ -1,7 +1,6 @@
 package com.smartlogic.rdfdiff;
 
-import org.apache.jena.ext.com.google.common.base.Preconditions;
-import org.apache.jena.ext.com.google.common.collect.*;
+import com.google.common.collect.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.SKOSXL;
 
@@ -66,7 +65,9 @@ public class RDFDifferenceBuilder {
    */
   public static Collection<RDFSubjectDifference> buildSubjectBatches(RDFDifference diff, List<Property> chaseIncludeSubjectProperties) {
 
-    Preconditions.checkArgument(diff != null);
+    if (diff == null) {
+      throw new IllegalArgumentException("diff is null");
+    };
 
     if (null == chaseIncludeSubjectProperties) {
       chaseIncludeSubjectProperties = Lists.newArrayList();

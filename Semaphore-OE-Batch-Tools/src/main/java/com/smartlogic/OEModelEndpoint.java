@@ -1,33 +1,18 @@
 package com.smartlogic;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
 import com.smartlogic.cloud.CloudException;
 import com.smartlogic.cloud.Token;
 import com.smartlogic.cloud.TokenFetcher;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.jena.atlas.json.JSON;
-import org.apache.jena.atlas.json.JsonObject;
-import org.apache.jena.ext.com.google.common.base.Joiner;
-import org.apache.jena.ext.com.google.common.base.Strings;
-import org.apache.jena.ext.com.google.common.collect.ImmutableSet;
-import org.apache.jena.ext.com.google.common.collect.Lists;
+import com.smartlogic.oebatch.beans.JobResult;
+import com.smartlogic.oebatch.beans.KMMError;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFactory;
@@ -36,16 +21,28 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
+import org.apache.jena.sparql.exec.http.QueryExecutionHTTP;
+import org.apache.jena.sparql.exec.http.QueryExecutionHTTPBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.json.JsonObject;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.jena.ext.com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 
 /**
  * Created by stevenbiondi on 6/21/17. Semaphore Knowledge Model Manager (KMM). All RESTful commands
@@ -60,6 +57,7 @@ public class OEModelEndpoint {
   public static final String JOB_STATUS = "status";
   public static final String JOB_STATUS_FINISHED = "FINISHED";
   public static final int JOB_CHECK_SLEEP_INTERVAL_MILLIS = 1000;
+  public static final String X_API_KEY = "X-Api-Key";
   static Logger logger = LoggerFactory.getLogger(OEModelEndpoint.class);
 
   protected boolean cloudAuthHeaderSet = false;
@@ -72,39 +70,60 @@ public class OEModelEndpoint {
   protected String modelIri;
   protected String proxyHost;
   protected Integer proxyPort;
-
-  protected HttpClientBuilder httpClientBuilder;
+  protected JobResult updateSparqlJobResult;
+  protected HttpClient.Builder httpClientBuilder;
+  protected HttpClient httpClient;
 
   public OEModelEndpoint() {
+    // nothing to do here.
+  }
 
-    httpClientBuilder = HttpClientBuilder.create();
+  private synchronized void initHttpClient() {
+    if (httpClient == null) {
+      httpClient = getHttpClientBuilder().build();
+    }
+  }
 
-    /*
-     * SCB - make timeouts infinite for this app for all HTTP requests.
-     */
-    RequestConfig config = RequestConfig.custom().setConnectTimeout(0)
-        .setConnectionRequestTimeout(0).setSocketTimeout(0).build();
-    httpClientBuilder.setDefaultRequestConfig(config);
+  private synchronized HttpClient.Builder  getHttpClientBuilder() {
+    if (httpClientBuilder == null) {
+      httpClientBuilder = HttpClient.newBuilder();
+      httpClientBuilder.connectTimeout(Duration.of(60, SECONDS));
+
+      if (proxyHost != null && proxyPort != 0) {
+        httpClientBuilder.proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort)));
+      }
+    }
+    return httpClientBuilder;
   }
 
   /**
    * Build the api URI for Knowledge Model Manager (KMM). All RESTful commands extend this URI.
    *
-   * @return
+   * @return the full KMM API URL string
    */
-  public StringBuffer buildApiUrl() {
-    StringBuffer buf = new StringBuffer().append(baseUrl);
-    if (!Strings.isNullOrEmpty(accessToken)) {
-      buf.append("t/").append(accessToken).append("/");
+  public String buildApiUrl() {
+    if (Strings.isNullOrEmpty(baseUrl)) {
+      throw new RuntimeException("The Studio/KMM baseUrl is not set");
     }
-    buf.append("kmm/api");
-    return buf;
+    StringBuilder stringBuilder = new StringBuilder();
+    if (!baseUrl.endsWith("/")) {
+      baseUrl = baseUrl + "/";
+    }
+    stringBuilder.append(baseUrl);
+    if (!baseUrl.endsWith("kmm/")) {
+      stringBuilder.append("kmm/");
+    }
+    stringBuilder.append("api/");
+    if (logger.isDebugEnabled()) {
+      logger.debug("apiUrl: {}", stringBuilder);
+    }
+    return stringBuilder.toString();
   }
 
   /**
    * Returns SPARQL URL with default sparql options.
    *
-   * @return
+   * @return the full SPARQL endpoint URL string
    */
   public String buildSPARQLUrl() {
     return buildSPARQLUrl(new SparqlUpdateOptions());
@@ -112,7 +131,7 @@ public class OEModelEndpoint {
 
   public String buildSPARQLUrl(SparqlUpdateOptions options) {
 
-    StringBuffer buf = buildApiUrl().append("/").append(modelIri).append("/sparql");
+    String apiUrl = buildApiUrl() + modelIri + "/sparql";
 
     List<String> optionsList = new ArrayList<>();
 
@@ -122,36 +141,33 @@ public class OEModelEndpoint {
     if (null != options) {
 
       // default is false, don't set unless changed.
-      if (options.acceptWarnings) {
+      if (options.isAcceptWarnings()) {
         optionsList.add("warningsAccepted=true");
       }
 
-      if (options.runEditRules) {
+      if (options.isRunEditRules()) {
         optionsList.add("runEditRules=true");
       } else {
         optionsList.add("runEditRules=false");
       }
 
-      if (options.runCheckConstraints) {
+      if (options.isRunCheckConstraints()) {
         optionsList.add("checkConstraints=true");
       } else {
         optionsList.add("checkConstraints=false");
       }
 
-      if (optionsList.size() > 0) {
-        buf.append("?");
-        buf.append(Joiner.on("&").join(optionsList));
-      }
+      apiUrl += "?" + Joiner.on("&").join(optionsList);
     }
-    return buf.toString();
+    return apiUrl;
   }
 
   /**
    * Runs the SPARQL query and returns a detached ResultSet. If you have a large query, use the same
    * technique inline to stream results and save memory.
    *
-   * @param sparql
-   * @return
+   * @param sparql the SPARQL query text to run.
+   * @return the ResultSet of results returned by the query.
    */
   public ResultSet runSparqlQuery(String sparql) {
 
@@ -160,28 +176,102 @@ public class OEModelEndpoint {
     }
 
     Query query = QueryFactory.create(sparql);
-    ResultSet results = null;
-
-    HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    setProxyHttpHost(clientBuilder);
-
-    setCloudAuthHeaderIfConfigured(clientBuilder);
-
-    try (CloseableHttpClient client = clientBuilder.build();
-        QueryExecution qe =
-            QueryExecutionFactory.sparqlService(buildSPARQLUrl(null).toString(), query, client)) {
-      results = ResultSetFactory.copyResults(qe.execSelect());
-    } catch (IOException ioe) {
-      throw new RuntimeException("IOException.", ioe);
+    ResultSet results;
+    try {
+      initHttpClient();
+      QueryExecutionHTTPBuilder builder = QueryExecution.service(buildSPARQLUrl(null))
+          .httpClient(httpClient).query(query);
+      setHeaders(builder);
+      try (QueryExecutionHTTP httpExecHttp = builder.build()) {
+        results = ResultSetFactory.copyResults(httpExecHttp.execSelect());
+      }
+    } finally {
     }
     return results;
   }
 
+  private Duration connectTimeout = Duration.of(60, SECONDS);
+
   /**
-   * Run SPARQL update with specified SPARQL statement string and options
+   * Returns the connect timeout duration.
+   * @return the Duration
+   */
+  public Duration getConnectTimeout() {
+    return connectTimeout;
+  }
+
+  /**
+   * Sets the connect timeout duration.
+   * @param connectTimeout the connect timeout duration.
+   */
+  public void setConnectTimeout(Duration connectTimeout) {
+    this.connectTimeout = connectTimeout;
+  }
+
+  private Duration requestTimeout = Duration.of(60, MINUTES);
+
+  /**
+   * Gets the request timeout duration.
+   * @return the request timeout duration
+   */
+  public Duration getRequestTimeout() {
+    return requestTimeout;
+  }
+
+  /**
+   * Set the request timeout duration.
+   * @param requestTimeout the request timeout duration
+   */
+  public void setRequestTimeout(Duration requestTimeout) {
+    this.requestTimeout = requestTimeout;
+  }
+
+  private Token cloudToken = null;
+  private QueryExecutionHTTPBuilder setHeaders(QueryExecutionHTTPBuilder builder) {
+    if (!Strings.isNullOrEmpty(accessToken)) {
+      builder.httpHeader(X_API_KEY, accessToken);
+    }
+    if (Strings.isNullOrEmpty(cloudTokenFetchUrl) ||
+            Strings.isNullOrEmpty(cloudAPIKey)) {
+      return builder;
+    }
+    if ((cloudToken == null) || (cloudToken.isExpired())) {
+      cloudToken = getCloudToken();
+    }
+    String cloudTokenString = cloudToken.getAccess_token();
+    if (!Strings.isNullOrEmpty(cloudTokenString)) {
+      builder.httpHeader(HttpHeaders.AUTHORIZATION, cloudTokenString);
+    }
+    return builder;
+  }
+
+  private HttpRequest.Builder setHeaders(HttpRequest.Builder builder) {
+
+    if (!Strings.isNullOrEmpty(accessToken)) {
+      builder.header(X_API_KEY, accessToken);
+    }
+
+    if (Strings.isNullOrEmpty(cloudTokenFetchUrl) ||
+            Strings.isNullOrEmpty(cloudAPIKey)) {
+      return builder;
+    }
+    if ((cloudToken == null) || (cloudToken.isExpired())) {
+      cloudToken = getCloudToken();
+    }
+    String cloudTokenString = cloudToken.getAccess_token();
+    if (!Strings.isNullOrEmpty(cloudTokenString)) {
+      builder.header(HttpHeaders.AUTHORIZATION, cloudTokenString);
+    }
+    return builder;
+  }
+
+  /**
+   * Run SPARQL update with specified SPARQL statement string and options.
+   * The JobResult response will have details about the SPARQL update request.
    *
    * @param sparql the sparql update statement to execute
-   * @return true if request was successful.
+   * @param options the SPARQL options for the request.
+   * @return true if the SPARQL update returned as HTTP 200 ok.
    */
   public boolean runSparqlUpdate(String sparql, SparqlUpdateOptions options) {
 
@@ -216,13 +306,14 @@ public class OEModelEndpoint {
 
       }
 
-      logger.debug("Async SPARQL update job complete.");
+      JobResult result = getJobResult(jobId);
+      logger.debug("Async SPARQL update job complete. Result: {}", result);
+      this.updateSparqlJobResult = result;
+      return result.httpStatusCode() == 200;
 
     } catch (Exception e) {
       throw new RuntimeException("SPARQL update failed.", e);
     }
-
-    return true;
   }
 
   public boolean isCloudAuthHeaderSet() {
@@ -241,18 +332,10 @@ public class OEModelEndpoint {
     this.proxyServerConfigSet = proxyServerConfigSet;
   }
 
-  private void setProxyHttpHost(HttpClientBuilder clientBuilder) {
-    if (proxyHost != null && proxyPort != null && !proxyServerConfigSet) {
-      HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-      clientBuilder.setProxy(proxy);
-      proxyServerConfigSet = true;
-    }
-  }
-
   /**
-   * Given a Cloud API key, fetch a token (TODO)
+   * Given a Cloud API key, fetch a token.
    *
-   * @return
+   * @return the cloud access token
    */
   public Token getCloudToken() {
     Token token = null;
@@ -269,6 +352,10 @@ public class OEModelEndpoint {
     return token;
   }
 
+  /**
+   * Returns a string representation of this object's state.
+   * @return the object string representation
+   */
   @Override
   public String toString() {
     StringBuilder bldr = new StringBuilder();
@@ -281,18 +368,18 @@ public class OEModelEndpoint {
   }
 
   /**
-   * Gets the OE base URL (e.g. http://server-name:8080/swoe/)
+   * Gets the KMM base URL
    *
-   * @return
+   * @return the KMM base URL.
    */
   public String getBaseUrl() {
     return baseUrl;
   }
 
   /**
-   * Sets the OE base URL (e.g. http://server-name:8080/swoe/)
+   * Sets the KMM base URL
    *
-   * @param baseUrl
+   * @param baseUrl the KMM base URL
    */
   public void setBaseUrl(String baseUrl) {
     if (!Strings.isNullOrEmpty(baseUrl) && !baseUrl.endsWith("/")) {
@@ -303,36 +390,36 @@ public class OEModelEndpoint {
   }
 
   /**
-   * Gets the OE access token
+   * Gets the Studio access token
    *
-   * @return
+   * @return the Studio access token
    */
   public String getAccessToken() {
     return accessToken;
   }
 
   /**
-   * Sets the OE access token
+   * Sets the Studio access token. For use with local, non-cloud Studio instances.
    *
-   * @param accessToken
+   * @param accessToken the Studio access token
    */
   public void setAccessToken(String accessToken) {
     this.accessToken = accessToken;
   }
 
   /**
-   * Gets the cloud API key for cloud.smartlogic.com.
+   * Gets the cloud API key set for cloud access.
    *
-   * @return
+   * @return the cloud API key
    */
   public String getCloudAPIKey() {
     return cloudAPIKey;
   }
 
   /**
-   * Sets the cloud API key for cloud.smartlogic.com
+   * Sets the cloud API key for cloud access
    *
-   * @param cloudAPIKey
+   * @param cloudAPIKey the cloud API key
    */
   public void setCloudAPIKey(String cloudAPIKey) {
     this.cloudAPIKey = cloudAPIKey;
@@ -341,7 +428,7 @@ public class OEModelEndpoint {
   /**
    * Gets the cloud token fetch URL
    *
-   * @return
+   * @return the cloud token fetch url
    */
   public String getCloudTokenFetchUrl() {
     return cloudTokenFetchUrl;
@@ -350,7 +437,7 @@ public class OEModelEndpoint {
   /**
    * Sets the cloud token fetch URL
    *
-   * @param cloudTokenFetchUrl
+   * @param cloudTokenFetchUrl the cloud token fetch url
    */
   public void setCloudTokenFetchUrl(String cloudTokenFetchUrl) {
     this.cloudTokenFetchUrl = cloudTokenFetchUrl;
@@ -359,7 +446,7 @@ public class OEModelEndpoint {
   /**
    * Gets the model IRI (e.g. model:myExample)
    *
-   * @return
+   * @return the model IRI
    */
   public String getModelIri() {
     return modelIri;
@@ -368,54 +455,54 @@ public class OEModelEndpoint {
   /**
    * Sets the model IRI (e.g. model:myExample)
    *
-   * @param modelIri
+   * @param modelIri the model IRI
    */
   public void setModelIRI(String modelIri) {
     this.modelIri = modelIri;
   }
 
+  /**
+   * Returns the proxy host
+   * @return the proxy host
+   */
   public String getProxyHost() {
     return proxyHost;
   }
 
+  /**
+   * Sets the proxy host
+   * @param proxyHost the proxy host
+   */
   public void setProxyHost(String proxyHost) {
     this.proxyHost = proxyHost;
   }
 
+  /**
+   * Returns the proxy port
+   * @return the proxy port
+   */
   public Integer getProxyPort() {
     return proxyPort;
   }
 
+  /**
+   * Sets the proxy port
+   * @param proxyPort the proxy port
+   */
   public void setProxyPort(Integer proxyPort) {
     this.proxyPort = proxyPort;
-  }
-
-  protected void setCloudAuthHeaderIfConfigured(HttpClientBuilder clientBuilder) {
-    if (!Strings.isNullOrEmpty(cloudTokenFetchUrl) &&
-        !Strings.isNullOrEmpty(cloudAPIKey) &&
-        !cloudAuthHeaderSet) {
-      Token cloudToken = getCloudToken();
-      String cloudTokenString = cloudToken.getAccess_token();
-      if (!Strings.isNullOrEmpty(cloudTokenString)) {
-        Header header = new BasicHeader("Authorization", cloudTokenString);
-        clientBuilder.setDefaultHeaders(ImmutableSet.of(header));
-        cloudAuthHeaderSet = true;
-      }
-    }
-
   }
 
   /**
    * Builds an export URI for a given model.
    *
-   * @return
+   * @return the export URI for the model
    */
-  private String buildOEExportApiUrl() {
+  private String buildModelExportApiUrl() {
     checkNotNull(baseUrl);
     checkNotNull(modelIri);
 
-    String exportUrl = buildApiUrl().append("?path=backup").append("%2F").append(modelIri)
-        .append("%2F").append("export").append("&async=true").toString();
+    String exportUrl = buildApiUrl() + "?path=backup%2F" + modelIri + "%2Fexport&async=true";
 
     if (logger.isDebugEnabled()) {
       logger.debug("KMM model export URL (async): {}", exportUrl);
@@ -425,50 +512,59 @@ public class OEModelEndpoint {
   }
 
   /**
+   * Builds an export URI for a given model.
+   *
+   * @return the export URI for the model
+   */
+  @Deprecated
+  private String buildOEExportApiUrl() {
+    return buildModelExportApiUrl();
+  }
+
+  /**
    * Initiate a SPARQL update asynchronously, return jobId.
    *
    * @param sparqlString the sparql update string to run.
    * @param options the SPARQL update options.
    * @return jobId
-   * @throws IOException
-   * @throws OEConnectionException
+   * @throws IOException I/O exception
+   * @throws OEConnectionException Studio connection exception
    */
   public String initiateSPARQLUpdateAsync(String sparqlString, SparqlUpdateOptions options) throws IOException, OEConnectionException {
 
-    setProxyHttpHost(httpClientBuilder);
-    setCloudAuthHeaderIfConfigured(httpClientBuilder);
+    String jobId = null;
 
     String sparqlUpdateUrl = buildSPARQLUrl(options);
 
-    List<NameValuePair> formParams = Lists.newArrayList();
-    formParams.add(new BasicNameValuePair("update", sparqlString));
-    UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, StandardCharsets.UTF_8);
-    String jobId = null;
-    try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-      HttpPost httpPost = new HttpPost(sparqlUpdateUrl);
-      httpPost.setEntity(formEntity);
-      try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+    String formData = "update=" + URLEncoder.encode(sparqlString, StandardCharsets.UTF_8);
 
-        int statusCode = response.getStatusLine().getStatusCode();
+    try {
+      initHttpClient();
+      HttpRequest.Builder builder = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(formData));
+      setHeaders(builder);
+      builder.setHeader(HttpHeaders.CONTENT_TYPE, WebContent.contentTypeHTMLForm);
+      HttpRequest request = builder.uri(URI.create(sparqlUpdateUrl)).build();
 
-        if (logger.isDebugEnabled()) {
-          logger.debug("HTTP POST request returned, status code: " + statusCode + " " + sparqlUpdateUrl);
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+      int statusCode = response.statusCode();
+
+      if (logger.isDebugEnabled()) {
+        logger.debug("HTTP POST request returned, status code: {} {}", statusCode, sparqlUpdateUrl);
+      }
+
+      if (statusCode != HttpURLConnection.HTTP_ACCEPTED) {
+        throw new OEConnectionException(
+                 "Incorrect status code " + statusCode + " received from URL: " + sparqlUpdateUrl);
+      }
+
+      try (InputStream is = response.body()) {
+        JsonObject responseJson = Json.createReader(is).readObject();
+        if (responseJson == null) {
+          throw new OEConnectionException("Invalid JSON response to callback for job status");
         }
 
-        if (statusCode != HttpStatus.SC_ACCEPTED) {
-          throw new OEConnectionException(
-                  "Incorrect status code " + statusCode + " received from URL: " + sparqlUpdateUrl);
-        }
-
-        HttpEntity entity = response.getEntity();
-
-        try (InputStream is = entity.getContent()) {
-          JsonObject responseJson = JSON.parse(is);
-          if (responseJson == null) {
-            throw new OEConnectionException("Invalid JSON response to callback for job status");
-          }
-
-          String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
+          String jobStatus = responseJson.getString(JOB_STATUS);
           if (null == jobStatus) {
             throw new OEConnectionException("Invalid response JSON payload");
           }
@@ -477,67 +573,65 @@ public class OEModelEndpoint {
             throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
           }
 
-          jobId = responseJson.get("jobId").getAsString().value();
+          jobId = responseJson.getString("jobId");
         }
-      }
+       } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    } finally {
+
     }
     return jobId;
   }
 
   public String initiateExportAsyncDownload() throws IOException, OEConnectionException {
 
-      String initiateExportUrl = buildOEExportApiUrl();
+    String initiateExportUrl = buildOEExportApiUrl();
 
-      setProxyHttpHost(httpClientBuilder);
-      setCloudAuthHeaderIfConfigured(httpClientBuilder);
+    String jobId;
 
-      String jobId = null;
-      try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-        HttpGet httpGet = new HttpGet(initiateExportUrl);
+    try {
+      initHttpClient();
+      HttpRequest.Builder builder = HttpRequest.newBuilder().header(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
+      setHeaders(builder);
+      HttpRequest request = builder.uri(URI.create(initiateExportUrl)).build();
 
-        /* NT format for response */
-        httpGet.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-        HttpResponse response = httpClient.execute(httpGet);
-        if (response == null) {
-          throw new OEConnectionException("Null response from http client: " + initiateExportUrl);
-        }
-        if (response.getStatusLine() == null) {
-          throw new OEConnectionException("Null status line from http client: " + initiateExportUrl);
-        }
-
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        if (logger.isDebugEnabled()) {
-          logger.debug("HTTP request returned, status code: " + statusCode + " " + initiateExportUrl);
-        }
-
-        if (statusCode != HttpStatus.SC_ACCEPTED) {
-          throw new OEConnectionException(
-                  "Incorrect status code " + statusCode + " received from URL: " + initiateExportUrl);
-        }
-
-        HttpEntity entity = response.getEntity();
-
-        try (InputStream is = entity.getContent()) {
-          JsonObject responseJson = JSON.parse(is);
-          if (responseJson == null) {
-            throw new OEConnectionException("Invalid JSON response to callback for job status");
-          }
-
-          String jobStatus = responseJson.get(JOB_STATUS).getAsString().value();
-          if (null == jobStatus) {
-            throw new OEConnectionException("Invalid response JSON payload");
-          }
-
-          if (!jobStatus.equals(JOB_STATUS_ACCEPTED)) {
-            throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
-          }
-
-          jobId = responseJson.get("jobId").getAsString().value();
-        }
+      if (response == null) {
+        throw new OEConnectionException("Null response from http client: " + initiateExportUrl);
       }
-      return jobId;
+      int statusCode = response.statusCode();
+      if (logger.isDebugEnabled()) {
+        logger.debug("HTTP request returned, status code: " + statusCode + " " + initiateExportUrl);
+      }
+
+      if (statusCode != HttpURLConnection.HTTP_ACCEPTED) {
+        throw new OEConnectionException(
+                "Incorrect status code " + statusCode + " received from URL: " + initiateExportUrl);
+      }
+
+
+      try (InputStream is = response.body()) {
+        JsonObject responseJson = Json.createReader(is).readObject();
+        if (responseJson == null) {
+          throw new OEConnectionException("Invalid JSON response to callback for job status");
+        }
+
+        String jobStatus = responseJson.getString(JOB_STATUS);
+        if (null == jobStatus) {
+          throw new OEConnectionException("Invalid response JSON payload");
+        }
+
+        if (!jobStatus.equals(JOB_STATUS_ACCEPTED)) {
+          throw new OEConnectionException("Export job not accepted, jobStatus was: " + jobStatus);
+        }
+
+        jobId = responseJson.getString("jobId");
+      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    return jobId;
   }
 
   /**
@@ -582,79 +676,134 @@ public class OEModelEndpoint {
 
     String jobResultUrl = getJobCallbackUrl(jobId) + "/result";
 
-    setProxyHttpHost(httpClientBuilder);
-    setCloudAuthHeaderIfConfigured(httpClientBuilder);
+    try {
+      initHttpClient();
+      HttpRequest.Builder builder = HttpRequest.newBuilder();
+      setHeaders(builder);
 
-    try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-      HttpGet httpGet = new HttpGet(jobResultUrl);
-      /*
-       * New way to specify format on export calls: use Accept: header. Leaving old param on URI for
-       * now
-       */
-      httpGet.setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
+      HttpRequest request = builder.uri(URI.create(jobResultUrl))
+          .setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples)
+          .build();
 
-      HttpResponse response = httpClient.execute(httpGet);
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
       if (response == null) {
         throw new OEConnectionException("Null response from http client: " + jobResultUrl);
       }
-      if (response.getStatusLine() == null) {
-        throw new OEConnectionException("Null status line from http client: " + jobResultUrl);
+      if (response.statusCode() != HttpURLConnection.HTTP_OK) {
+        throw new OEConnectionException(
+                "Status code " + response.statusCode() + " received from URL: " + jobResultUrl);
       }
-
-      int statusCode = response.getStatusLine().getStatusCode();
 
       if (logger.isDebugEnabled()) {
-        logger.debug("HTTP request complete: " + statusCode + " " + jobResultUrl);
+        logger.debug("HTTP request complete: " + response.statusCode()  + " " + jobResultUrl);
       }
 
-      if (statusCode != HttpStatus.SC_OK) {
-        throw new OEConnectionException(
-            "Status code " + statusCode + " received from URL: " + jobResultUrl);
-      }
-
-      HttpEntity entity = response.getEntity();
-
-      try (InputStream is = entity.getContent()) {
+      try (InputStream is = response.body()) {
         RDFDataMgr.read(model, is, RDFFormat.NT.getLang());
       }
+    } finally {
+
     }
     return model;
   }
 
   public String getJobCallbackUrl(String jobId) {
-    return buildApiUrl().append("/async/jobs/").append(jobId).toString();
+    if (Strings.isNullOrEmpty(jobId)) {
+      return null;
+    }
+    return buildApiUrl() + "async/jobs/" + jobId;
   }
 
+  public String getJobResultCallbackUrl(String jobId) {
+    if (Strings.isNullOrEmpty(jobId)) {
+      return null;
+    }
+    return getJobCallbackUrl(jobId) + "/result";
+  }
+
+
   /**
-   * Get the job status from OE using the specified job status callback URL.
+   * Get the job status using the specified job status callback URL.
    *
-   * @param callbackUrl
-   * @return
+   * @param callbackUrl the job callback URL
+   * @return the job status string.
    */
-  public String getJobStatus(String callbackUrl) {
+  public String getJobStatus(String callbackUrl)  {
     checkNotNull(callbackUrl);
     logger.debug("Running getJobStatus, callback url: {}", callbackUrl);
 
     try {
       JsonObject responseJson;
-      HttpGet httpGet = new HttpGet(callbackUrl);
-      try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-        try (CloseableHttpResponse resp = httpClient.execute(httpGet)) {
-          HttpEntity ent = resp.getEntity();
-          try (InputStream inStr = ent.getContent()) {
-            responseJson = JSON.parse(inStr);
-          }
+
+      try {
+        initHttpClient();
+        HttpRequest.Builder builder = HttpRequest.newBuilder();
+        setHeaders(builder);
+        HttpRequest request = builder.uri(URI.create(callbackUrl)).build();
+
+        HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+        try (InputStream inStr = response.body()) {
+            responseJson = Json.createReader(inStr).readObject();
         }
+      } finally {
+
       }
 
       if (responseJson == null) {
         throw new RuntimeException("Invalid JSON response to callback for job status");
       }
 
-      return responseJson.get(JOB_STATUS).getAsString().value();
+      return responseJson.getString(JOB_STATUS);
 
     } catch (Exception e) {
       throw new RuntimeException("Exception caught while getting OE job status.", e);
     }
+  }
+
+  /**
+   * Get the job result from KMM using the specified job status callback URL.
+   *
+   * @param jobId the job id
+   * @return the job result
+   */
+  public JobResult getJobResult(String jobId)  {
+    checkNotNull(jobId);
+
+    String callbackUrl = getJobResultCallbackUrl(jobId);
+    logger.debug("Running getJobResult, jobId: {}, callback url: {}", jobId, callbackUrl);
+
+    JsonObject responseJson;
+    int httpStatusCode;
+    List<KMMError> errorsList = Lists.newArrayList();
+
+    try {
+      initHttpClient();
+      HttpRequest.Builder builder = HttpRequest.newBuilder();
+      setHeaders(builder);
+      HttpRequest request = builder.uri(URI.create(callbackUrl)).build();
+
+      HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+      httpStatusCode = response.statusCode();
+      if (httpStatusCode != 200) {
+        try (InputStream inStr = response.body()) {
+          responseJson = Json.createReader(inStr).readObject();
+          JsonArray errorsArray = responseJson.getJsonArray("errors");
+          errorsArray.forEach(error -> errorsList.add(new KMMError((JsonObject) error)));
+        }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Exception caught while getting OE job status.", e);
+    }
+    return new JobResult(jobId, httpStatusCode, errorsList);
+  }
+
+  /**
+   * Return the JobResultRecord object from the last update SPARQL call.
+   * @return the JobResultRecord
+   */
+  public JobResult getJobResultRecord()  {
+    return this.updateSparqlJobResult;
   }
 }

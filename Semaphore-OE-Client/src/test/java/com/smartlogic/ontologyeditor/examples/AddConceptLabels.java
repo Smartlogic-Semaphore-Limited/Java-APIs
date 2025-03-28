@@ -37,13 +37,14 @@ public class AddConceptLabels extends ModelManipulation {
 		oeClient.createLabels(uris, labels);
 	}
 
-	private Concept addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) {
+	private Concept addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {
 
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", "Concept " + label));
 
 		Concept concept = new Concept(oeClient,
 				"http://example.com/APITest#Concept" + urlEncode(label), labels);
+		oeClient.createConcept(conceptScheme.getUri(), concept);
 		return concept;
 
 	}

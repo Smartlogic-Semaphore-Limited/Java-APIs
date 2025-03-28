@@ -9,8 +9,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -18,7 +18,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public abstract class AbstractFieldListElement implements Serializable {
-  protected final static Log logger = LogFactory.getLog(AbstractFieldListElement.class);
+  protected static final Logger logger = LoggerFactory.getLogger(AbstractFieldListElement.class);
   private static final long serialVersionUID = 8798207670666532501L;
 
   // This is required by the XML Marshalling/Unmarshalling

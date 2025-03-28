@@ -1,16 +1,16 @@
 package com.smartlogic.ses.client;
 
 import com.smartlogic.ses.client.exceptions.SESException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class TestModelsList extends PrintingTestCase {
-  protected final Log logger = LogFactory.getLog(getClass());
   private static SESClient sesClient;
+  protected static final Logger logger = LoggerFactory.getLogger(TestModelsList.class);
 
   public void setUp() {
     wireMockRule.start();

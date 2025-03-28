@@ -8,16 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.smartlogic.classificationserver.client.ClassificationClient;
 import com.smartlogic.classificationserver.client.ClassificationConfiguration;
 import com.smartlogic.classificationserver.client.ClassificationException;
 import com.smartlogic.classificationserver.client.ClassificationScore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DirectoryClassifier extends DirectoryParser {
-	protected final static Log logger = LogFactory.getLog(DirectoryClassifier.class);
+	protected static final Logger logger = LoggerFactory.getLogger(DirectoryClassifier.class);
 
 	public DirectoryClassifier(ClassificationClient classificationClient) {
 		super(classificationClient);

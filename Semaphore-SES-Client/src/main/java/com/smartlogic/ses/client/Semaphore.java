@@ -13,8 +13,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -26,7 +26,7 @@ import com.smartlogic.ses.client.exceptions.SESException;
 @XmlRootElement(name = "semaphore")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Semaphore implements Serializable {
-  protected final static Log logger = LogFactory.getLog(Semaphore.class);
+  protected static final Logger logger = LoggerFactory.getLogger(Semaphore.class);
   private static final long serialVersionUID = 970605711180551842L;
 
   // This is required by the XML Marshalling/Unmarshalling

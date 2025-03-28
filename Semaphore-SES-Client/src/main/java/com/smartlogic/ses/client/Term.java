@@ -13,8 +13,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Term implements Serializable {
   private static final long serialVersionUID = 4770870508237781876L;
-  protected final static Log logger = LogFactory.getLog(Term.class);
+  protected static final Logger logger = LoggerFactory.getLogger(Term.class);
 
   public Term() {
   }

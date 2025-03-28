@@ -1,16 +1,17 @@
 package com.smartlogic.ses.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class TestHintsXML extends SESServerMockTestCase {
-  protected final Log logger = LogFactory.getLog(getClass());
+  protected static final Logger logger = LoggerFactory.getLogger(TestHintsXML.class);
   private static SESClient sesClient;
 
   @Override

@@ -8,6 +8,7 @@ import wiremock.org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
@@ -27,7 +28,7 @@ public abstract class SESServerMockTestCase extends TestCase {
    */
   public static String readFileToString(String path) {
     try {
-      return FileUtils.readFileToString(new File(path));
+      return FileUtils.readFileToString(new File(path), StandardCharsets.UTF_8);
     } catch (IOException ioe) {
       throw new RuntimeException(ioe);
     }

@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.compress.utils.Sets;
-import org.apache.jena.ext.com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -297,7 +297,7 @@ public abstract class ObjectWithURI {
     while (it.hasNext()) {
       Statement stmt = it.nextStatement();
       Literal lit = stmt.getLiteral();
-      if (!Strings.isNullOrEmpty(lang)) {
+      if (!StringUtils.isEmpty(lang)) {
         if (lit.getString().equals(value) && lit.getLanguage().equalsIgnoreCase(lang)) {
           return true;
         }
@@ -420,4 +420,11 @@ public abstract class ObjectWithURI {
     }
     return concepts;
   }
+
+  protected static void checkNotNull(Object object) {
+    if (object == null) {
+      throw new IllegalStateException("Null value received");
+    }
+  }
+
 }

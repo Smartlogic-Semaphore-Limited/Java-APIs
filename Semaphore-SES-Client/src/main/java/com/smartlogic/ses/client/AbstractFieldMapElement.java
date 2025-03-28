@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -22,7 +22,7 @@ import org.w3c.dom.NodeList;
 import com.smartlogic.ses.client.utils.FieldComparator;
 
 public abstract class AbstractFieldMapElement implements Serializable {
-  protected final static Log logger = LogFactory.getLog(AbstractFieldMapElement.class);
+  protected static final Logger logger = LoggerFactory.getLogger(AbstractFieldMapElement.class);
   private static final long serialVersionUID = -7358409617941350295L;
 
   // This is required by the XML Marshalling/Unmarshalling

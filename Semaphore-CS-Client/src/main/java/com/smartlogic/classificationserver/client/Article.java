@@ -37,7 +37,7 @@ public class Article extends ClassifiableObject {
 		}
 	}
 
-	private List<Paragraph> paragraphs = new LinkedList<Paragraph>();
+	private List<Paragraph> paragraphs = new LinkedList<>();
 	
 	/**
 	 * Return the list of paragraphs identified within the article

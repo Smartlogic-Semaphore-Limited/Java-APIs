@@ -1,5 +1,6 @@
 package com.smartlogic.ontologyeditor.examples;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -21,9 +22,9 @@ public abstract class ModelManipulation {
   public static Collection<OEClientReadWrite> getOEClients() throws IOException, CloudException {
     if (oeClients == null) {
       oeClients = new ArrayList<>();
-      oeClients.add(getOEClient("semaphore4.properties"));
+//      oeClients.add(getOEClient("semaphore4.properties"));
       oeClients.add(getOEClient("semaphore5.properties"));
-      oeClients.add(getOEClient("cloud.properties"));
+//      oeClients.add(getOEClient("cloud.properties"));
     }
     return oeClients;
   }
@@ -35,7 +36,8 @@ public abstract class ModelManipulation {
       properties = new Properties();
       properties.load(propertiesInputStream);
     } catch (IOException e) {
-      System.err.println("Error attempting to read properties from file \"config.properties\"");
+      File file = new File(fileName);
+      System.err.println("Error attempting to read properties from file " + file.getAbsolutePath());
       throw e;
     }
 

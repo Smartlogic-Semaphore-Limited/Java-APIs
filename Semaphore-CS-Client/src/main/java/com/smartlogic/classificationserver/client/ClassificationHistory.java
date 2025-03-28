@@ -3,8 +3,8 @@ package com.smartlogic.classificationserver.client;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -16,7 +16,7 @@ import com.smartlogic.classificationserver.client.csvparser.CSVParser;
  *
  */
 public class ClassificationHistory extends XMLReader {
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected static final Logger logger = LoggerFactory.getLogger(ClassificationHistory.class);
 
 	public ClassificationHistory(String successFormat, String failFormat, String logData) {
 		this.successFormat = successFormat;

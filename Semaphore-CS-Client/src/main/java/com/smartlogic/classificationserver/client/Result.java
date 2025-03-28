@@ -3,14 +3,14 @@ package com.smartlogic.classificationserver.client;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class Result extends ClassifiableObject {
-	protected static final Log logger = LogFactory.getLog(Result.class);
+	protected static final Logger logger = LoggerFactory.getLogger(Result.class);
 
 	public Result(Document document) throws ClassificationException {
 		// If there is no data provided, then just return an empty category list
