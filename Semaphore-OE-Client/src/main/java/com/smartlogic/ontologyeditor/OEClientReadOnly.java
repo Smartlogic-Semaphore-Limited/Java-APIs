@@ -27,12 +27,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OEClientReadOnly {
+
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private final static String basicProperties = "sem:guid,skosxl:prefLabel/[]";
-  private final static String conceptSchemeProperties = "rdf:type,rdfs:label,sem:guid,skos:hasTopConcept";
+  public static final String JSON_LD_GRAPH = "@graph";
+  public static final String PARAM_PROPERTIES = "properties";
+  public static final String PARAM_FILTERS = "filters";
+  public static final String PATH_SKOS_CONCEPT_META_TRANSITIVE_INSTANCE = "/skos:Concept/meta:transitiveInstance";
 
-  private final static Map<String, String> prefixMapping = new HashMap<>();
+  private static final String BASIC_PROPERTIES = "sem:guid,skosxl:prefLabel/[]";
+  private static final String CONCEPT_SCHEME_PROPERTIES = "rdf:type,rdfs:label,sem:guid,skos:hasTopConcept";
+
+  private static final Map<String, String> prefixMapping = new HashMap<>();
   static {
     prefixMapping.put("rdfs:", RDFS.getURI());
     prefixMapping.put("rdf:", RDF.getURI());
@@ -150,14 +156,14 @@ public class OEClientReadOnly {
   public boolean isKRTClient() {
     return isKRTClient;
   }
-  public void setKRTClient(boolean KRTClient) {
-    isKRTClient = KRTClient;
+  public void setKRTClient(boolean krtClient) {
+    isKRTClient = krtClient;
   }
 
   protected String getWrappedUri(String uriString) throws OEClientException {
     try {
       URI uri = new URI(uriString);
-      return (uri.getAuthority() == null) ? uri.toString() : "<" + uri.toString() + ">";
+      return (uri.getAuthority() == null) ? uri.toString() : "<" + uri + ">";
     } catch (URISyntaxException e) {
       throw new OEClientException(String.format("%s is not a valid URI", uriString));
     }
@@ -177,10 +183,7 @@ public class OEClientReadOnly {
 
   protected String getModelURL() {
     if (modelURL == null) {
-      StringBuilder stringBuilder = new StringBuilder(getApiURL());
-//      stringBuilder.append("?path=");
-      stringBuilder.append(modelUri);
-      modelURL = stringBuilder.toString();
+      modelURL = getApiURL() + modelUri;
 
       if (logger.isDebugEnabled()) {
         logger.debug("modelURL: {}", modelURL);
@@ -240,7 +243,7 @@ public class OEClientReadOnly {
     String url = getApiURL() + "sys/sys:Model/rdf:instance";
     logger.info("getAllModels URL: {}", url);
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", "meta:displayName,meta:graphUri");
+    queryParameters.put(PARAM_PROPERTIES, "meta:displayName,meta:graphUri");
 
     Date startDate = new Date();
     logger.info("getAllModels making call  : {}", startDate.getTime());
@@ -249,7 +252,7 @@ public class OEClientReadOnly {
 
     JsonObject jsonResponse = JSON.parse(response);
 
-    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
     Collection<Model> models = new ArrayList<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
     while (jsonValueIterator.hasNext()) {
@@ -273,8 +276,8 @@ public class OEClientReadOnly {
     logger.info("getAllTasks URL: {}", url);
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", "semfun:hasMainTag/(meta:graphUri|meta:displayName)");
-    queryParameters.put("filters", "subject_hasTask(notExists rdf:type sem:ORTTask)");
+    queryParameters.put(PARAM_PROPERTIES, "semfun:hasMainTag/(meta:graphUri|meta:displayName)");
+    queryParameters.put(PARAM_FILTERS, "subject_hasTask(notExists rdf:type sem:ORTTask)");
     logger.info("getAllTasks queryParameters: {}", queryParameters);
 
 
@@ -283,7 +286,7 @@ public class OEClientReadOnly {
     String response = getResponse(url, queryParameters);
 
     JsonObject jsonResponse = JSON.parse(response);
-    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
     Collection<Task> tasks = new ArrayList<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
     while (jsonValueIterator.hasNext()) {
@@ -309,9 +312,9 @@ public class OEClientReadOnly {
     logger.debug("getChangesSince: '{}'", url);
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties",
+    queryParameters.put(PARAM_PROPERTIES,
         "?triple/(teamwork:subject|teamwork:predicate|teamwork:object),sem:committed");
-    queryParameters.put("filters", String.format("subject(sem:committed >= \"%s\"^^xsd:dateTime)",
+    queryParameters.put(PARAM_FILTERS, String.format("subject(sem:committed >= \"%s\"^^xsd:dateTime)",
         date.toInstant().toString()));
     queryParameters.put("sort", "sem:committed");
 
@@ -320,7 +323,7 @@ public class OEClientReadOnly {
     String response = getResponse(url, queryParameters);
 
     JsonObject jsonResponse = JSON.parse(response);
-    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
     Collection<ChangeRecord> changeRecords = new ArrayList<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
     while (jsonValueIterator.hasNext()) {
@@ -339,7 +342,7 @@ public class OEClientReadOnly {
     logger.info("getRelationshipTypes entry: {}", parentType);
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties",
+    queryParameters.put(PARAM_PROPERTIES,
         "rdfs:label,owl:inverseOf,rdfs:subPropertyOf,owl:inverseOf/rdfs:label,owl:inverseOf/rdfs:subPropertyOf");
 
     String url = getModelURL() + "/" + parentType + "/meta:transitiveSubProperty";
@@ -349,7 +352,7 @@ public class OEClientReadOnly {
     String response = getResponse(url, queryParameters);
 
     JsonObject jsonResponse = JSON.parse( response);
-    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
     Collection<RelationshipType> relationshipTypes = new HashSet<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
     while (jsonValueIterator.hasNext()) {
@@ -392,7 +395,7 @@ public class OEClientReadOnly {
     logger.info("getConceptClasses entry");
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", "rdfs:label,rdfs:subClassOf");
+    queryParameters.put(PARAM_PROPERTIES, "rdfs:label,rdfs:subClassOf");
     queryParameters.put("limit", Integer.toString(limit));
     String url = getModelURL() + "/skos:Concept/meta:transitiveSubClass";
 
@@ -401,7 +404,7 @@ public class OEClientReadOnly {
     String response = getResponse(url, queryParameters);
 
     JsonObject jsonResponse = JSON.parse(response);
-    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
     Collection<ConceptClass> conceptClasses = new HashSet<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
     while (jsonValueIterator.hasNext()) {
@@ -424,7 +427,7 @@ public class OEClientReadOnly {
     logger.info("getConcept entry: {}", conceptUri);
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", basicProperties);
+    queryParameters.put(PARAM_PROPERTIES, BASIC_PROPERTIES);
     queryParameters.put("path", getPathParameter(conceptUri));
 
     Date startDate = new Date();
@@ -432,14 +435,14 @@ public class OEClientReadOnly {
     String response = getResponse(getApiURL(), queryParameters);
 
     JsonObject jsonResponse = JSON.parse( response);
-    return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+    return new Concept(this, jsonResponse.get(JSON_LD_GRAPH).getAsArray().get(0).getAsObject());
   }
 
   public ConceptScheme getConceptScheme(String conceptSchemeUri) throws OEClientException {
     logger.info("getConceptScheme entry: {}", conceptSchemeUri);
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", conceptSchemeProperties);
+    queryParameters.put(PARAM_PROPERTIES, CONCEPT_SCHEME_PROPERTIES);
     queryParameters.put("path", getPathParameter(conceptSchemeUri));
 
     Date startDate = new Date();
@@ -447,7 +450,7 @@ public class OEClientReadOnly {
     String response = getResponse(getApiURL(), queryParameters);
 
     JsonObject jsonResponse = JSON.parse( response);
-    return new ConceptScheme(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+    return new ConceptScheme(this, jsonResponse.get(JSON_LD_GRAPH).getAsArray().get(0).getAsObject());
   }
 
   /**
@@ -475,12 +478,12 @@ public class OEClientReadOnly {
   public Concept getConceptByIdentifier(Identifier identifier) throws OEClientException {
     logger.info("getConceptByIdentifier entry: {}", identifier);
 
-    String url = getModelURL() + "/skos:Concept/meta:transitiveInstance";
+    String url = getModelURL() + PATH_SKOS_CONCEPT_META_TRANSITIVE_INSTANCE;
     logger.info("getConceptByIdentifier url: {}", url);
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", basicProperties);
-    queryParameters.put("filters", String.format("subject(exists %s \"%s\")",
+    queryParameters.put(PARAM_PROPERTIES, BASIC_PROPERTIES);
+    queryParameters.put(PARAM_FILTERS, String.format("subject(exists %s \"%s\")",
         getWrappedUri(identifier.getUri()), identifier.getValue()));
     logger.info("getConceptByIdentifier queryParameters: {}", queryParameters);
 
@@ -489,7 +492,7 @@ public class OEClientReadOnly {
     String response = getResponse(url, queryParameters);
 
     JsonObject jsonResponse = JSON.parse(response);
-    return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+    return new Concept(this, jsonResponse.get(JSON_LD_GRAPH).getAsArray().get(0).getAsObject());
   }
 
   public Concept getConceptByName(String relationshipTypeUri, String labelValue)
@@ -500,21 +503,21 @@ public class OEClientReadOnly {
   public Concept getConceptByName(String relationshipTypeUri, String labelValue, String language)
       throws OEClientException {
     JsonObject jsonResponse = getConceptByNameResponse(relationshipTypeUri, labelValue, language);
-    if (jsonResponse.get("@graph").getAsArray().size() == 0) {
+    if (jsonResponse.get(JSON_LD_GRAPH).getAsArray().isEmpty()) {
       throw new OEClientException(
           String.format("No concept found with label type '%s' and value '%s' (%s)",
               relationshipTypeUri, labelValue, language));
-    } else if (jsonResponse.get("@graph").getAsArray().size() > 1) {
+    } else if (jsonResponse.get(JSON_LD_GRAPH).getAsArray().size() > 1) {
       throw new OEClientException(
           String.format("Multiple concepts found with label type '%s' and value '%s'",
               relationshipTypeUri, labelValue));
     }
-    return new Concept(this, jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+    return new Concept(this, jsonResponse.get(JSON_LD_GRAPH).getAsArray().get(0).getAsObject());
   }
 
   public ConceptScheme getConceptSchemeByName(String labelValue,  String language) throws OEClientException {
     JsonObject jsonResponse = getConceptSchemeByNameResponse(labelValue, language);
-    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
     if (jsonArray.isEmpty()) {
       throw new OEClientException(String.format("Concept Scheme not found: \"%s\"@%s", labelValue, language));
     } else if (jsonArray.size() > 1) {
@@ -532,7 +535,7 @@ public class OEClientReadOnly {
       String language) throws OEClientException {
     JsonObject jsonResponse = getConceptByNameResponse(relationshipTypeUri, labelValue, language);
     Collection<Concept> concepts = new ArrayList<>();
-    for (JsonValue jsonValue : jsonResponse.get("@graph").getAsArray()) {
+    for (JsonValue jsonValue : jsonResponse.get(JSON_LD_GRAPH).getAsArray()) {
       concepts.add(new Concept(this, jsonValue.getAsObject()));
     }
     return concepts;
@@ -542,12 +545,12 @@ public class OEClientReadOnly {
       String language) throws OEClientException {
     logger.info("getConceptByNameResponse entry: {} {}", relationshipTypeUri, labelValue);
 
-    String url = getModelURL() + "/skos:Concept/meta:transitiveInstance";
+    String url = getModelURL() + PATH_SKOS_CONCEPT_META_TRANSITIVE_INSTANCE;
     logger.info("getConceptByNameResponse url: {}", url);
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", basicProperties);
-    queryParameters.put("filters", String.format("subject(%s/skosxl:literalForm matches \"%s\"%s)",
+    queryParameters.put(PARAM_PROPERTIES, BASIC_PROPERTIES);
+    queryParameters.put(PARAM_FILTERS, String.format("subject(%s/skosxl:literalForm matches \"%s\"%s)",
         getWrappedUri(relationshipTypeUri), labelValue, language == null ? "" : "@" + language));
     if (language != null) {
       queryParameters.put("language", language);
@@ -558,9 +561,9 @@ public class OEClientReadOnly {
     logger.info("getConceptByNameResponse making call  : {}", startDate.getTime());
     String response = getResponse(url, queryParameters);
 
-    JsonObject jsonResponse = JSON.parse(response);
-    return jsonResponse;
+    return JSON.parse(response);
   }
+
   private JsonObject getConceptSchemeByNameResponse(String labelValue, String language) throws OEClientException {
     logger.info("getConceptSchemeByNameResponse entry: {}", labelValue);
 
@@ -568,8 +571,8 @@ public class OEClientReadOnly {
     logger.info("getConceptSchemeByNameResponse url: {}", url);
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", "rdfs:label,sem:guid");
-    queryParameters.put("filters", String.format("subject(rdfs:label matches \"%s\"%s)",
+    queryParameters.put(PARAM_PROPERTIES, "rdfs:label,sem:guid");
+    queryParameters.put(PARAM_FILTERS, String.format("subject(rdfs:label matches \"%s\"%s)",
             labelValue, language == null ? "" : "@" + language));
     if (language != null) {
       queryParameters.put("language", language);
@@ -590,27 +593,38 @@ public class OEClientReadOnly {
   public Collection<Concept> getFilteredConcepts(OEFilter oeFilter) throws OEClientException {
     logger.info("getFilteredConcepts entry: {}", oeFilter);
 
-    String url = getModelURL() + "/skos:Concept/meta:transitiveInstance";
+    String url = getModelURL() + PATH_SKOS_CONCEPT_META_TRANSITIVE_INSTANCE;
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", basicProperties);
+    queryParameters.put(PARAM_PROPERTIES, BASIC_PROPERTIES);
 
+    StringJoiner filterParamJoiner = new StringJoiner(",");
     if (oeFilter.getConceptClass() != null) {
-      queryParameters.put("filters",
-          String.format("subject(rdf:type=%s)", getWrappedUri(oeFilter.getConceptClass())));
+      filterParamJoiner.add(String.format("subject(rdf:type=%s)", getWrappedUri(oeFilter.getConceptClass())));
+          String.format("subject(rdf:type=%s)", getWrappedUri(oeFilter.getConceptClass()));
     }
 
+    if (oeFilter.getLabelPrefix() != null) {
+      filterParamJoiner.add(String.format("subject( autocomplete prefix \"%s\"@%s)",
+          oeFilter.getLabelPrefix(), oeFilter.getLabelPrefixLangCode()));
+    }
+
+    if (filterParamJoiner.length() > 0)
+      queryParameters.put(PARAM_FILTERS, filterParamJoiner.toString());
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("getFilteredConcepts queryParameters: {}", queryParameters);
+    }
 
     Date startDate = new Date();
     logger.info("getFilteredConcepts making call  : {} {}", startDate.getTime(), url);
     String response = getResponse(url, queryParameters);
     JsonObject jsonResponse = JSON.parse(response);
 
-    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
     Collection<Concept> concepts = new HashSet<>();
-    Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
-    while (jsonValueIterator.hasNext()) {
-      concepts.add(new Concept(this, jsonValueIterator.next().getAsObject()));
+    for (JsonValue jsonValue : jsonArray) {
+      concepts.add(new Concept(this, jsonValue.getAsObject()));
     }
     return concepts;
   }
@@ -621,14 +635,14 @@ public class OEClientReadOnly {
     String url = getModelURL() + "/skos:ConceptScheme/rdf:instance";
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", "sem:guid,rdfs:label,skos:hasTopConcept");
+    queryParameters.put(PARAM_PROPERTIES, "sem:guid,rdfs:label,skos:hasTopConcept");
 
     Date startDate = new Date();
     logger.info("getAllConceptSchemes making call  : {} {}", startDate.getTime(), url);
     String response = getResponse(url, queryParameters);
     JsonObject jsonResponse = JSON.parse(response);
 
-    JsonArray jsonArray = jsonResponse.get("@graph").getAsArray();
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
     Collection<ConceptScheme> conceptSchemes = new HashSet<>();
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
     while (jsonValueIterator.hasNext()) {
@@ -650,7 +664,7 @@ public class OEClientReadOnly {
     logger.info("populateRelatedConceptUris call complete: {}", startDate.getTime());
 
     JsonObject jsonResponse = JSON.parse(response);
-    concept.populateRelatedConceptUris(relationshipUri, jsonResponse.get("@graph"));
+    concept.populateRelatedConceptUris(relationshipUri, jsonResponse.get(JSON_LD_GRAPH));
   }
 
   public void populateAltLabels(String altLabelTypeUri, Concept concept) throws OEClientException {
@@ -658,23 +672,26 @@ public class OEClientReadOnly {
 
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put("path", getPathParameter(concept.getUri(), altLabelTypeUri));
-    queryParameters.put("properties", "[]");
+    queryParameters.put(PARAM_PROPERTIES, "[]");
 
     Date startDate = new Date();
     logger.info("populateAltLabels making call  : {}", startDate.getTime());
     String response = getResponse(getApiURL(), queryParameters);
 
     JsonObject jsonResponse = JSON.parse(response);
-    concept.populateAltLabels(altLabelTypeUri, jsonResponse.get("@graph"));
+    concept.populateAltLabels(altLabelTypeUri, jsonResponse.get(JSON_LD_GRAPH));
   }
 
   public void populateMetadata(String metadataUri, Concept concept) throws OEClientException {
     logger.info("populateMetadata entry: {}", concept.getUri());
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", getEscapedUri(getWrappedUri(metadataUri)));
+    queryParameters.put(PARAM_PROPERTIES, getEscapedUri(getWrappedUri(metadataUri)));
 
-    String path = getModelUri() + "/" + getEscapedUri("<" + concept.getUri() + ">");
+    String path = new StringJoiner("/")
+        .add(getModelUri())
+        .add(getEscapedUri("<" + concept.getUri() + ">"))
+        .toString();
     queryParameters.put("path", path);
 
     logger.info("populateMetadata uri: {}", getApiURL());
@@ -686,7 +703,7 @@ public class OEClientReadOnly {
 
     JsonObject jsonResponse = JSON.parse(response);
     concept.populateMetadata(metadataUri,
-        jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+        jsonResponse.get(JSON_LD_GRAPH).getAsArray().get(0).getAsObject());
   }
 
   public void populateBooleanMetadata(String metadataUri, Concept concept)
@@ -694,11 +711,13 @@ public class OEClientReadOnly {
     logger.info("populateBooleanMetadata entry: {}", concept.getUri());
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", getEscapedUri(getWrappedUri(metadataUri)));
+    queryParameters.put(PARAM_PROPERTIES, getEscapedUri(getWrappedUri(metadataUri)));
 
-    String path = getModelUri() + "/" + getEscapedUri("<" + concept.getUri() + ">");
+    String path = new StringJoiner("/")
+        .add(getModelUri())
+        .add(getEscapedUri("<" + concept.getUri() + ">"))
+        .toString();
     queryParameters.put("path", path);
-
 
     logger.info("populateBooleanMetadata uri: {}", getApiURL());
     logger.info("populateBooleanMetadata queryParameters: {}", queryParameters);
@@ -709,7 +728,7 @@ public class OEClientReadOnly {
 
     JsonObject jsonResponse = JSON.parse(response);
     concept.populateBooleanMetadata(metadataUri,
-        jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+        jsonResponse.get(JSON_LD_GRAPH).getAsArray().get(0).getAsObject());
 
   }
 
@@ -717,7 +736,7 @@ public class OEClientReadOnly {
     logger.info("populateClasses entry: {}", concept.getUri());
 
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put("properties", getEscapedUri(getWrappedUri("rdf:type")));
+    queryParameters.put(PARAM_PROPERTIES, getEscapedUri(getWrappedUri("rdf:type")));
     queryParameters.put("path", getPathParameter(concept.getUri()));
 
     logger.info("populateClasses uri: {}", getApiURL());
@@ -729,22 +748,8 @@ public class OEClientReadOnly {
     logger.info("populateClasses call complete: {}", startDate.getTime());
 
     JsonObject jsonResponse = JSON.parse(response);
-    concept.populateClasses(jsonResponse.get("@graph").getAsArray().get(0).getAsObject());
+    concept.populateClasses(jsonResponse.get(JSON_LD_GRAPH).getAsArray().get(0).getAsObject());
 
-  }
-
-  private JsonObject getJsonResponse(String callingMethod, String stringResponse)
-      throws OEClientException {
-
-    return JSON.parse(stringResponse);
-  }
-
-  // Concept uri needs to be encoded to be used in path
-  protected String getResourceURL(String resourceUri) throws OEClientException {
-    logger.info("getResourceURL - entry: {}", resourceUri);
-    String resourceURL = getModelURL() + "/" + getPath(resourceUri);
-    logger.info("getResourceURL - exit: {}", resourceURL);
-    return resourceURL;
   }
 
   /**
@@ -789,7 +794,7 @@ public class OEClientReadOnly {
     }
   }
 
-  private String getPath(String resourceUri) throws OEClientException {
+  private String getPath(String resourceUri) {
 
     logger.info("getPath - entry: {}", resourceUri);
     boolean matching =
@@ -803,17 +808,18 @@ public class OEClientReadOnly {
     return escapedUri;
   }
 
-  protected String getPathParameter(String conceptUri) throws OEClientException {
-    logger.info("getPath - entry: {}", conceptUri);
-    String pathParameter = (modelUri + "/" + getPath(conceptUri));
-    logger.info("getPath - exit: {}", pathParameter);
+  protected String getPathParameter(String conceptUri) {
+    logger.info("getPathParameter - entry: {}", conceptUri);
+    String pathParameter = new StringJoiner("/").add(modelUri).add(getPath(conceptUri)).toString();
+    logger.info("getPathParameter - exit: {}", pathParameter);
     return pathParameter;
   }
 
-  protected String getPathParameter(String conceptUri, String relationshipUrl) throws OEClientException {
-    logger.info("getPath - entry: {}", conceptUri);
-    String pathParameter = (modelUri + "/" + getPath(conceptUri) + "/" + getPath(relationshipUrl));
-    logger.info("getPath - exit: {}", pathParameter);
+  protected String getPathParameter(String conceptUri, String relationshipUrl) {
+    logger.info("getPathParameter (2 arg) - entry: {}", conceptUri);
+    StringJoiner joiner = new StringJoiner("/");
+    String pathParameter = joiner.add(conceptUri).add(getPath(conceptUri)).add(getPath(relationshipUrl)).toString();
+    logger.info("getPathParameter (2 arg) - exit: {}", pathParameter);
     return pathParameter;
   }
 
@@ -841,7 +847,7 @@ public class OEClientReadOnly {
    * @return - the wrapped Uri encoded for sysetms that don't allow slashes
    */
   protected String getTildered(String wrappedUri) {
-    return wrappedUri.replaceAll("~", "~0").replaceAll("/", "~1");
+    return wrappedUri.replace("~", "~0").replace("/", "~1");
   }
 
   protected enum RequestType { POST, DELETE, PATCH }
