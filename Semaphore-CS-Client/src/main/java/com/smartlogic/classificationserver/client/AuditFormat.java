@@ -8,7 +8,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ibm.icu.text.SimpleDateFormat;
+import java.text.SimpleDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class AuditFormat {
 	protected static final Logger logger = LoggerFactory.getLogger(AuditFormat.class);
 
-	public final static String defaultDateFormat = "eee LLL dd hh:mm:ss yyyy";
+	public final static String defaultDateFormat = "EEE LLL dd hh:mm:ss yyyy";
 
 	public final static int UNDEFINED_INT = -1;
 	public final static float UNDEFINED_FLOAT = -1.0f;
