@@ -16,13 +16,7 @@ import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.atlas.json.JsonValue;
 import org.apache.jena.sparql.util.FmtUtils;
-import org.apache.jena.vocabulary.DC_11;
-import org.apache.jena.vocabulary.OWL;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
-import org.apache.jena.vocabulary.SKOS;
-import org.apache.jena.vocabulary.SKOSXL;
-import org.apache.jena.vocabulary.XSD;
+import org.apache.jena.vocabulary.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +37,7 @@ public class OEClientReadOnly {
     prefixMapping.put("rdfs:", RDFS.getURI());
     prefixMapping.put("rdf:", RDF.getURI());
     prefixMapping.put("dc:", DC_11.getURI());
-    prefixMapping.put("owl:", OWL.getURI());
+    prefixMapping.put("owl:", OWL2.getURI());
     prefixMapping.put("xsd:", XSD.getURI());
     prefixMapping.put("skos:", SKOS.getURI());
     prefixMapping.put("skosxl:", SKOSXL.getURI());
@@ -601,7 +595,6 @@ public class OEClientReadOnly {
     StringJoiner filterParamJoiner = new StringJoiner(",");
     if (oeFilter.getConceptClass() != null) {
       filterParamJoiner.add(String.format("subject(rdf:type=%s)", getWrappedUri(oeFilter.getConceptClass())));
-          String.format("subject(rdf:type=%s)", getWrappedUri(oeFilter.getConceptClass()));
     }
 
     if (oeFilter.getLabelPrefix() != null) {
@@ -818,7 +811,7 @@ public class OEClientReadOnly {
   protected String getPathParameter(String conceptUri, String relationshipUrl) {
     logger.info("getPathParameter (2 arg) - entry: {}", conceptUri);
     StringJoiner joiner = new StringJoiner("/");
-    String pathParameter = joiner.add(conceptUri).add(getPath(conceptUri)).add(getPath(relationshipUrl)).toString();
+    String pathParameter = joiner.add(modelUri).add(getPath(conceptUri)).add(getPath(relationshipUrl)).toString();
     logger.info("getPathParameter (2 arg) - exit: {}", pathParameter);
     return pathParameter;
   }
