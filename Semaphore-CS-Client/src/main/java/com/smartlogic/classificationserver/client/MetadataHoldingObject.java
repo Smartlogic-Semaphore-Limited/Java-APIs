@@ -10,17 +10,18 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class MetadataHoldingObject extends XMLReader {
-	private Map<String, Collection<MetaNode>> metaNodes = new TreeMap<String, Collection<MetaNode>>();
+	private final Map<String, Collection<MetaNode>> metaNodes = new TreeMap<>();
 
 	protected void addMetaNode(Element metaElement) {
 		String name = metaElement.getAttribute("name");
 		String value = metaElement.getAttribute("value");
 		String score = metaElement.getAttribute("score");
-		MetaNode metaNode = new MetaNode(name, value, score);
+		String id = metaElement.getAttribute("id");
+		MetaNode metaNode = new MetaNode(name, value, score, id);
 
 		Collection<MetaNode> metaNodesForName = metaNodes.get(name);
 		if (metaNodesForName == null) {
-			metaNodesForName = new ArrayList<MetaNode>();
+			metaNodesForName = new ArrayList<>();
 			metaNodes.put(name, metaNodesForName);
 		}
 		metaNodesForName.add(metaNode);
@@ -29,7 +30,6 @@ public class MetadataHoldingObject extends XMLReader {
 		
 		
 		NodeList nodeList = metaElement.getChildNodes();
-		if (nodeList == null) return;
 
 		for (int n = 0; n < nodeList.getLength(); n++) {
 			Node childNode = nodeList.item(n);
