@@ -62,10 +62,10 @@ public class OEFilter {
 
 	@Override
 	public String toString() {
-		StringBuilder stringBuilder = new StringBuilder(this.getClass().getSimpleName());
-		stringBuilder.append(" [");
-		stringBuilder.append("conceptClass = '").append(conceptClass).append("'");
-		stringBuilder.append("]");
-		return stringBuilder.toString();
+        String toStringValue = this.getClass().getSimpleName() + " [" +
+                "conceptClass = '" + conceptClass + "'" +
+                "]," +
+                "labelPrefix = '" + labelPrefix + "'";
+		return toStringValue;
 	}
 }

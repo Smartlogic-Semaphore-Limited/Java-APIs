@@ -40,13 +40,34 @@ public class GetFilteredLabelSearchConcepts extends ModelManipulation {
     OEFilter oeFilter = new OEFilter();
     oeFilter.setLabelPrefix("my favorite");
 
-    Collection<Concept> concepts = oeClient.getFilteredConcepts(oeFilter);
-    for (Concept concept: concepts) {
-      System.err.println(concept);
+    {
+      Collection<Concept> concepts = oeClient.getFilteredConcepts(oeFilter);
+      for (Concept concept : concepts) {
+        Label pl = concept.getPrefLabels().stream().findFirst().orElse(null);
+        if (pl == null) {
+          System.out.println("Concept has no prefLabel: " + concept.getUri());
+        } else {
+          System.out.println("Concept prefLabel: " + pl.getValue());
+        }
+      }
+
+      System.out.println(String.format("%d concepts returned", concepts.size()));
     }
 
-    System.err.println(String.format("%d concepts returned", concepts.size()));
+    oeFilter.setLabelPrefix("i");
 
+    {
+      Collection<Concept> concepts = oeClient.getFilteredConcepts(oeFilter);
+      for (Concept concept : concepts) {
+        Label pl = concept.getPrefLabels().stream().findFirst().orElse(null);
+        if (pl == null) {
+          System.out.println("Concept has no prefLabel: " + concept.getUri());
+        } else {
+          System.out.println("Concept prefLabel: " + pl.getValue());
+        }
+      }
+      System.out.println(String.format("%d concepts returned", concepts.size()));
+    }
   }
 
   private void addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {

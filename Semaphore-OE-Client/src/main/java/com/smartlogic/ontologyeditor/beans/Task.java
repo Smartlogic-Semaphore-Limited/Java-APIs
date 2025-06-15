@@ -14,9 +14,11 @@ public class Task {
 	}
 
 	public Task(JsonObject jsonObject) {
-		label = new Label(jsonObject.get("meta:displayName").getAsObject().get("@value").toString(), "");
-		id = jsonObject.get("@id").toString();
-		graphUri = jsonObject.get("meta:graphUri").getAsObject().get("@id").toString();
+		label = new Label(
+				"",
+				jsonObject.get("meta:displayName").getAsObject().get("@value").getAsString().value());
+		id = jsonObject.get("@id").getAsString().value();
+		graphUri = jsonObject.get("meta:graphUri").getAsObject().get("@id").getAsString().value();
 	}
 
 	public Task(Label label, String id, String graphUri) {

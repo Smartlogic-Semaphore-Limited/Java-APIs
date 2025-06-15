@@ -24,6 +24,11 @@ public class OEClientReadOnly {
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+  /** The canonical label for KRT Newly Added concept scheme */
+  public static final String CONCEPT_REVIEW_NEWLY_ADDED = "Concept Review - Newly Added";
+  /** The canonical label for KRT Modified concept scheme */
+  public static final String CONCEPT_REVIEW_MODIFIED = "Concept Review - Modified";
+
   public static final String JSON_LD_GRAPH = "@graph";
   public static final String PARAM_PROPERTIES = "properties";
   public static final String PARAM_FILTERS = "filters";
@@ -285,10 +290,13 @@ public class OEClientReadOnly {
     Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
     while (jsonValueIterator.hasNext()) {
       JsonObject modelData = jsonValueIterator.next().getAsObject();
-      JsonArray taskArray = modelData.get("semfun:hasMainTag").getAsArray();
-      Iterator<JsonValue> jsonTaskIterator = taskArray.iterator();
-      while (jsonTaskIterator.hasNext()) {
-        tasks.add(new Task(jsonTaskIterator.next().getAsObject()));
+      JsonValue hasMainTagVal = modelData.get("semfun:hasMainTag");
+      if (hasMainTagVal != null) {
+        JsonArray taskArray = hasMainTagVal.getAsArray();
+        Iterator<JsonValue> jsonTaskIterator = taskArray.iterator();
+        while (jsonTaskIterator.hasNext()) {
+          tasks.add(new Task(jsonTaskIterator.next().getAsObject()));
+        }
       }
     }
     return tasks;
@@ -599,7 +607,8 @@ public class OEClientReadOnly {
 
     if (oeFilter.getLabelPrefix() != null) {
       filterParamJoiner.add(String.format("subject( autocomplete prefix \"%s\"@%s)",
-          oeFilter.getLabelPrefix(), oeFilter.getLabelPrefixLangCode()));
+              oeFilter.getLabelPrefix(),
+              oeFilter.getLabelPrefixLangCode() == null ? "en" : oeFilter.getLabelPrefixLangCode()));
     }
 
     if (filterParamJoiner.length() > 0)
@@ -746,6 +755,43 @@ public class OEClientReadOnly {
   }
 
   /**
+   * Load the Newly Added and Modified concept schemes for KRT and cache them for the duration of the client lifetime.
+   * If these URIs are not found, throw an exception. These URIs are used when the client is in "KRT" mode.
+   * If the client is in KRT mode, the client must have these concept scheme URIs loaded.
+   * We use the rdfs:label object to find the concept schemes, so the labels must be present in the model and must
+   * match the canonical labels defined in this class as static final strings.
+   *
+   * @throws OEClientException exception if the concept schemes are not found
+   */
+  protected void loadKRTConceptSchemeURIs() throws OEClientException {
+
+    Collection<ConceptScheme> schemes = getAllConceptSchemes();
+    if (schemes.isEmpty()) {
+      throw new OEClientException("No concept schemes found in the model. There must be at least 3 concept schemes in a KRT review task.");
+    }
+
+    for (ConceptScheme scheme : schemes) {
+      if (scheme.getPrefLabels().stream()
+              .anyMatch(prefLabel -> prefLabel.getValue().equals(CONCEPT_REVIEW_NEWLY_ADDED))) {
+        krtNewlyAddedConceptSchemeUri = scheme.getUri();
+      }
+      if (scheme.getPrefLabels().stream()
+              .anyMatch(prefLabel -> prefLabel.getValue().equals(CONCEPT_REVIEW_MODIFIED))) {
+        krtModifiedConceptSchemeUri = scheme.getUri();
+      }
+    }
+
+    if (krtModifiedConceptSchemeUri == null || krtModifiedConceptSchemeUri.isEmpty()) {
+      throw new OEClientException("No URI found for required KRT concept scheme with label 'Concept Review - Modified'.");
+    }
+
+    if (krtNewlyAddedConceptSchemeUri == null || krtNewlyAddedConceptSchemeUri.isEmpty()) {
+      throw new OEClientException("No URI found for required KRT concept scheme with label 'Concept Review - Newly Added'.");
+    }
+
+  }
+
+  /**
    * Returns the KRT modified concept scheme. This returns a value when KRT is enabled
    * in a task.
    * @return null or the task-specific modified concept scheme for KRT
@@ -755,14 +801,12 @@ public class OEClientReadOnly {
     if (null != krtModifiedConceptSchemeUri)
       return krtModifiedConceptSchemeUri;
 
-    final Optional<ConceptScheme> modifiedConceptScheme = getAllConceptSchemes().stream()
-            .filter(cs -> cs.getUri().endsWith("ConceptReview-Modified"))
-            .findFirst();
-    if (modifiedConceptScheme.isPresent()) {
-      krtModifiedConceptSchemeUri = modifiedConceptScheme.get().getUri();
+    loadKRTConceptSchemeURIs();
+
+    if (krtModifiedConceptSchemeUri != null && !krtModifiedConceptSchemeUri.isEmpty()) {
       return krtModifiedConceptSchemeUri;
     } else {
-      return null;
+      throw new OEClientException("No URI found for required concept scheme with label 'Concept Review - Modified'.");
     }
   }
 
@@ -776,14 +820,12 @@ public class OEClientReadOnly {
     if (null != krtNewlyAddedConceptSchemeUri)
       return krtNewlyAddedConceptSchemeUri;
 
-    final Optional<ConceptScheme> newlyAddedConceptScheme = getAllConceptSchemes().stream()
-        .filter(cs -> cs.getUri().endsWith("ConceptReview-NewlyAdded"))
-        .findFirst();
-    if (newlyAddedConceptScheme.isPresent()) {
-      krtNewlyAddedConceptSchemeUri = newlyAddedConceptScheme.get().getUri();
+    loadKRTConceptSchemeURIs();
+
+    if (krtNewlyAddedConceptSchemeUri != null && !krtNewlyAddedConceptSchemeUri.isEmpty()) {
       return krtNewlyAddedConceptSchemeUri;
     } else {
-      return null;
+      throw new OEClientException("No URI found for required concept scheme with label 'Concept Review - Newly Added'.");
     }
   }
 

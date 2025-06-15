@@ -2,6 +2,7 @@
 target
 .settings
 .classpath
+.DS_Store
 *.properties
 .idea/
 *.iml

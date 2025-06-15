@@ -16,7 +16,7 @@ public class AddTask extends ModelManipulation {
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
-		Task task = new Task(new Label("en", "KRTTest"));
+		Task task = new Task(new Label("en", "MyTask"));
 
 		// if you specify model:APITest as the model.uri, you can create this task here,
 		// but to test KRT related stuff, need to enable a review in the task.

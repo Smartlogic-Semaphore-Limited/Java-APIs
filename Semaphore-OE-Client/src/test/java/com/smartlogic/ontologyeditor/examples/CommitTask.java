@@ -1,8 +1,7 @@
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.smartlogic.cloud.CloudException;
 import com.smartlogic.ontologyeditor.OEClientException;
@@ -19,7 +18,16 @@ public class CommitTask extends ModelManipulation {
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
-		Task task = new Task(new Label("en", "My task again again"), "MyTaskAgainAgain", "task:" + getModelName(oeClient) + ":MyTaskAgainAgain");
+		Task task = new Task(new Label("en", "MyTaskTestCommit"));
+		oeClient.createTask(task);
+		Collection<Task> tasks = oeClient.getAllTasks();
+
+		Optional<Task> findResult = tasks.stream()
+				.filter((task1) -> task1.getLabel().getValue().equals("MyTaskTestCommit")).findFirst();
+		if (findResult.isEmpty()) {
+			throw new OEClientException("Newly created task not found!");
+		}
+		task = findResult.get();
 
 		String modelUri = oeClient.getModelUri();
 		oeClient.setModelUri(task.getGraphUri());
@@ -27,7 +35,8 @@ public class CommitTask extends ModelManipulation {
 		List<Label> labels = new ArrayList<Label>();
 		labels.add(new Label("en", "Task created Concept Scheme"));
 
-		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#taskConceptScheme",
+		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#taskConceptScheme" +
+				new Random().nextLong(),
 				labels);
 
 		oeClient.createConceptScheme(conceptScheme);
