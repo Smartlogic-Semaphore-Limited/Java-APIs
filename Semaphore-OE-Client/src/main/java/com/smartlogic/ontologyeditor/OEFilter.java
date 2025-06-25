@@ -1,5 +1,7 @@
 package com.smartlogic.ontologyeditor;
 
+import com.smartlogic.ontologyeditor.beans.LabelFilter;
+
 public class OEFilter {
 
 	private String conceptClass;
@@ -20,52 +22,63 @@ public class OEFilter {
 		this.conceptClass = conceptClass;
 	}
 
-	private String labelPrefix;
+	private LabelFilter anyLabelFilter;
 
 	/**
-	 * Gets the concept label prefix search string. For example "Acti"
-	 * The prefix search string must match, case-insensitive, the beginning of a preferred or alternative label
-	 * of a concept in the graph for there to be a match.
-	 * For example "My" will match any concept that has any label
-	 * that starts with the string "[Mm][Yy]"
-	 * @return the label prefix search string
+	 * Gets the current any label filter object.
+	 * @return the LabelFilter for any label search
 	 */
-	public String getLabelPrefix() {
-		return labelPrefix;
+	public LabelFilter getAnyLabelFilter() {
+		return anyLabelFilter;
 	}
 
 	/**
-	 * Sets the concept label prefix search string
-	 * @param labelPrefix the concept label prefix search string.
+	 * Sets the current any label filter.
+	 * @param anyLabelFilter the label filter object for searching for any labels.
 	 */
-	public void setLabelPrefix(String labelPrefix) {
-		this.labelPrefix = labelPrefix;
+	public void setAnyLabelFilter(LabelFilter anyLabelFilter) {
+		this.anyLabelFilter = anyLabelFilter;
 	}
 
-	private String labelPrefixLangCode;
+	private LabelFilter prefLabelFilter;
 
 	/**
-	 * Gets the concept label prefix search language code
-	 * @return the concept label prefix label language code
+	 * Gets the current preferred label filter object.
+	 * @return the LabelFilter for preferred label search
 	 */
-	public String getLabelPrefixLangCode() {
-		return labelPrefixLangCode;
+	public LabelFilter getPrefLabelFilter() {
+		return prefLabelFilter;
 	}
 
 	/**
-	 * Sets the label prefix search string language code. For example: "en"
-	 * @param labelPrefixLangCode the concept label prefix search language code.
+	 * Sets the preferred label filter.
+	 * @param prefLabelFilter the label filter object for searching for preferred labels.
 	 */
-	public void setLabelPrefixLangCode(String labelPrefixLangCode) {
-		this.labelPrefixLangCode = labelPrefixLangCode;
+	public void setPrefLabelFilter(LabelFilter prefLabelFilter) {
+		this.prefLabelFilter = prefLabelFilter;
+	}
+
+	private LabelFilter altLabelFilter;
+
+	/**
+	 * Gets the alternative label filter.
+	 * @return the LabelFilter for alternative label search.
+	 */
+	public LabelFilter getAltLabelFilter() {
+		return altLabelFilter;
+	}
+
+	public void setAltLabelFilter(LabelFilter altLabelFilter) {
+		this.altLabelFilter = altLabelFilter;
 	}
 
 	@Override
 	public String toString() {
-        String toStringValue = this.getClass().getSimpleName() + " [" +
-                "conceptClass = '" + conceptClass + "'" +
-                "]," +
-                "labelPrefix = '" + labelPrefix + "'";
-		return toStringValue;
+		return this.getClass().getSimpleName() + "\n[" +
+                "conceptClass = " + conceptClass  +
+                "],\n" +
+                "[any label = " + (anyLabelFilter == null ? "null" : anyLabelFilter.toString()) + "],\n" +
+                "[prefLabel = " + (prefLabelFilter == null ? "null" : prefLabelFilter.toString()) + "],\n" +
+                "[altLabel  = " + (altLabelFilter == null ? "null" : altLabelFilter.toString()) + "]";
 	}
 }

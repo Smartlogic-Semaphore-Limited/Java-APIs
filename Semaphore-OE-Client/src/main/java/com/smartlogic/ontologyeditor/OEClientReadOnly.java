@@ -605,10 +605,53 @@ public class OEClientReadOnly {
       filterParamJoiner.add(String.format("subject(rdf:type=%s)", getWrappedUri(oeFilter.getConceptClass())));
     }
 
-    if (oeFilter.getLabelPrefix() != null) {
-      filterParamJoiner.add(String.format("subject( autocomplete prefix \"%s\"@%s)",
-              oeFilter.getLabelPrefix(),
-              oeFilter.getLabelPrefixLangCode() == null ? "en" : oeFilter.getLabelPrefixLangCode()));
+    if (oeFilter.getAnyLabelFilter() != null) {
+      LabelFilter filter =  oeFilter.getAnyLabelFilter();
+      filterParamJoiner.add("subject(notExists rdf:type/rdfs:subClassOf sem:TargetSchemeInORT)");
+      String langCodeForSearch = filter.getLangCodeForSearch();
+      if (filter.isRegexSearch()) {
+        //TODO: figure out how to search all alt labels if possible
+        filterParamJoiner.add(String.format(
+                "subject((skosxl:prefLabel|skosxl:altLabel)/skosxl:literalForm matches \"%s\"%s)",
+                filter.getEscapedLeftSlashesValue(), langCodeForSearch));
+      } else {
+        filterParamJoiner.add(String.format(
+                "subject(autocomplete prefix \"%s\"%s)",
+                filter.getValue(), langCodeForSearch));
+      }
+    }
+
+    if (oeFilter.getPrefLabelFilter() != null) {
+      LabelFilter filter =  oeFilter.getPrefLabelFilter();
+      filterParamJoiner.add("subject(notExists rdf:type/rdfs:subClassOf sem:TargetSchemeInORT)");
+      String langCodeForSearch = filter.getLangCodeForSearch();
+      if (filter.isRegexSearch()) {
+        filterParamJoiner.add(String.format(
+            "subject(skosxl:prefLabel/skosxl:literalForm matches \"%s\"%s)",
+            filter.getEscapedLeftSlashesValue(), langCodeForSearch));
+      } else {
+        filterParamJoiner.add(String.format(
+            "subject(skosxl:prefLabel/skosxl:literalForm autocomplete type skosxl:Label prefix \"%s\"%s)",
+            filter.getValue(), langCodeForSearch));
+      }
+    }
+
+    if (oeFilter.getAltLabelFilter() != null) {
+      LabelFilter filter =  oeFilter.getAltLabelFilter();
+      filterParamJoiner.add("subject(notExists rdf:type/rdfs:subClassOf sem:TargetSchemeInORT)");
+      String langCodeForSearch = filter.getLangCodeForSearch();
+      //TODO: figure out how to search all alt labels if possible
+      if (filter.isRegexSearch()) {
+        filterParamJoiner.add(String.format(
+            "subject(%s/skosxl:literalForm matches \"%s\"%s)",
+            filter.getAltLabelType() == null ? "skosxl:altLabel" : filter.getAltLabelType(),
+            filter.getValue(), langCodeForSearch));
+      } else {
+        filterParamJoiner.add(String.format(
+            "subject(%s/skosxl:literalForm autocomplete type skosxl:Label prefix \"%s\"%s)",
+            filter.getAltLabelType() == null ? "skosxl:altLabel" : filter.getAltLabelType(),
+            filter.getValue(), langCodeForSearch));
+      }
     }
 
     if (filterParamJoiner.length() > 0)
