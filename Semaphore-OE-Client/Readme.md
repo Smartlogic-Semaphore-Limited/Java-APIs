@@ -1,11 +1,11 @@
 # The Ontology Editor API #
 
 The Ontology Editor currently consists of two main services classes (in com.smartlogic.ontologyeditor)
-- OEClientReadOnly - responsible for getting data out of Ontology Server into the Java Application.
-- OEClientReadWrite - responsible for uploading data from the Java Application into Ontology Server.
+- OEClientReadOnly - responsible for getting data out of KMM into the Java Application.
+- OEClientReadWrite - responsible for uploading data from the Java Application into KMM.
 
-All manipulation of the data within the Ontology Editor model is done using methods of OEClientReadWrite
-(so adding metadata to a concept is done using the method oeClientReadWrite.createMeadata(....) not a method of the concept).
+All manipulation of the data within the KMM model is done using methods of OEClientReadWrite
+(so adding metadata to a concept is done using the method oeClientReadWrite.createMetadata(....) not a method of the concept).
 
 To get data out of the model methods of the form OEClientReadOnly.get.... are used. However, if you have a concept in the Java application and wish to load its metadata then you call the OEClientReadOnly.populate... methods. So oeClientReadOnly.populateMetadata(<metadata uri>, Concept) will populate the metadata of the supplied concept with the values currently in the model.
 
@@ -16,10 +16,10 @@ This requires the presence of the file "config.properties" (not supplied) that c
 
 **proxy.address**=*http://localhost:8888*
 
-**base.url**=*http://localhost:8080/workbench-webapp-4.1.2.rc1*
+**base.url**=*http://localhost:5080/kmm*
 
 **model.uri**=*model:Playpen2*
 
-**token**=*WyJBZG1pbmlzdHJhdG9yIiwxNTAyNDU3Njc5LCJNQ0VDRGkyelpXRjZ6MTdVbmIxcjk5L0RBZzhBMGROOWhjUm5uQWMvMk40RjFSST0iXQ\=\=*
+**header.token**=*WyJBZG1pbmlzdHJhdG9yIiwxNTAyNDU3Njc5LCJNQ0VDRGkyelpXRjZ6MTdVbmIxcjk5L0RBZzhBMGROOWhjUm5uQWMvMk40RjFSST0iXQ\=\=*
 
  
