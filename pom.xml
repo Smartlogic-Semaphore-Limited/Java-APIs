@@ -15,7 +15,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<dependency.jersey>3.1.10</dependency.jersey>
 	</properties>
-	<version>5.10.0-SNAPSHOT</version>
+	<version>5.10.0</version>
 	<groupId>com.smartlogic</groupId>
 	<artifactId>Semaphore-Java-APIs</artifactId>
 	<description>Java connectors to the Smartlogic Semaphore Services</description>
