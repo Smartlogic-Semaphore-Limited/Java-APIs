@@ -47,6 +47,13 @@ public class LocalTestingClient {
 			endpoint.setModelIRI("model:BatchTest");
 			endpoint.setRequestTimeout(Duration.ofSeconds(10));
 			endpoint.setConnectTimeout(Duration.ofHours(2));
+            if (config.containsKey("xuser")) {
+                endpoint.setHeader("X-User", config.getProperty("xuser"));
+            }
+            if (config.containsKey("xrole")) {
+                endpoint.setHeader("X-Role", config.getProperty("xrole"));
+            }
+
 			{
 				var rs = endpoint.runSparqlQuery("PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nselect * where {?s a skos:Concept } limit 10");
 				while (rs.hasNext()) {

@@ -15,9 +15,15 @@ public class ExampleReadClient {
     try {
       Properties config = TestConfig.getConfig();
       OEModelEndpoint endpoint = new OEModelEndpoint();
-      endpoint.setBaseUrl(config.getProperty("oeurl"));
+      endpoint.setBaseUrl(config.getProperty("studiourl"));
       endpoint.setModelIRI("model:myExample");
       endpoint.setAccessToken(config.getProperty("accesstoken"));
+      if (config.containsKey("xuser")) {
+        endpoint.setHeader("X-User", config.getProperty("xuser"));
+      }
+      if (config.containsKey("xrole")) {
+        endpoint.setHeader("X-Role", config.getProperty("xrole"));
+      }
 
       ResultSet rs = endpoint.runSparqlQuery("select ?s ?p ?o where { ?s ?p ?o . } LIMIT 100");
       while (rs.hasNext()) {

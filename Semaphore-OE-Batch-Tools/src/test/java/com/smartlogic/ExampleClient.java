@@ -35,6 +35,13 @@ public class ExampleClient {
       endpoint.setBaseUrl(config.getProperty("studiourl"));
       endpoint.setModelIRI(config.getProperty("modeluri"));
       endpoint.setAccessToken(config.getProperty("accesstoken"));
+      if (config.containsKey("xuser")) {
+        endpoint.setHeader("X-User", config.getProperty("xuser"));
+      }
+      if (config.containsKey("xrole")) {
+        endpoint.setHeader("X-Role", config.getProperty("xrole"));
+      }
+
       try (OEBatchClient client = new OEBatchClient(endpoint)) {
         /* we are running this test in micro-batches. So we turn off all edit rules and constraint checking */
         client.getSparqlUpdateOptions().setRunCheckConstraints(false);

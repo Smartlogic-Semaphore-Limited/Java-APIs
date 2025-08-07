@@ -54,6 +54,13 @@ public abstract class ModelManipulation {
       TokenFetcher tokenFetcher = new TokenFetcher(tokenUrl, tokenKey);
       oeClient.setCloudToken(tokenFetcher.getAccessToken());
     }
+
+    if (properties.getProperty("header.xuser") != null) {
+      oeClient.setHeader("X-User", properties.getProperty("header.xuser"));
+    }
+    if (properties.getProperty("header.xrole") != null) {
+      oeClient.setHeader("X-Role", properties.getProperty("header.xrole"));
+    }
     return oeClient;
   }
 

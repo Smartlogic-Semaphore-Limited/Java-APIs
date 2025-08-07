@@ -37,7 +37,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -190,6 +192,16 @@ public class OEModelEndpoint {
     return results;
   }
 
+  private final Map<String, String> headers = new HashMap<>();
+
+  public void setHeader(String key, String value) {
+    headers.put(key, value);
+  }
+
+  public String getHeader(String key) {
+    return headers.get(key);
+  }
+
   private Duration connectTimeout = Duration.of(60, SECONDS);
 
   /**
@@ -242,6 +254,9 @@ public class OEModelEndpoint {
     if (!Strings.isNullOrEmpty(cloudTokenString)) {
       builder.httpHeader(HttpHeaders.AUTHORIZATION, cloudTokenString);
     }
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      builder.httpHeader(entry.getKey(), entry.getValue());
+    }
     return builder;
   }
 
@@ -262,6 +277,10 @@ public class OEModelEndpoint {
     if (!Strings.isNullOrEmpty(cloudTokenString)) {
       builder.header(HttpHeaders.AUTHORIZATION, cloudTokenString);
     }
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      builder.header(entry.getKey(), entry.getValue());
+    }
+
     return builder;
   }
 

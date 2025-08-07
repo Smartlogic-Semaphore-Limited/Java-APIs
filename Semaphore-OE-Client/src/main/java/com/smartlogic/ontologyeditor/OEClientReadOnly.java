@@ -56,6 +56,16 @@ public class OEClientReadOnly {
 
   private String baseURL;
 
+  private final Map<String, String> headers = new HashMap<>();
+
+  public void setHeader(String key, String value) {
+    headers.put(key, value);
+  }
+
+  public String getHeader(String key) {
+    return headers.get(key);
+  }
+
   public String getBaseURL() {
     return baseURL;
   }
@@ -1013,6 +1023,10 @@ public class OEClientReadOnly {
       requestBuilder.header("x-change-accepted", "false");
       requestBuilder.header("x-split-change", "true");
     }
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      requestBuilder.header(entry.getKey(), entry.getValue());
+    }
+
   }
 
   private HttpClient httpClient = null;
