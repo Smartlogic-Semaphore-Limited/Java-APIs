@@ -25,6 +25,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.smartlogic.conceptsclient</groupId>
+			<artifactId>Semaphore-Concepts-Client</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.smartlogic.sesclient</groupId>
 			<artifactId>Semaphore-SES-Client</artifactId>
 			<scope>test</scope>

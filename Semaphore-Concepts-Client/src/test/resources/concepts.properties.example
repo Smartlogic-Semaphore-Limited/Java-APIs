@@ -1,0 +1,6 @@
+concepts.url=https://<<machinename>>
+model.name=<<Model name>>
+
+token.apiKey=<<Cloud token>>
+token.url=<<Cloud token URL>>
+
