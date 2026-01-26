@@ -82,6 +82,7 @@ public class OEClientReadOnly {
 
   public void setModelUri(String modelUri) {
     this.modelUri = modelUri;
+    this.modelURL = null;
   }
 
   private String token;
@@ -225,6 +226,10 @@ public class OEClientReadOnly {
     return apiURL;
   }
 
+  protected String getStudioURL() {
+    return getApiURL().replace("/kmm", "");
+  }
+
   private String modelSysURL = null;
 
   protected String getModelSysURL() {
@@ -349,7 +354,7 @@ public class OEClientReadOnly {
     return getConceptClasses(1000);
   }
 
-  private Collection<RelationshipType> getRelationshipTypes(String parentType)
+  public Collection<RelationshipType> getRelationshipTypes(String parentType)
       throws OEClientException {
     logger.info("getRelationshipTypes entry: {}", parentType);
 
@@ -360,7 +365,7 @@ public class OEClientReadOnly {
     String url = getModelURL() + "/" + parentType + "/meta:transitiveSubProperty";
 
     Date startDate = new Date();
-    logger.info("getRelationshipTypes making call  : {}", startDate.getTime());
+    logger.info("getRelationshipTypes making call  : {}", url);
     String response = getResponse(url, queryParameters);
 
     JsonObject jsonResponse = JSON.parse( response);
@@ -371,6 +376,66 @@ public class OEClientReadOnly {
       relationshipTypes.add(new RelationshipType(this, jsonValueIterator.next().getAsObject()));
     }
     return relationshipTypes;
+
+  }
+
+
+  public Collection<RelationshipType> getLabelTypes()
+          throws OEClientException {
+    logger.info("getLabelTypes entry");
+
+    Map<String, String> queryParameters = new HashMap<>();
+    queryParameters.put(PARAM_PROPERTIES,
+            "rdfs:label,rdfs:subPropertyOf");
+
+    String url = getModelURL() + "/skosxl:altLabel/meta:transitiveSubProperty";
+
+    Date startDate = new Date();
+    logger.info("getLabelTypes  : {}", startDate.getTime());
+    String response = getResponse(url, queryParameters);
+
+    JsonObject jsonResponse = JSON.parse( response);
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
+    Collection<RelationshipType> relationshipTypes = new HashSet<>();
+    Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+    while (jsonValueIterator.hasNext()) {
+      relationshipTypes.add(new RelationshipType(this, jsonValueIterator.next().getAsObject()));
+    }
+    return relationshipTypes;
+
+  }
+
+  public Collection<MetadataType> getMetadataTypes()
+          throws OEClientException {
+    logger.info("getMetadataTypes entry");
+
+    Collection<MetadataType> metadataTypes = new HashSet<>();
+
+    addMetadataTypesForFilter(metadataTypes, "subject(rdfs:range/a=rdfs:Datatype),subject(rdfs:domain=?class),class(rdfs:subClassOf*=skos:Concept)");
+    addMetadataTypesForFilter(metadataTypes, "subject(semfun:effectiveRange=?range),range(rdf:type=rdfs:Datatype),subject(a=sem:DefaultProperty)");
+
+    return metadataTypes;
+
+  }
+
+  private void addMetadataTypesForFilter(Collection<MetadataType> metadataTypes, String filter)
+          throws OEClientException {
+    Map<String, String> queryParameters = new HashMap<>();
+    queryParameters.put(PARAM_PROPERTIES,
+            "rdfs:label,rdfs:domain,rdfs:range,rdfs:subPropertyOf");
+
+    queryParameters.put(PARAM_FILTERS, filter);
+
+    Date startDate = new Date();
+    logger.info("getMetadataTypes making call  : {}", startDate.getTime());
+    String response = getResponse(getModelURL(), queryParameters);
+
+    JsonObject jsonResponse = JSON.parse( response);
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
+    Iterator<JsonValue> jsonValueIterator = jsonArray.iterator();
+    while (jsonValueIterator.hasNext()) {
+      metadataTypes.add(new MetadataType(this, jsonValueIterator.next().getAsObject()));
+    }
 
   }
 
@@ -807,6 +872,69 @@ public class OEClientReadOnly {
 
   }
 
+  public byte[] downloadPublisherConfiguration() throws OEClientException {
+    try {
+      return tryToGetPublisherConfiguration();
+    } catch (NoPublisherConfigsException e) {
+      // The model has no publisher configurations so we need to tell KMM to create them
+      String url = getApiURL() + "/publisher/" + getModelUri() + "/configs";
+      getResponse(url, null);
+      return tryToGetPublisherConfiguration();
+    }
+  }
+
+  private byte[] tryToGetPublisherConfiguration() throws OEClientException, NoPublisherConfigsException {
+    String uri = getApiURL() + "/publisher/workspace/" + getModelUri() + "/config";
+    logger.info("Attempting to get publisher configuration from URI: {}", uri);
+
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(uri));
+    addHeaders(requestBuilder);
+    HttpResponse<byte[]> response = null;
+    try {
+      response = getHttpClient().send(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray());
+    } catch (IOException | InterruptedException e) {
+      throw new OEClientException(e.getClass().getSimpleName() + ": " + e.getMessage());
+    }
+
+    if (response.statusCode() == 404) {
+      throw new NoPublisherConfigsException("No publisher configuration found for model: getModelUri()");
+    }
+    checkResponseStatus(response);
+
+    return response.body();
+  }
+
+  private static class NoPublisherConfigsException extends OEClientException {
+    public NoPublisherConfigsException(String message) {
+      super(message);
+    }
+  }
+
+  public Map<String, Environment> getEnvironments() throws OEClientException {
+    logger.info("getEnvironments entry");
+
+    String url = getStudioURL() + "graphql";
+
+    String query = "{\"query\":\"{ environments { uri name } }\\n\",\"variables\":null,\"operationName\":null}";
+
+
+    String responseBody = getResponse(url, null, query, RequestType.POST);
+    JsonObject jsonResponse = JSON.parse(responseBody);
+
+    JsonObject dataObject = jsonResponse.get("data").getAsObject();
+    JsonArray environmentsArray = dataObject.get("environments").getAsArray();
+
+    Map<String, Environment> environmentMap = new HashMap<>();
+    for (JsonValue environmentValue : environmentsArray) {
+      JsonObject environmentObject = environmentValue.getAsObject();
+      Environment environment = new Environment();
+      environment.setUri(environmentObject.get("uri").getAsString().value());
+      environment.setName(environmentObject.get("name").getAsString().value());
+      environmentMap.put(environment.getUri(), environment);
+    }
+
+    return environmentMap;
+  }
   /**
    * Load the Newly Added and Modified concept schemes for KRT and cache them for the duration of the client lifetime.
    * If these URIs are not found, throw an exception. These URIs are used when the client is in "KRT" mode.
@@ -975,12 +1103,26 @@ public class OEClientReadOnly {
     checkResponseStatus(response);
 
   }
+
+
   protected String getResponse(String url, Map<String, String> queryParameters) throws OEClientException {
+    return getResponse(url, queryParameters, null, null);
+  }
+
+  protected String getResponse(String url, Map<String, String> queryParameters, String payload, RequestType requestType) throws OEClientException {
 
     String urlToUse = getURLwithParameters(url, queryParameters);
 
 
     HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(urlToUse)).header("Accept", "application/ld+json,application/json");
+    if (RequestType.POST == requestType) {
+      if (payload == null) {
+        requestBuilder.POST(HttpRequest.BodyPublishers.noBody());
+      } else {
+        requestBuilder.POST(HttpRequest.BodyPublishers.ofString(payload))
+                .header("Content-Type", "application/json");
+      }
+    }
     addHeaders(requestBuilder);
     HttpResponse<String> response = null;
     try {
@@ -994,7 +1136,7 @@ public class OEClientReadOnly {
     return response.body();
   }
 
-  private String getURLwithParameters(String url, Map<String, String> queryParameters) {
+  protected String getURLwithParameters(String url, Map<String, String> queryParameters) {
     StringBuilder stringBuilder = new StringBuilder(url);
     String separator = "?";
     if ((queryParameters != null) && !queryParameters.isEmpty()) {
@@ -1012,7 +1154,7 @@ public class OEClientReadOnly {
     return stringBuilder.toString();
   }
 
-  private void addHeaders(HttpRequest.Builder requestBuilder) {
+  protected void addHeaders(HttpRequest.Builder requestBuilder) {
     if (getCloudToken() != null) {
       requestBuilder.header("Authorization", getCloudTokenValue());
     }
@@ -1030,7 +1172,7 @@ public class OEClientReadOnly {
   }
 
   private HttpClient httpClient = null;
-  private HttpClient getHttpClient() {
+  protected HttpClient getHttpClient() {
     if (httpClient == null) {
       HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
       if (getProxyHost() != null && getProxyPort() != 0) {
@@ -1041,7 +1183,7 @@ public class OEClientReadOnly {
     return httpClient;
   }
 
-  private void checkResponseStatus(HttpResponse<String> response) throws OEClientException {
+  protected <T> void checkResponseStatus(HttpResponse<T> response) throws OEClientException {
     if (isSuccess(response)) {
       logger.info("Call completed successfully");
     } else {

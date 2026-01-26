@@ -1,9 +1,21 @@
 package com.smartlogic.ontologyeditor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.smartlogic.ontologyeditor.beans.*;
+import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 
@@ -181,6 +193,46 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
+	public void createClass(Label label, String classUri, ConceptClass[] superClasses) throws OEClientException {
+		logger.info("createClass entry: {} {}", label, classUri);
+
+		JsonObject classObject = new JsonObject();
+		classObject.put("@id", classUri);
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("owl:Class");
+		classObject.put("@type", typeArray);
+
+		JsonArray labelArray = new JsonArray();
+		JsonObject labelObject = new JsonObject();
+		if (label.getLanguageCode() != null) {
+			labelObject.put("@language", label.getLanguageCode());
+		}
+		labelObject.put("@value", label.getValue());
+		labelArray.add(labelObject);
+		classObject.put("rdfs:label", labelArray);
+
+		JsonArray superClassArray = new JsonArray();
+		if ((superClasses == null) || (superClasses.length == 0)) {
+			JsonObject superClassObject = new JsonObject();
+			superClassObject.put("@id", "skos:Concept");
+			superClassArray.add(superClassObject);
+		} else {
+			for (ConceptClass superClass : superClasses) {
+				JsonObject superClassObject = new JsonObject();
+				superClassObject.put("@id", superClass.getUri());
+				superClassArray.add(superClassObject);
+			}
+		}
+		classObject.put("rdfs:subClassOf", superClassArray);
+		String classPayload = classObject.toString();
+
+		Date startDate = new Date();
+		logger.info("commitTask making call  : {} {}", classPayload, startDate.getTime());
+		makeRequest(getModelURL(), classPayload, RequestType.POST);
+
+
+
+	}
 	/**
 	 * Helper method to add multiple concepts to model in one method call including metadata.
 	 * The concept and metadata lists must be the same size. The correlation between a concept
@@ -770,6 +822,113 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
+	public void createRelationshipType(Label forwardLabel, String forwardUri, Label inverseLabel, String inverseUri) {
+		logger.info("createRelationshipType entry: {} {} {} {}", forwardLabel, forwardUri, inverseLabel, inverseUri);
+
+		JsonObject forwardRelationshipType = getRelationshipTypeJsonObject(forwardLabel, forwardUri);
+		JsonObject inverseRelationshipType = getRelationshipTypeJsonObject(inverseLabel, inverseUri);
+
+		JsonArray inverseOfArray = new JsonArray();
+		inverseOfArray.add(inverseRelationshipType);
+		forwardRelationshipType.put("owl:inverseOf", inverseOfArray);
+
+		String relationshipTypePayload = forwardRelationshipType.toString();
+
+		logger.info("createRelationshipType making call  : {}", relationshipTypePayload);
+		try {
+			makeRequest(getModelURL(), relationshipTypePayload, RequestType.POST);
+		} catch (OEClientException e) {
+			logger.error("createRelationshipType failed: {}", e.getMessage());
+		}
+
+	}
+
+	public void createLabelRelationshipType(Label forwardLabel, String forwardUri) {
+		logger.info("createLabelRelationshipType entry: {} {}", forwardLabel, forwardUri);
+
+		JsonObject relationshipTypeObject = new JsonObject();
+
+
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("owl:ObjectProperty");
+		relationshipTypeObject.put("@type", typeArray);
+		relationshipTypeObject.put("@id", forwardUri);
+
+		JsonArray labelArray = new JsonArray();
+		JsonObject labelObject = new JsonObject();
+		labelObject.put("@value", forwardLabel.getValue());
+		labelObject.put("@language", forwardLabel.getLanguageCode());
+		labelArray.add(labelObject);
+		relationshipTypeObject.put("rdfs:label", labelArray);
+
+		JsonArray domainArray = new JsonArray();
+		JsonObject domainObject = new JsonObject();
+		domainObject.put("@id", "skos:Concept");
+		domainArray.add(domainObject);
+		relationshipTypeObject.put("rdfs:domain", domainArray);
+
+		JsonArray rangeArray = new JsonArray();
+		JsonObject rangeObject = new JsonObject();
+		rangeObject.put("@id", "skosxl:Label");
+		rangeArray.add(rangeObject);
+		relationshipTypeObject.put("rdfs:range", rangeArray);
+
+		JsonArray subPropertyOfArray = new JsonArray();
+		JsonObject subPropertyOfObject = new JsonObject();
+		subPropertyOfObject.put("@id", "skosxl:altLabel");
+		subPropertyOfArray.add(subPropertyOfObject);
+		relationshipTypeObject.put("rdfs:subPropertyOf", subPropertyOfArray);
+
+
+		String relationshipTypePayload = relationshipTypeObject.toString();
+
+		logger.info("createLabelRelationshipType making call  : {}", relationshipTypePayload);
+		try {
+			makeRequest(getModelURL(), relationshipTypePayload, RequestType.POST);
+		} catch (OEClientException e) {
+			logger.error("createLabelRelationshipType failed: {}", e.getMessage());
+		}
+
+	}
+
+	private JsonObject getRelationshipTypeJsonObject(Label forwardLabel, String forwardUri) {
+
+		JsonObject relationshipTypeObject = new JsonObject();
+
+
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("owl:ObjectProperty");
+		relationshipTypeObject.put("@type", typeArray);
+		relationshipTypeObject.put("@id", forwardUri);
+
+		JsonArray labelArray = new JsonArray();
+		JsonObject labelObject = new JsonObject();
+		labelObject.put("@value", forwardLabel.getValue());
+		labelObject.put("@language", forwardLabel.getLanguageCode());
+		labelArray.add(labelObject);
+		relationshipTypeObject.put("rdfs:label", labelArray);
+
+		JsonArray domainArray = new JsonArray();
+		JsonObject domainObject = new JsonObject();
+		domainObject.put("@id", "skos:Concept");
+		domainArray.add(domainObject);
+		relationshipTypeObject.put("rdfs:domain", domainArray);
+
+		JsonArray rangeArray = new JsonArray();
+		JsonObject rangeObject = new JsonObject();
+		rangeObject.put("@id", "skos:Concept");
+		rangeArray.add(rangeObject);
+		relationshipTypeObject.put("rdfs:range", rangeArray);
+
+		JsonArray subPropertyOfArray = new JsonArray();
+		JsonObject subPropertyOfObject = new JsonObject();
+		subPropertyOfObject.put("@id", "skos:related");
+		subPropertyOfArray.add(subPropertyOfObject);
+		relationshipTypeObject.put("rdfs:subPropertyOf", subPropertyOfArray);
+
+		return relationshipTypeObject;
+	}
+
 	@SuppressWarnings("unchecked")
 	public void createRelationship(String relationshipTypeUri, Concept sourceConcept, Concept targetConcept)
 			throws OEClientException {
@@ -805,10 +964,64 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
-	@SuppressWarnings("unchecked")
-	public void createMetadata(Concept concept, String metadataTypeUri, String metadataValue, String metadataLanguage)
+	public void createMetadata(Concept concept, String metadataTypeUri, String metadataValue, String metadataLanguage) throws OEClientException {
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@language", metadataLanguage);
+		valueObject.put("@value", metadataValue);
+
+		createMetadata(concept, metadataTypeUri, valueObject);
+	}
+
+	public void createMetadata(Concept concept, String metadataTypeUri, URI uri)
 			throws OEClientException {
-		logger.info("createMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, metadataValue, metadataLanguage);
+		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, uri.toString());
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@value", uri.toString());
+		valueObject.put("@type", "xsd:anyURI");
+		createMetadata(concept, metadataTypeUri, valueObject);
+	}
+
+	private final static SimpleDateFormat xsdDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public void createMetadata(Concept concept, String metadataTypeUri, Date date)
+			throws OEClientException {
+		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, date.toString());
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@value", xsdDateFormat.format(date));
+		valueObject.put("@type", "xsd:date");
+		createMetadata(concept, metadataTypeUri, valueObject);
+	}
+
+	public void createMetadata(Concept concept, String metadataTypeUri, double value)
+			throws OEClientException {
+		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@value", (long) value);
+		valueObject.put("@type", "xsd:decimal");
+		createMetadata(concept, metadataTypeUri, valueObject);
+	}
+
+	public void createMetadata(Concept concept, String metadataTypeUri, int value)
+			throws OEClientException {
+		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@value", value);
+		valueObject.put("@type", "xsd:integer");
+		createMetadata(concept, metadataTypeUri, valueObject);
+	}
+
+	public void createMetadata(Concept concept, String metadataTypeUri, boolean value)
+			throws OEClientException {
+		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@value", value);
+		valueObject.put("@type", "xsd:boolean");
+		createMetadata(concept, metadataTypeUri, valueObject);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void createMetadata(Concept concept, String metadataTypeUri, JsonObject valueObject)
+			throws OEClientException {
+		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, valueObject);
 
 		JsonArray operationList = new JsonArray();
 		JsonObject testOperation = new JsonObject();
@@ -824,10 +1037,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataTypeUri)));
 
 		JsonArray valueArray = new JsonArray();
-		JsonObject valueObject = new JsonObject();
-		valueObject.put("@language", metadataLanguage);
-		valueObject.put("@value", metadataValue);
-		
+
 		valueArray.add(valueObject);
 		addOperation.put("value", valueArray);
 		operationList.add(addOperation);
@@ -840,73 +1050,73 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH);
 	}
 
-	@SuppressWarnings("unchecked")
-	public void createMetadata(Concept concept, String metadataTypeUri, URI uri)
-			throws OEClientException {
-		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, uri.toString());
-
-		Map<String, String> queryParameters = new HashMap<String, String>();
-		queryParameters.put("path", getPathParameter(concept.getUri()));
-
-		JsonArray operationList = new JsonArray();
-
-		JsonObject testOperation = new JsonObject();
-		testOperation.put("op", "test");
-		testOperation.put("path", "@graph/0");
-		JsonObject testValue = new JsonObject();
-		testValue.put("@id", concept.getUri());
-		testOperation.put("value", testValue);
-		operationList.add(testOperation);
-
-		JsonObject addOperation = new JsonObject();
-		addOperation.put("op", "add");
-		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataTypeUri)));
-
-		JsonObject valueObject = new JsonObject();
-		valueObject.put("@value", uri.toString());
-		valueObject.put("@type", "xsd:anyURI");
-		addOperation.put("value", valueObject);
-
-		operationList.add(addOperation);
-
-		checkKRTModified(operationList, "0");
-
-		String createMetadataPayload = operationList.toString();
-		logger.info("createMetadata payload: {}", createMetadataPayload);
-		makeRequest(getApiURL(), queryParameters, createMetadataPayload, RequestType.PATCH);
+	public void createMetadataTypeString(Label label, String metadataTypeUri) throws OEClientException {
+		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
+		createMetadataType(label, metadataTypeUri, "xsd:string");
 	}
 
-	@SuppressWarnings("unchecked")
-	public void createMetadata(Concept concept, String metadataTypeUri, boolean value) throws OEClientException {
-		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
+	public void createMetadataTypeInteger(Label label, String metadataTypeUri) throws OEClientException {
+		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
+		createMetadataType(label, metadataTypeUri, "xsd:integer");
+	}
+
+	public void createMetadataTypeDate(Label label, String metadataTypeUri) throws OEClientException {
+		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
+		createMetadataType(label, metadataTypeUri, "xsd:date");
+	}
+
+	public void createMetadataTypeDecimal(Label label, String metadataTypeUri) throws OEClientException {
+		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
+		createMetadataType(label, metadataTypeUri, "xsd:decimal");
+	}
+
+	public void createMetadataTypeAnyURI(Label label, String metadataTypeUri) throws OEClientException {
+		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
+		createMetadataType(label, metadataTypeUri, "xsd:anyURI");
+	}
+
+	public void createMetadataTypeBoolean(Label label, String metadataTypeUri) throws OEClientException {
+		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
+		createMetadataType(label, metadataTypeUri, "xsd:boolean");
+	}
+
+	private void createMetadataType(Label label, String metadataTypeUri, String metadataDataRange) throws OEClientException {
 
 		JsonArray operationList = new JsonArray();
 
-		JsonObject testOperation = new JsonObject();
-		testOperation.put("op", "test");
-		testOperation.put("path", "@graph/0");
+		JsonObject metadataPayload = new JsonObject();
+		metadataPayload.put("@id", metadataTypeUri);
 
-		JsonObject testObject = new JsonObject();
-		testObject.put("@id", concept.getUri());
-		testOperation.put("value", testObject);
-		operationList.add(testOperation);
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("owl:DatatypeProperty");
+		metadataPayload.put("@type", typeArray);
 
-		JsonObject addOperation = new JsonObject();
-		addOperation.put("op", "add");
-		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(metadataTypeUri)));
+		JsonArray labelArray = new JsonArray();
+		JsonObject labelObject = new JsonObject();
+		labelObject.put("@value", label.getValue());
+		if (label.getLanguageCode() != null) {
+			labelObject.put("@language", label.getLanguageCode());
+		}
+		labelArray.add(labelObject);
+		metadataPayload.put("rdfs:label", labelArray);
 
-		JsonArray valueArray = new JsonArray();
-		valueArray.add(value);
-		addOperation.put("value", valueArray);
+		JsonArray domainArray = new JsonArray();
+		JsonObject domainObject = new JsonObject();
+		domainObject.put("@id", "skos:Concept");
+		domainArray.add(domainObject);
+		metadataPayload.put("rdfs:domain", domainArray);
 
-		operationList.add(addOperation);
+		JsonArray rangeArray = new JsonArray();
+		JsonObject rangeObject = new JsonObject();
+		rangeObject.put("@id", metadataDataRange);
+		rangeArray.add(rangeObject);
+		metadataPayload.put("rdfs:range", rangeArray);
 
-		checkKRTModified(operationList, "0");
+		String createMetadataPayload = metadataPayload.toString();
 
-		String createMetadataPayload = operationList.toString();
 		logger.info("createMetadata payload: {}", createMetadataPayload);
 
-		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
+		makeRequest(getModelURL(), createMetadataPayload, RequestType.POST );
 	}
 
 	public void updateMetadata(Concept concept, String metadataTypeUri, String oldValueLanguage, String oldValue, String newValueLanguage, String newValue) throws OEClientException {
@@ -1251,6 +1461,77 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getApiURL(), queryParameters, removeClassPayload, RequestType.PATCH );
 	}
 
+	public void uploadPublisherConfiguration(byte[] zippedPublisherConfiguration) throws OEClientException {
+		logger.info("uploadPublisherConfiguration entry");
+
+		String boundary = "----geckoformboundary7cfb67d17ac7416fe63a2f1ae8c7bbe8";
+
+
+		String url = getApiURL() + "publisher/workspace/" + getModelUri() + "/config";
+		HashMap<String, String> queryParameters = new HashMap<>();
+		queryParameters.put("mode", "replace");
+		String urlToUse = getURLwithParameters(url, queryParameters);
+		HttpResponse<String> response = null;
+
+		HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+				.uri(URI.create(urlToUse))
+				.header("Content-Type", "multipart/form-data; boundary=" + boundary)
+				.POST(ofMimeMultipartData(zippedPublisherConfiguration, boundary));
+		addHeaders(requestBuilder);
+		HttpRequest request = requestBuilder.build();
+
+		try {
+			response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+		} catch (IOException |  InterruptedException e) {
+			throw new OEClientException(e.getMessage());
+		}
+
+		checkResponseStatus(response);
+	}
+
+	private HttpRequest.BodyPublisher ofMimeMultipartData(byte[] data, String boundary) throws OEClientException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		try {
+			baos.write(("--" + boundary+"\r\n").getBytes());
+			baos.write("Content-Disposition: form-data; name=\"file\"; filename=\"Upload.zip\"".getBytes());
+			baos.write(("\r\nContent-Type: application/x-zip-compressed\r\n\r\n").getBytes());
+			baos.write(data);
+			baos.write(("\r\n--" + boundary + "--\r\n").getBytes());
+		} catch (IOException e) {
+			throw new OEClientException(e.getMessage());
+		}
+
+		return HttpRequest.BodyPublishers.ofByteArray(baos.toByteArray());
+	}
+
+	public void publishModel(String config, String environmentUri) throws OEClientException {
+		logger.info("publishModel entry");
+
+		String url = getApiURL() + "publisher/" + getModelUri() + "/publish";
+
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("config", config);
+		queryParameters.put("environment", environmentUri);
+
+		String urlToUse = getURLwithParameters(url, queryParameters);
+		HttpResponse<String> response = null;
+
+		HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+				.uri(URI.create(urlToUse))
+				.POST(HttpRequest.BodyPublishers.noBody());
+		addHeaders(requestBuilder);
+		HttpRequest request = requestBuilder.build();
+
+
+		try {
+			response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+		} catch (IOException |  InterruptedException e) {
+			throw new OEClientException(e.getMessage());
+		}
+
+		checkResponseStatus(response);
+	}
 	/**
 	 * Checks if the client is in KRT mode, and if so, add the concept to the Modified KRT concept scheme.
 	 * @param operationList the JSON PATCH operation list object

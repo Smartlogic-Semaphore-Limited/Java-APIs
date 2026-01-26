@@ -24,5 +24,18 @@ public abstract class AbstractBeanFromJson {
 		return jsonValue == null ? new JsonArray() : jsonValue.getAsArray();
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 
+		AbstractBeanFromJson that = (AbstractBeanFromJson) o;
+
+        return uri.equals(that.uri);
+    }
+
+	@Override
+	public int hashCode() {
+		return uri.hashCode();
+	}
 }
