@@ -98,6 +98,33 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
+	public void linkModel(String importedModelUri) throws OEClientException {
+
+		logger.info("linkModel importing URL: {}", importedModelUri);
+
+		String url = getModelURL() + "/" + getModelUri();
+
+		JsonArray jsonArray = new JsonArray();
+
+		JsonObject addObject = new JsonObject();
+		addObject.put("op", "add");
+		addObject.put("path", "@graph/0/owl:imports/1");
+
+		JsonObject linkedModel = new JsonObject();
+		linkedModel.put("@id", importedModelUri);
+
+		addObject.put("value", linkedModel);
+
+		jsonArray.add(addObject);
+		String modelPayload = jsonArray.toString();
+
+		Date startDate = new Date();
+		logger.info("linkModel making call  : {} {} {}", modelPayload, url, startDate.getTime());
+		makeRequest(url, modelPayload, RequestType.PATCH);
+
+	}
+
+
 	/**
 	 * Delete model
 	 * @param model - the model to be deleted
