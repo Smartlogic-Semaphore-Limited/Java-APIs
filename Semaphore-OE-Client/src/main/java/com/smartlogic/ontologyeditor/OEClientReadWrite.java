@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -1272,26 +1273,34 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void deleteConcept(Concept concept) throws OEClientException {
 		logger.info("deleteConcept entry: {} {} {}", concept.getUri());
 
-		String url = getApiURL();
-		url = url.substring(0, url.length() - 1);
-		logger.info("deleteConcept - URL: {}", url);
-
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("mode", "empty");
 		
-		StringBuilder pathBuilder = new StringBuilder(getModelUri());
+		StringBuilder pathBuilder = new StringBuilder(getModelURL());
 		pathBuilder.append("/");
-		pathBuilder.append(getEscapedUri(getEscapedUri("<" + concept.getUri() + ">")));
-		String path = pathBuilder.toString();
-		logger.info("deleteConcept - path: {}", path);
-		queryParameters.put("path", path);
+		pathBuilder.append(getEscapedUri("<" + concept.getUri() + ">"));
+		String fullUrl = pathBuilder.toString();
+		logger.info("deleteConcept - fullUrl: {}", fullUrl);
 
-		makeRequest(url, queryParameters, null, RequestType.DELETE );
-
+		makeRequest(fullUrl, queryParameters, null, RequestType.DELETE );
 	}
 
-	@SuppressWarnings("unchecked")
-	public void deleteRelationship(String relationshipTypeUri, Concept concept1, Concept concept2)
+	public void deleteConceptScheme(ConceptScheme conceptScheme) throws OEClientException {
+		logger.info("deleteConceptScheme entry: {} {} {}", conceptScheme.getUri());
+
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("mode", "empty");
+
+		StringBuilder pathBuilder = new StringBuilder(getModelURL());
+		pathBuilder.append("/");
+		pathBuilder.append(getEscapedUri("<" + conceptScheme.getUri() + ">"));
+		String fullUrl = pathBuilder.toString();
+		logger.info("deleteConceptScheme - fullUrl: {}", fullUrl);
+
+		makeRequest(fullUrl, queryParameters, null, RequestType.DELETE );
+	}
+
+	public void deleteRelationship(String relationshipTypeUri, AbstractBeanFromJson concept1, AbstractBeanFromJson concept2)
 			throws OEClientException {
 		logger.info("deleteRelationship entry: {} {} {}", relationshipTypeUri, concept1.getUri(), concept2.getUri());
 

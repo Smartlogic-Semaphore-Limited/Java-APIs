@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.atlas.json.JsonValue;
@@ -32,8 +34,12 @@ public class Concept extends AbstractBeanFromJson {
 
   private Collection<String> classUris = new HashSet<>();
 
+  @JsonIgnore
+  private final JsonObject jsonObject;
+
   public Concept(OEClientReadOnly oeClient, JsonObject jsonObject) {
     logger.debug("Concept - entry: {}", jsonObject);
+    this.jsonObject = jsonObject;
     this.uri = getAsString(jsonObject, "@id");
 
     JsonValue jsonValue = jsonObject.get("@type");
@@ -188,6 +194,7 @@ public class Concept extends AbstractBeanFromJson {
   public Concept(OEClientReadOnly oeClient, String uri, List<Label> labelList) {
     this.oeClient = oeClient;
     this.uri = uri;
+    this.jsonObject = null;
     prefLabels.addAll(labelList);
   }
 
@@ -220,27 +227,32 @@ public class Concept extends AbstractBeanFromJson {
 
   @Override
   public String toString() {
-    StringBuilder stringBuilder = new StringBuilder("Concept:");
-    stringBuilder.append(this.uri).append(" [");
-    String sep = "";
-    for (String type : types) {
-      stringBuilder.append(sep).append(type);
-      sep = ", ";
-    }
-    stringBuilder.append("] ");
-    stringBuilder.append("\nPref Labels: ");
-    for (Label prefLabel : prefLabels) {
-      stringBuilder.append(" \"").append(prefLabel.toString()).append("\"");
-    }
+    return this.asJson();
+//    StringBuilder stringBuilder = new StringBuilder("Concept:");
+//    stringBuilder.append(this.uri).append(" [");
+//    String sep = "";
+//    for (String type : types) {
+//      stringBuilder.append(sep).append(type);
+//      sep = ", ";
+//    }
+//    stringBuilder.append("] ");
+//    stringBuilder.append("Pref Labels: ");
+//    for (Label prefLabel : prefLabels) {
+//      stringBuilder.append(" \"").append(prefLabel.toString()).append("\"");
+//    }
+//
+//    for (Map.Entry<String, Collection<String>> entry : relatedConceptUrisByRelationship
+//        .entrySet()) {
+//      stringBuilder.append("\n").append(entry.getKey()).append(": ");
+//      for (String relatedUri : entry.getValue()) {
+//        stringBuilder.append(" <").append(relatedUri).append(">");
+//      }
+//    }
+//    return stringBuilder.toString();
+  }
 
-    for (Map.Entry<String, Collection<String>> entry : relatedConceptUrisByRelationship
-        .entrySet()) {
-      stringBuilder.append("\n").append(entry.getKey()).append(": ");
-      for (String relatedUri : entry.getValue()) {
-        stringBuilder.append(" <").append(relatedUri).append(">");
-      }
-    }
-    return stringBuilder.toString();
+  public String asJson() {
+    return JSON.toStringFlat(jsonObject);
   }
 
   public Collection<Label> getPrefLabels() {
