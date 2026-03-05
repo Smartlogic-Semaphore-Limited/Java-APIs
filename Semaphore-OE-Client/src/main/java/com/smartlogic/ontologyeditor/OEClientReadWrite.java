@@ -416,6 +416,152 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	/**
+	 * Create multiple concepts in a single request using a @graph payload.
+	 * Each concept is paired with a parent URI and a flag indicating whether
+	 * the concept should be a top concept of a concept scheme (true) or a
+	 * narrower concept of a parent concept (false).
+	 *
+	 * @param concepts the list of concepts to create
+	 * @param parentUris the list of parent URIs - either a concept scheme URI (when asTopConcept is true)
+	 *                   or a parent concept URI (when asTopConcept is false)
+	 * @param asTopConcept the list of flags indicating whether each concept is a top concept of a scheme
+	 *                     (true) or a narrower concept below a parent concept (false)
+	 * @throws OEClientException the exception
+	 */
+	public void createConcepts(List<Concept> concepts, List<String> parentUris, List<Boolean> asTopConcept) throws OEClientException {
+		createConcepts(concepts, parentUris, asTopConcept, null);
+	}
+
+	/**
+	 * Create multiple concepts in a single request using a @graph payload,
+	 * optionally with metadata. Each concept is paired with a parent URI and
+	 * a flag indicating whether the concept should be a top concept of a
+	 * concept scheme (true) or a narrower concept of a parent concept (false).
+	 * If metadata is provided, its size must match the concepts list size.
+	 *
+	 * @param concepts the list of concepts to create
+	 * @param parentUris the list of parent URIs - either a concept scheme URI (when asTopConcept is true)
+	 *                   or a parent concept URI (when asTopConcept is false)
+	 * @param asTopConcept the list of flags indicating whether each concept is a top concept of a scheme
+	 *                     (true) or a narrower concept below a parent concept (false)
+	 * @param metadataList optional list of metadata maps, one per concept (may be null)
+	 * @throws OEClientException the exception
+	 */
+	@SuppressWarnings("unchecked")
+	public void createConcepts(List<Concept> concepts, List<String> parentUris, List<Boolean> asTopConcept,
+							   List<Map<String, Collection<MetadataValue>>> metadataList) throws OEClientException {
+		if (concepts == null)
+			throw new IllegalArgumentException("createConcepts cannot take null concepts list");
+		if (parentUris == null)
+			throw new IllegalArgumentException("createConcepts cannot take null parentUris list");
+		if (asTopConcept == null)
+			throw new IllegalArgumentException("createConcepts cannot take null asTopConcept list");
+		if (concepts.size() != parentUris.size())
+			throw new IllegalArgumentException(String.format("concepts size (%d) must match parentUris size (%d)",
+					concepts.size(), parentUris.size()));
+		if (concepts.size() != asTopConcept.size())
+			throw new IllegalArgumentException(String.format("concepts size (%d) must match asTopConcept size (%d)",
+					concepts.size(), asTopConcept.size()));
+		if (metadataList != null && metadataList.size() != concepts.size())
+			throw new IllegalArgumentException(String.format("concepts size (%d) must match metadataList size (%d)",
+					concepts.size(), metadataList.size()));
+		if (concepts.isEmpty())
+			return;
+
+		logger.info("createConcepts entry: concepts count={}", concepts.size());
+
+		JsonObject graphObject = new JsonObject();
+		JsonArray dataArray = new JsonArray();
+
+		for (int i = 0; i < concepts.size(); i++) {
+			Concept concept = concepts.get(i);
+			String parentUri = parentUris.get(i);
+			boolean isTopConcept = asTopConcept.get(i);
+
+			JsonArray conceptTypeList = new JsonArray();
+			conceptTypeList.add("skos:Concept");
+
+			JsonArray labelTypeList = new JsonArray();
+			labelTypeList.add("skosxl:Label");
+
+			JsonArray labelLiteralFormDataList = new JsonArray();
+			for (Label label : concept.getPrefLabels()) {
+				JsonObject labelLiteralFormData = new JsonObject();
+				labelLiteralFormData.put("@value", label.getValue());
+				if (label.getLanguageCode() != null) {
+					labelLiteralFormData.put("@language", label.getLanguageCode());
+				}
+				labelLiteralFormDataList.add(labelLiteralFormData);
+			}
+
+			JsonObject newConceptLabelData = new JsonObject();
+			newConceptLabelData.put("@type", labelTypeList);
+			newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
+
+			JsonArray newConceptLabelDataList = new JsonArray();
+			newConceptLabelDataList.add(newConceptLabelData);
+
+			JsonObject conceptDetails = new JsonObject();
+			conceptDetails.put("@type", conceptTypeList);
+			conceptDetails.put("skosxl:prefLabel", newConceptLabelDataList);
+			conceptDetails.put("@id", concept.getUri());
+
+			if (isTopConcept) {
+				JsonObject relatedConceptSchemeData = new JsonObject();
+				relatedConceptSchemeData.put("@id", parentUri);
+				conceptDetails.put("skos:topConceptOf", relatedConceptSchemeData);
+			} else {
+				JsonObject broaderConceptData = new JsonObject();
+				broaderConceptData.put("@id", parentUri);
+				JsonArray broaderArray = new JsonArray();
+				broaderArray.add(broaderConceptData);
+				conceptDetails.put("skos:broader", broaderArray);
+			}
+
+			for (Identifier identifier : concept.getIdentifiers())
+				conceptDetails.put(identifier.getUri(), identifier.getValue());
+
+			if (metadataList != null) {
+				Map<String, Collection<MetadataValue>> metadata = metadataList.get(i);
+				if (metadata != null && !metadata.isEmpty()) {
+					metadata.forEach((key, mdCollectionValue) -> {
+						JsonArray jsonMetadataArray = new JsonArray();
+						if (mdCollectionValue != null && !mdCollectionValue.isEmpty()) {
+							mdCollectionValue.forEach(mdValue -> {
+								JsonObject mdObject = new JsonObject();
+								mdObject.put("@value", mdValue.getValue());
+								if (mdValue.getLanguageCode() != null) {
+									mdObject.put("@language", mdValue.getLanguageCode());
+								}
+								jsonMetadataArray.add(mdObject);
+							});
+							conceptDetails.put(key, jsonMetadataArray);
+						}
+					});
+				}
+			}
+
+			/* if in KRT mode, add new concept to NewlyCreated KRT concept scheme as a top concept */
+			if (isKRTClient()) {
+				String newlyAddedConceptSchemeUri = getKRTNewlyAddedSchemeUri();
+				if (newlyAddedConceptSchemeUri != null) {
+					JsonObject newlyCreatedConceptSchemeData = new JsonObject();
+					newlyCreatedConceptSchemeData.put("@id", newlyAddedConceptSchemeUri);
+					conceptDetails.put("skos:topConceptOf", newlyCreatedConceptSchemeData);
+				}
+			}
+
+			dataArray.add(conceptDetails);
+		}
+
+		graphObject.put("@graph", dataArray);
+
+		String createConceptsPayload = graphObject.toString();
+		logger.info("createConcepts payload: {}", createConceptsPayload);
+		makeRequest(getModelURL(), createConceptsPayload, RequestType.POST);
+	}
+
+	/**
 	 * Helper method to add multiple concepts to model in one method call including metadata.
 	 * The concept and metadata lists must be the same size. The correlation between a concept
 	 * and a metadata map is by list ordinal.
@@ -583,6 +729,53 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	/**
+	 * Create multiple concept schemes in a single request using a @graph payload.
+	 *
+	 * @param conceptSchemes the list of concept schemes to create
+	 * @throws OEClientException the exception
+	 */
+	public void createConceptSchemes(List<ConceptScheme> conceptSchemes) throws OEClientException {
+		if (conceptSchemes == null)
+			throw new IllegalArgumentException("createConceptSchemes cannot take null conceptSchemes list");
+		if (conceptSchemes.isEmpty())
+			return;
+
+		logger.info("createConceptSchemes entry: count={}", conceptSchemes.size());
+
+		JsonObject graphObject = new JsonObject();
+		JsonArray dataArray = new JsonArray();
+
+		for (ConceptScheme conceptScheme : conceptSchemes) {
+			JsonObject conceptSchemeDetails = new JsonObject();
+
+			JsonArray conceptSchemeTypeList = new JsonArray();
+			conceptSchemeTypeList.add("skos:ConceptScheme");
+			conceptSchemeDetails.put("@type", conceptSchemeTypeList);
+
+			JsonArray labelDataList = new JsonArray();
+			for (Label label : conceptScheme.getPrefLabels()) {
+				JsonObject labelData = new JsonObject();
+				labelData.put("@value", label.getValue());
+				if (label.getLanguageCode() != null) {
+					labelData.put("@language", label.getLanguageCode());
+				}
+				labelDataList.add(labelData);
+			}
+
+			conceptSchemeDetails.put("rdfs:label", labelDataList);
+			conceptSchemeDetails.put("@id", conceptScheme.getUri());
+
+			dataArray.add(conceptSchemeDetails);
+		}
+
+		graphObject.put("@graph", dataArray);
+
+		String createConceptSchemesPayload = graphObject.toString();
+		logger.info("createConceptSchemes payload: {}", createConceptSchemesPayload);
+		makeRequest(getModelURL(), createConceptSchemesPayload, RequestType.POST);
+	}
+
+	/**
 	 * Update a label object of a specified label type.
 	 * This version of the  method works with KRT mode enabled.
 	 *
@@ -726,17 +919,47 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getModelURL(), updateLabelPayload, RequestType.PATCH);
 	}
 
+	/**
+	 * Create/add preferred labels to multiple existing concepts. Each concept URI is paired with a label
+	 * by array index. The relationship type is defaulted to "skosxl:prefLabel".
+	 *
+	 * @param conceptUris array of concept URIs
+	 * @param labels array of labels (must be same length as conceptUris)
+	 * @throws OEClientException the exception
+	 */
 	@SuppressWarnings("unchecked")
 	public void createLabels(String[] conceptUris, Label[] labels) throws OEClientException {
+		String[] relationshipTypeUris = new String[conceptUris == null ? 0 : conceptUris.length];
+		Arrays.fill(relationshipTypeUris, "skosxl:prefLabel");
+		createLabels(conceptUris, relationshipTypeUris, labels);
+	}
+
+	/**
+	 * Create/add labels to multiple existing concepts with specified relationship types.
+	 * Each concept URI is paired with a relationship type URI and a label by array index.
+	 *
+	 * @param conceptUris array of concept URIs
+	 * @param relationshipTypeUris array of relationship type URIs (e.g. "skosxl:prefLabel", "skosxl:altLabel")
+	 * @param labels array of labels (must be same length as conceptUris and relationshipTypeUris)
+	 * @throws OEClientException the exception
+	 */
+	@SuppressWarnings("unchecked")
+	public void createLabels(String[] conceptUris, String[] relationshipTypeUris, Label[] labels) throws OEClientException {
 		if (conceptUris == null)
 			throw new IllegalArgumentException("createLabels cannot take null concept URIs array");
+		if (relationshipTypeUris == null)
+			throw new IllegalArgumentException("createLabels cannot take null relationship type URIs array");
 		if (labels == null)
 			throw new IllegalArgumentException("createLabels cannot take null labels array");
-		logger.info("createLabels: {} conceptUris, {} labels provided", conceptUris.length, labels.length);
+		logger.info("createLabels: {} conceptUris, {} relationshipTypeUris, {} labels provided",
+				conceptUris.length, relationshipTypeUris.length, labels.length);
 
 		if ((conceptUris.length != labels.length))
 			throw new IllegalArgumentException(String.format("conceptUris size (%d) must match labels size (%d)",
 					conceptUris.length, labels.length));
+		if ((conceptUris.length != relationshipTypeUris.length))
+			throw new IllegalArgumentException(String.format("conceptUris size (%d) must match relationshipTypeUris size (%d)",
+					conceptUris.length, relationshipTypeUris.length));
 		if ((conceptUris.length == 0))
 			return;
 
@@ -746,6 +969,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		JsonArray dataArray = new JsonArray();
 		for (int i = 0; i < conceptUris.length; i++) {
 			String conceptUri = conceptUris[i];
+			String relationshipTypeUri = relationshipTypeUris[i];
 			Label label = labels[i];
 
 			JsonObject instanceObject = new JsonObject();
@@ -768,7 +992,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			literalFormArray.add(literalFormObject);
 			labelObject.put("skosxl:literalForm", literalFormArray);
 
-			instanceObject.put("skosxl:prefLabel", labelObject);
+			instanceObject.put(relationshipTypeUri, labelObject);
 
 			/* if a KRT client, add the parent concept to the Modified scheme */
 			if (isKRTClient()) {
