@@ -42,6 +42,47 @@ public class AddConcepts extends ModelManipulation {
 		addConcept(oeClient, conceptScheme, "Are you sure?");
 		addConcept(oeClient, conceptScheme, "Sometimes you just need a /");
 
+		// Create multiple concepts in a single request - mix of top concepts and narrower concepts
+		List<Label> schemeLabels = new ArrayList<>();
+		schemeLabels.add(new Label("en", "Batch Concept Scheme"));
+		ConceptScheme batchScheme = new ConceptScheme(oeClient,
+				"http://example.com/APITest#BatchConceptScheme", schemeLabels);
+		oeClient.createConceptScheme(batchScheme);
+
+		List<Label> parentLabels = new ArrayList<>();
+		parentLabels.add(new Label("en", "Batch Parent Concept"));
+		Concept parentConcept = new Concept(oeClient,
+				"http://example.com/APITest#BatchParentConcept", parentLabels);
+		oeClient.createConcept(batchScheme.getUri(), parentConcept);
+
+		List<Concept> batchConcepts = new ArrayList<>();
+		List<String> parentUris = new ArrayList<>();
+		List<Boolean> asTopConcept = new ArrayList<>();
+
+		batchConcepts.add(buildConcept(oeClient, "BatchTop1"));
+		parentUris.add(batchScheme.getUri());
+		asTopConcept.add(true);
+
+		batchConcepts.add(buildConcept(oeClient, "BatchTop2"));
+		parentUris.add(batchScheme.getUri());
+		asTopConcept.add(true);
+
+		batchConcepts.add(buildConcept(oeClient, "BatchNarrower1"));
+		parentUris.add(parentConcept.getUri());
+		asTopConcept.add(false);
+
+		batchConcepts.add(buildConcept(oeClient, "BatchNarrower2"));
+		parentUris.add(parentConcept.getUri());
+		asTopConcept.add(false);
+
+		oeClient.createConcepts(batchConcepts, parentUris, asTopConcept);
+
+	}
+
+	private Concept buildConcept(OEClientReadWrite oeClient, String name) {
+		List<Label> labels = new ArrayList<>();
+		labels.add(new Label("en", name));
+		return new Concept(oeClient, "http://example.com/APITest#" + urlEncode(name), labels);
 	}
 
 	private void addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {

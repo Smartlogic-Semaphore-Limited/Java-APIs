@@ -277,6 +277,33 @@ public class OEClientReadOnly {
   }
 
   /**
+   * Get a single model's details by its URI.
+   *
+   * @param modelUri the URI of the model to retrieve
+   * @return the model details
+   * @throws OEClientException - an error has occurred contacting the server
+   */
+  public Model getModel(String modelUri) throws OEClientException {
+    logger.info("getModel entry: {}", modelUri);
+
+    String url = getApiURL() + "sys/" + modelUri;
+    logger.info("getModel URL: {}", url);
+    Map<String, String> queryParameters = new HashMap<>();
+    queryParameters.put(PARAM_PROPERTIES, "meta:displayName,meta:graphUri");
+
+    String response = getResponse(url, queryParameters);
+    JsonObject jsonResponse = JSON.parse(response);
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
+
+    if (jsonArray.size() == 0) {
+      throw new OEClientException("Model not found: " + modelUri);
+    }
+
+    JsonObject modelObject = jsonArray.get(0).getAsObject();
+    return new Model(modelObject);
+  }
+
+  /**
    * getAllTasks
    *
    * @return all the tasks present for this model

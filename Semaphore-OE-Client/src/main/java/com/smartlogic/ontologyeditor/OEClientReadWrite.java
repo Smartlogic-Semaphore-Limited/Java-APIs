@@ -1458,7 +1458,134 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
 
 	}
-	
+
+	/**
+	 * Update an integer metadata value on a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current integer value
+	 * @param newValue the new integer value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadata(Concept concept, String metadataTypeUri, int oldValue, int newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldValue);
+		oldValueObject.put("@type", "xsd:integer");
+
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newValue);
+		newValueObject.put("@type", "xsd:integer");
+
+		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
+	}
+
+	/**
+	 * Update a decimal metadata value on a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current decimal value
+	 * @param newValue the new decimal value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadata(Concept concept, String metadataTypeUri, double oldValue, double newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", (long) oldValue);
+		oldValueObject.put("@type", "xsd:decimal");
+
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", (long) newValue);
+		newValueObject.put("@type", "xsd:decimal");
+
+		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
+	}
+
+	/**
+	 * Update a date metadata value on a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current date value
+	 * @param newValue the new date value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadata(Concept concept, String metadataTypeUri, Date oldValue, Date newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", xsdDateFormat.format(oldValue));
+		oldValueObject.put("@type", "xsd:date");
+
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", xsdDateFormat.format(newValue));
+		newValueObject.put("@type", "xsd:date");
+
+		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
+	}
+
+	/**
+	 * Update a URI metadata value on a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current URI value
+	 * @param newValue the new URI value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadata(Concept concept, String metadataTypeUri, URI oldValue, URI newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldValue.toString());
+		oldValueObject.put("@type", "xsd:anyURI");
+
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newValue.toString());
+		newValueObject.put("@type", "xsd:anyURI");
+
+		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
+	}
+
+	private void updateTypedMetadata(Concept concept, String metadataTypeUri, JsonObject oldValueObject, JsonObject newValueObject) throws OEClientException {
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/1");
+		JsonObject testObject1 = new JsonObject();
+		testObject1.put("@id", concept.getUri());
+		testOperation1.put("value", testObject1);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", String.format("@graph/1/%s/2", getTildered(metadataTypeUri)));
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		checkKRTModified(operationList, "1");
+
+		String updateMetadataPayload = operationList.toString();
+		logger.info("updateTypedMetadata payload: {}", updateMetadataPayload);
+		makeRequest(getModelURL(), updateMetadataPayload, RequestType.PATCH);
+	}
+
 	@SuppressWarnings("unchecked")
 	public void deleteMetadata(Concept concept, String metadataTypeUri, boolean oldValue) throws OEClientException {
 		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
@@ -1493,7 +1620,106 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("deleteMetadata payload: {}", createMetadataPayload);
 		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
 	}
-	
+
+	/**
+	 * Delete an integer metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current integer value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadata(Concept concept, String metadataTypeUri, int oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldValue);
+		oldValueObject.put("@type", "xsd:integer");
+
+		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
+	}
+
+	/**
+	 * Delete a decimal metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current decimal value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadata(Concept concept, String metadataTypeUri, double oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", (long) oldValue);
+		oldValueObject.put("@type", "xsd:decimal");
+
+		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
+	}
+
+	/**
+	 * Delete a date metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current date value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadata(Concept concept, String metadataTypeUri, Date oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", xsdDateFormat.format(oldValue));
+		oldValueObject.put("@type", "xsd:date");
+
+		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
+	}
+
+	/**
+	 * Delete a URI metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current URI value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadata(Concept concept, String metadataTypeUri, URI oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldValue.toString());
+		oldValueObject.put("@type", "xsd:anyURI");
+
+		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
+	}
+
+	private void deleteTypedMetadata(Concept concept, String metadataTypeUri, JsonObject oldValueObject) throws OEClientException {
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/1");
+		JsonObject testObject1 = new JsonObject();
+		testObject1.put("@id", concept.getUri());
+		testOperation1.put("value", testObject1);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		operationList.add(removeOperation);
+
+		String deleteMetadataPayload = operationList.toString();
+		logger.info("deleteTypedMetadata payload: {}", deleteMetadataPayload);
+		makeRequest(getModelURL(), deleteMetadataPayload, RequestType.PATCH);
+	}
+
 	public void deleteConcept(Concept concept) throws OEClientException {
 		logger.info("deleteConcept entry: {} {} {}", concept.getUri());
 
@@ -1792,6 +2018,336 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		checkResponseStatus(response);
 	}
+
+	// ======================================================================
+	// Concept Scheme update
+	// ======================================================================
+
+	/**
+	 * Update the label of a concept scheme.
+	 *
+	 * @param conceptScheme the concept scheme to update
+	 * @param oldLabel the existing label to replace
+	 * @param newLabel the new label value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateConceptScheme(ConceptScheme conceptScheme, Label oldLabel, Label newLabel) throws OEClientException {
+		logger.info("updateConceptScheme entry: {} {} {}", conceptScheme.getUri(), oldLabel.getValue(), newLabel.getValue());
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", conceptScheme.getUri());
+		testOperation1.put("value", testValue);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldLabel.getValue());
+		if (oldLabel.getLanguageCode() != null) {
+			oldValueObject.put("@language", oldLabel.getLanguageCode());
+		}
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/rdfs:label/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/rdfs:label/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newLabel.getValue());
+		if (newLabel.getLanguageCode() != null) {
+			newValueObject.put("@language", newLabel.getLanguageCode());
+		}
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getModelURL() + "/" + getEscapedUri(conceptScheme.getUri());
+		String payload = operationList.toString();
+		logger.info("updateConceptScheme payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	// ======================================================================
+	// Hierarchical Relationship Type
+	// ======================================================================
+
+	/**
+	 * Create a hierarchical relationship type (broader/narrower).
+	 *
+	 * @param broaderLabel the label for the broader (forward) direction
+	 * @param broaderUri the URI for the broader property
+	 * @param narrowerLabel the label for the narrower (inverse) direction
+	 * @param narrowerUri the URI for the narrower property
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void createHierarchicalRelationshipType(Label broaderLabel, String broaderUri,
+			Label narrowerLabel, String narrowerUri) throws OEClientException {
+		logger.info("createHierarchicalRelationshipType entry: {} {} {} {}",
+				broaderLabel, broaderUri, narrowerLabel, narrowerUri);
+
+		JsonObject broaderType = getHierarchicalRelationshipTypeJsonObject(broaderLabel, broaderUri, "skos:broader");
+		JsonObject narrowerType = getHierarchicalRelationshipTypeJsonObject(narrowerLabel, narrowerUri, "skos:narrower");
+
+		JsonArray inverseOfArray = new JsonArray();
+		inverseOfArray.add(narrowerType);
+		broaderType.put("owl:inverseOf", inverseOfArray);
+
+		String payload = broaderType.toString();
+		logger.info("createHierarchicalRelationshipType making call: {}", payload);
+		makeRequest(getModelURL(), payload, RequestType.POST);
+	}
+
+	private JsonObject getHierarchicalRelationshipTypeJsonObject(Label label, String uri, String parentProperty) {
+		JsonObject relationshipTypeObject = new JsonObject();
+
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("owl:ObjectProperty");
+		relationshipTypeObject.put("@type", typeArray);
+		relationshipTypeObject.put("@id", uri);
+
+		JsonArray labelArray = new JsonArray();
+		JsonObject labelObject = new JsonObject();
+		labelObject.put("@value", label.getValue());
+		labelObject.put("@language", label.getLanguageCode());
+		labelArray.add(labelObject);
+		relationshipTypeObject.put("rdfs:label", labelArray);
+
+		JsonArray domainArray = new JsonArray();
+		JsonObject domainObject = new JsonObject();
+		domainObject.put("@id", "skos:Concept");
+		domainArray.add(domainObject);
+		relationshipTypeObject.put("rdfs:domain", domainArray);
+
+		JsonArray rangeArray = new JsonArray();
+		JsonObject rangeObject = new JsonObject();
+		rangeObject.put("@id", "skos:Concept");
+		rangeArray.add(rangeObject);
+		relationshipTypeObject.put("rdfs:range", rangeArray);
+
+		JsonArray subPropertyOfArray = new JsonArray();
+		JsonObject subPropertyOfObject = new JsonObject();
+		subPropertyOfObject.put("@id", parentProperty);
+		subPropertyOfArray.add(subPropertyOfObject);
+		relationshipTypeObject.put("rdfs:subPropertyOf", subPropertyOfArray);
+
+		return relationshipTypeObject;
+	}
+
+	// ======================================================================
+	// Delete / Update Relationship Types
+	// ======================================================================
+
+	/**
+	 * Delete a relationship type (hierarchical or associative) from the model.
+	 *
+	 * @param relationshipTypeUri the URI of the relationship type to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteRelationshipType(String relationshipTypeUri) throws OEClientException {
+		logger.info("deleteRelationshipType entry: {}", relationshipTypeUri);
+
+		String url = getModelURL() + "/" + getEscapedUri(relationshipTypeUri);
+		logger.info("deleteRelationshipType URL: {}", url);
+		makeRequest(url, null, RequestType.DELETE);
+	}
+
+	/**
+	 * Update the label of a relationship type.
+	 *
+	 * @param relationshipTypeUri the URI of the relationship type
+	 * @param oldLabel the current label
+	 * @param newLabel the new label
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateRelationshipType(String relationshipTypeUri, Label oldLabel, Label newLabel) throws OEClientException {
+		logger.info("updateRelationshipType entry: {} {} {}", relationshipTypeUri, oldLabel.getValue(), newLabel.getValue());
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", relationshipTypeUri);
+		testOperation1.put("value", testValue);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldLabel.getValue());
+		if (oldLabel.getLanguageCode() != null) {
+			oldValueObject.put("@language", oldLabel.getLanguageCode());
+		}
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/rdfs:label/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/rdfs:label/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newLabel.getValue());
+		if (newLabel.getLanguageCode() != null) {
+			newValueObject.put("@language", newLabel.getLanguageCode());
+		}
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getModelURL() + "/" + getEscapedUri(relationshipTypeUri);
+		String payload = operationList.toString();
+		logger.info("updateRelationshipType payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	// ======================================================================
+	// Update / Delete Metadata Types
+	// ======================================================================
+
+	/**
+	 * Update the label of a metadata type.
+	 *
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldLabel the current label
+	 * @param newLabel the new label
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadataType(String metadataTypeUri, Label oldLabel, Label newLabel) throws OEClientException {
+		logger.info("updateMetadataType entry: {} {} {}", metadataTypeUri, oldLabel.getValue(), newLabel.getValue());
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", metadataTypeUri);
+		testOperation1.put("value", testValue);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldLabel.getValue());
+		if (oldLabel.getLanguageCode() != null) {
+			oldValueObject.put("@language", oldLabel.getLanguageCode());
+		}
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/rdfs:label/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/rdfs:label/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newLabel.getValue());
+		if (newLabel.getLanguageCode() != null) {
+			newValueObject.put("@language", newLabel.getLanguageCode());
+		}
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getModelURL() + "/" + getEscapedUri(metadataTypeUri);
+		String payload = operationList.toString();
+		logger.info("updateMetadataType payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	/**
+	 * Delete a metadata type from the model.
+	 *
+	 * @param metadataTypeUri the URI of the metadata type to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadataType(String metadataTypeUri) throws OEClientException {
+		logger.info("deleteMetadataType entry: {}", metadataTypeUri);
+
+		String url = getModelURL() + "/" + getEscapedUri(metadataTypeUri);
+		logger.info("deleteMetadataType URL: {}", url);
+		makeRequest(url, null, RequestType.DELETE);
+	}
+
+	// ======================================================================
+	// Delete Alt Label Types
+	// ======================================================================
+
+	/**
+	 * Delete an alt label type from the model.
+	 *
+	 * @param altLabelTypeUri the URI of the alt label type to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteAltLabelType(String altLabelTypeUri) throws OEClientException {
+		logger.info("deleteAltLabelType entry: {}", altLabelTypeUri);
+
+		String url = getModelURL() + "/" + getEscapedUri(altLabelTypeUri);
+		logger.info("deleteAltLabelType URL: {}", url);
+		makeRequest(url, null, RequestType.DELETE);
+	}
+
+	// ======================================================================
+	// Update Model
+	// ======================================================================
+
+	/**
+	 * Update the display name of a model.
+	 *
+	 * @param model the model to update
+	 * @param newDisplayName the new display name
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateModel(Model model, String newDisplayName) throws OEClientException {
+		logger.info("updateModel entry: {} {}", model.getUri(), newDisplayName);
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", model.getUri());
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/meta:displayName/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/meta:displayName/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newDisplayName);
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("updateModel payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
 	/**
 	 * Checks if the client is in KRT mode, and if so, add the concept to the Modified KRT concept scheme.
 	 * @param operationList the JSON PATCH operation list object
