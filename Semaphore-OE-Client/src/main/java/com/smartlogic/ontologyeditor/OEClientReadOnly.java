@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor;
 
 import java.io.IOException;
@@ -1261,107 +1262,6 @@ public class OEClientReadOnly {
 
     logger.warn("getConceptCount: No data found in response");
     return 0;
-  }
-
-  /**
-   * Add a linguistic system to the model language list.
-   *
-   * @param language - language label, e.g. Abkhazian
-   * @param notation - language notation, e.g. ab
-   * @throws OEClientException - an error has occurred contacting the server
-   */
-  public void addLanguage(String language, String notation) throws OEClientException {
-    logger.info("addLanguage entry: {} {}", language, notation);
-
-    if (StringUtils.isBlank(language)) {
-      throw new OEClientException("language must not be blank");
-    }
-    if (StringUtils.isBlank(notation)) {
-      throw new OEClientException("notation must not be blank");
-    }
-
-    String normalizedLanguage = language.trim();
-    String normalizedNotation = notation.trim();
-
-
-    String url = getApiURL() + "sys/" + getModelUri() + "?language=en";
-
-    boolean languageExists = languageExists(normalizedNotation);
-
-    if(languageExists) {
-      String payload = buildLanguagePatchPayload(normalizedLanguage, normalizedNotation, true);
-      makeRequest(url, payload, RequestType.PATCH);
-    } else {
-    String payload = buildLanguagePatchPayload(normalizedLanguage, normalizedNotation, false);
-    makeRequest(url, payload, RequestType.PATCH);
-
-    }
-  }
-
-  private boolean languageExists(String notation) throws OEClientException {
-    String url = getApiURL() + "sys/" + getModelUri() + "/lang:" + notation;
-
-    Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put(PARAM_PROPERTIES, "skos:notation,meta:displayName,meta:isImported");
-
-    try {
-      String response = getResponse(url, queryParameters);
-      JsonObject jsonResponse = JSON.parse(response);
-      JsonArray graphArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
-
-      if (graphArray.isEmpty()) {
-        logger.debug("languageExists: lang:{} not found (empty graph)", notation);
-        return false;
-      }
-
-      // Check if skos:notation is present in the response
-      JsonObject languageObject = graphArray.get(0).getAsObject();
-      JsonValue skosNotation = languageObject.get("skos:notation");
-
-      boolean exists = skosNotation != null;
-      logger.debug("languageExists: lang:{} exists={} (skos:notation present={})", notation, exists, skosNotation != null);
-      return exists;
-    } catch (OEClientException e) {
-      if (e.getMessage() != null && e.getMessage().contains(" 404")) {
-        logger.debug("languageExists: lang:{} not found (404)", notation);
-        return false;
-      }
-      throw e;
-    }
-  }
-
-  private String buildLanguagePatchPayload(String language, String notation, boolean useLangFormat) {
-    JsonObject valueObject = new JsonObject();
-    valueObject.put("@id", useLangFormat ? "lang:" + notation : "sem:Lang-" + notation);
-
-    JsonArray typeArray = new JsonArray();
-    typeArray.add("dcterms:LinguisticSystem");
-    valueObject.put("@type", typeArray);
-
-    JsonObject titleObject = new JsonObject();
-    titleObject.put("@language", "en");
-    titleObject.put("@value", language);
-    JsonArray titleArray = new JsonArray();
-    titleArray.add(titleObject);
-    valueObject.put("dc:title", titleArray);
-
-    if (!useLangFormat) {
-      JsonObject notationObject = new JsonObject();
-      notationObject.put("@value", notation);
-      JsonArray notationArray = new JsonArray();
-      notationArray.add(notationObject);
-      valueObject.put("skos:notation", notationArray);
-    }
-
-    JsonObject operationObject = new JsonObject();
-    operationObject.put("op", "add");
-    operationObject.put("path", "@graph/0/dcterms:language/4");
-    operationObject.put("value", valueObject);
-
-    JsonArray patchArray = new JsonArray();
-    patchArray.add(operationObject);
-
-    return patchArray.toString();
   }
 
 }

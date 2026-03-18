@@ -1,9 +1,11 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -16,9 +18,11 @@ import java.util.*;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.smartlogic.ontologyeditor.beans.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
+import org.apache.jena.atlas.json.JsonValue;
 
 import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 
@@ -333,6 +337,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * If client is in KRT mode, will also add the new concept to the Newly Created KRT concept scheme,
 	 * making it eligible for review.
 	 *
+	 * All properties set on the concept will be included in the creation request:
+	 * preferred labels, alternative labels (via {@link Concept#addAltLabel}),
+	 * custom classes (via {@link Concept#addClass}), and relationships
+	 * (via {@link Concept#addRelationship}).
+	 *
 	 * @param conceptSchemeUri
 	 *            - the URI of the concept scheme for which the new concept will
 	 *            become a new concept
@@ -346,66 +355,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void createConcept(String conceptSchemeUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
 		logger.info("createConcept entry: {} {}", conceptSchemeUri, concept.getUri());
 
-		JsonArray conceptTypeList = new JsonArray();
-		conceptTypeList.add("skos:Concept");
-
-		JsonArray labelTypeList = new JsonArray();
-		labelTypeList.add("skosxl:Label");
-
-		JsonArray labelLiteralFormDataList = new JsonArray();
-		for (Label label : concept.getPrefLabels()) {
-			JsonObject labelLiteralFormData = new JsonObject();
-			labelLiteralFormData.put("@value", label.getValue());
-			if (label.getLanguageCode() != null) {
-				labelLiteralFormData.put("@language", label.getLanguageCode());
-			}
-			labelLiteralFormDataList.add(labelLiteralFormData);
-		}
-
-		JsonObject newConceptLabelData = new JsonObject();
-		newConceptLabelData.put("@type", labelTypeList);
-		newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
-
-		JsonArray newConceptLabelDataList = new JsonArray();
-		newConceptLabelDataList.add(newConceptLabelData);
-
-		JsonObject relatedConceptSchemeData = new JsonObject();
-		relatedConceptSchemeData.put("@id", conceptSchemeUri);
-
-		JsonObject conceptDetails = new JsonObject();
-		conceptDetails.put("@type", conceptTypeList);
-		conceptDetails.put("skosxl:prefLabel", newConceptLabelDataList);
-		conceptDetails.put("skos:topConceptOf", relatedConceptSchemeData);
-		conceptDetails.put("@id", concept.getUri());
-		for (Identifier identifier : concept.getIdentifiers())
-			conceptDetails.put(identifier.getUri(), identifier.getValue());
-
-		if (metadata != null && !metadata.isEmpty()) {
-			metadata.forEach((key, mdCollectionValue) -> {
-				JsonArray jsonMetadataArray = new JsonArray();
-				if (mdCollectionValue != null && !mdCollectionValue.isEmpty()) {
-					mdCollectionValue.forEach(mdValue -> {
-						JsonObject mdObject = new JsonObject();
-						mdObject.put("@value", mdValue.getValue());
-						if (mdValue.getLanguageCode() != null) {
-							mdObject.put("@language", mdValue.getLanguageCode());
-						}
-						jsonMetadataArray.add(mdObject);
-					});
-					conceptDetails.put(key, jsonMetadataArray);
-				}
-			});
-		}
-
-		/* if in KRT mode, add new concept to NewlyCreated KRT concept scheme as a top concept */
-		if (isKRTClient()) {
-			String newlyAddedConceptSchemeUri = getKRTNewlyAddedSchemeUri();
-			if (newlyAddedConceptSchemeUri != null) {
-				JsonObject newlyCreatedConceptSchemeData = new JsonObject();
-				newlyCreatedConceptSchemeData.put("@id", newlyAddedConceptSchemeUri);
-				conceptDetails.put("skos:topConceptOf", newlyCreatedConceptSchemeData);
-			}
-		}
+		JsonObject conceptDetails = buildConceptJsonLd(concept, conceptSchemeUri, true, metadata);
 
 		String conceptSchemePayload = conceptDetails.toString();
 
@@ -475,82 +425,13 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		for (int i = 0; i < concepts.size(); i++) {
 			Concept concept = concepts.get(i);
+			if (concept == null)
+				throw new IllegalArgumentException("createConcepts: null concept at index " + i);
 			String parentUri = parentUris.get(i);
 			boolean isTopConcept = asTopConcept.get(i);
+			Map<String, Collection<MetadataValue>> metadata = metadataList != null ? metadataList.get(i) : null;
 
-			JsonArray conceptTypeList = new JsonArray();
-			conceptTypeList.add("skos:Concept");
-
-			JsonArray labelTypeList = new JsonArray();
-			labelTypeList.add("skosxl:Label");
-
-			JsonArray labelLiteralFormDataList = new JsonArray();
-			for (Label label : concept.getPrefLabels()) {
-				JsonObject labelLiteralFormData = new JsonObject();
-				labelLiteralFormData.put("@value", label.getValue());
-				if (label.getLanguageCode() != null) {
-					labelLiteralFormData.put("@language", label.getLanguageCode());
-				}
-				labelLiteralFormDataList.add(labelLiteralFormData);
-			}
-
-			JsonObject newConceptLabelData = new JsonObject();
-			newConceptLabelData.put("@type", labelTypeList);
-			newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
-
-			JsonArray newConceptLabelDataList = new JsonArray();
-			newConceptLabelDataList.add(newConceptLabelData);
-
-			JsonObject conceptDetails = new JsonObject();
-			conceptDetails.put("@type", conceptTypeList);
-			conceptDetails.put("skosxl:prefLabel", newConceptLabelDataList);
-			conceptDetails.put("@id", concept.getUri());
-
-			if (isTopConcept) {
-				JsonObject relatedConceptSchemeData = new JsonObject();
-				relatedConceptSchemeData.put("@id", parentUri);
-				conceptDetails.put("skos:topConceptOf", relatedConceptSchemeData);
-			} else {
-				JsonObject broaderConceptData = new JsonObject();
-				broaderConceptData.put("@id", parentUri);
-				JsonArray broaderArray = new JsonArray();
-				broaderArray.add(broaderConceptData);
-				conceptDetails.put("skos:broader", broaderArray);
-			}
-
-			for (Identifier identifier : concept.getIdentifiers())
-				conceptDetails.put(identifier.getUri(), identifier.getValue());
-
-			if (metadataList != null) {
-				Map<String, Collection<MetadataValue>> metadata = metadataList.get(i);
-				if (metadata != null && !metadata.isEmpty()) {
-					metadata.forEach((key, mdCollectionValue) -> {
-						JsonArray jsonMetadataArray = new JsonArray();
-						if (mdCollectionValue != null && !mdCollectionValue.isEmpty()) {
-							mdCollectionValue.forEach(mdValue -> {
-								JsonObject mdObject = new JsonObject();
-								mdObject.put("@value", mdValue.getValue());
-								if (mdValue.getLanguageCode() != null) {
-									mdObject.put("@language", mdValue.getLanguageCode());
-								}
-								jsonMetadataArray.add(mdObject);
-							});
-							conceptDetails.put(key, jsonMetadataArray);
-						}
-					});
-				}
-			}
-
-			/* if in KRT mode, add new concept to NewlyCreated KRT concept scheme as a top concept */
-			if (isKRTClient()) {
-				String newlyAddedConceptSchemeUri = getKRTNewlyAddedSchemeUri();
-				if (newlyAddedConceptSchemeUri != null) {
-					JsonObject newlyCreatedConceptSchemeData = new JsonObject();
-					newlyCreatedConceptSchemeData.put("@id", newlyAddedConceptSchemeUri);
-					conceptDetails.put("skos:topConceptOf", newlyCreatedConceptSchemeData);
-				}
-			}
-
+			JsonObject conceptDetails = buildConceptJsonLd(concept, parentUri, isTopConcept, metadata);
 			dataArray.add(conceptDetails);
 		}
 
@@ -620,42 +501,113 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void createConceptBelowConcept(String parentConceptUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
 		logger.info("createConceptBelowConcept entry: {} {} {}", parentConceptUri, concept.getUri(), metadata == null ? "" : metadata.keySet());
 
+		JsonObject conceptDetails = buildConceptJsonLd(concept, parentConceptUri, false, metadata);
+
+		String conceptPayload = conceptDetails.toString();
+
+		logger.info("createConceptBelowConcept making call with payload: {}", conceptPayload);
+		makeRequest(getModelURL(), conceptPayload, RequestType.POST);
+
+	}
+
+	/**
+	 * Build a JSON-LD object for a concept with all its properties: preferred labels,
+	 * alternative labels, custom classes, metadata, relationships, and identifiers.
+	 *
+	 * @param concept the concept to serialize
+	 * @param parentUri the parent URI - either a concept scheme URI (if isTopConcept) or a parent concept URI
+	 * @param isTopConcept true if the concept is a top concept of a scheme, false if narrower of a parent concept
+	 * @param metadata optional metadata map
+	 * @return the JSON-LD object representing the concept
+	 */
+	private JsonObject buildConceptJsonLd(Concept concept, String parentUri, boolean isTopConcept,
+										  Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
+
+		// @type: use custom classes if set, otherwise default to skos:Concept
 		JsonArray conceptTypeList = new JsonArray();
-		conceptTypeList.add("skos:Concept");
+		if (concept.getClassUris() != null && !concept.getClassUris().isEmpty()) {
+			for (String classUri : concept.getClassUris()) {
+				conceptTypeList.add(classUri);
+			}
+		} else {
+			conceptTypeList.add("skos:Concept");
+		}
 
-		JsonArray labelTypeList = new JsonArray();
-		labelTypeList.add("skosxl:Label");
-
-		JsonArray labelLiteralFormDataList = new JsonArray();
+		// Preferred labels
+		JsonArray newConceptLabelDataList = new JsonArray();
 		for (Label label : concept.getPrefLabels()) {
+			JsonObject newConceptLabelData = new JsonObject();
+			JsonArray labelTypeList = new JsonArray();
+			labelTypeList.add("skosxl:Label");
+			newConceptLabelData.put("@type", labelTypeList);
+
+			JsonArray labelLiteralFormDataList = new JsonArray();
 			JsonObject labelLiteralFormData = new JsonObject();
 			labelLiteralFormData.put("@value", label.getValue());
 			if (label.getLanguageCode() != null) {
 				labelLiteralFormData.put("@language", label.getLanguageCode());
 			}
 			labelLiteralFormDataList.add(labelLiteralFormData);
+			newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
+
+			newConceptLabelDataList.add(newConceptLabelData);
 		}
 
-		JsonObject newConceptLabelData = new JsonObject();
-		newConceptLabelData.put("@type", labelTypeList);
-		newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
-
-		JsonArray newConceptLabelDataList = new JsonArray();
-		newConceptLabelDataList.add(newConceptLabelData);
-
-		JsonObject relatedConceptSchemeData = new JsonObject();
-		relatedConceptSchemeData.put("@id", parentConceptUri);
-		JsonArray relatedConceptSchemeArray = new JsonArray();
-		relatedConceptSchemeArray.add(relatedConceptSchemeData);
-		
+		// Build the concept object
 		JsonObject conceptDetails = new JsonObject();
 		conceptDetails.put("@type", conceptTypeList);
 		conceptDetails.put("skosxl:prefLabel", newConceptLabelDataList);
-		conceptDetails.put("skos:broader", relatedConceptSchemeArray);
 		conceptDetails.put("@id", concept.getUri());
-		for (Identifier identifier : concept.getIdentifiers())
-			conceptDetails.put(identifier.getUri(), identifier.getValue());
 
+		// Parent relationship (top concept of scheme or narrower of parent concept)
+		if (isTopConcept) {
+			JsonObject relatedConceptSchemeData = new JsonObject();
+			relatedConceptSchemeData.put("@id", parentUri);
+			conceptDetails.put("skos:topConceptOf", relatedConceptSchemeData);
+		} else {
+			JsonObject broaderConceptData = new JsonObject();
+			broaderConceptData.put("@id", parentUri);
+			JsonArray broaderArray = new JsonArray();
+			broaderArray.add(broaderConceptData);
+			conceptDetails.put("skos:broader", broaderArray);
+		}
+
+		// Identifiers (e.g. sem:guid)
+		for (Identifier identifier : concept.getIdentifiers()) {
+			conceptDetails.put(identifier.getUri(), identifier.getValue());
+		}
+
+		// Alternative labels (skosxl:altLabel or custom label types)
+		Map<String, Collection<Label>> altLabelsByUri = concept.getAltLabelsByUri();
+		if (altLabelsByUri != null && !altLabelsByUri.isEmpty()) {
+			for (Map.Entry<String, Collection<Label>> entry : altLabelsByUri.entrySet()) {
+				String labelTypeUri = entry.getKey();
+				Collection<Label> altLabels = entry.getValue();
+				if (altLabels != null && !altLabels.isEmpty()) {
+					JsonArray altLabelArray = new JsonArray();
+					for (Label altLabel : altLabels) {
+						JsonObject altLabelData = new JsonObject();
+						JsonArray altLabelTypeList = new JsonArray();
+						altLabelTypeList.add("skosxl:Label");
+						altLabelData.put("@type", altLabelTypeList);
+
+						JsonArray altLiteralFormList = new JsonArray();
+						JsonObject altLiteralForm = new JsonObject();
+						altLiteralForm.put("@value", altLabel.getValue());
+						if (altLabel.getLanguageCode() != null) {
+							altLiteralForm.put("@language", altLabel.getLanguageCode());
+						}
+						altLiteralFormList.add(altLiteralForm);
+						altLabelData.put("skosxl:literalForm", altLiteralFormList);
+
+						altLabelArray.add(altLabelData);
+					}
+					conceptDetails.put(labelTypeUri, altLabelArray);
+				}
+			}
+		}
+
+		// Metadata
 		if (metadata != null && !metadata.isEmpty()) {
 			metadata.forEach((key, mdCollectionValue) -> {
 				JsonArray jsonMetadataArray = new JsonArray();
@@ -673,7 +625,27 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			});
 		}
 
-		/* if in KRT mode, add new concept to NewlyCreate KRT concept scheme as a top concept */
+		// Associative relationships to existing concepts
+		Map<String, Collection<String>> relationships = concept.getRelationships();
+		if (relationships != null && !relationships.isEmpty()) {
+			for (Map.Entry<String, Collection<String>> entry : relationships.entrySet()) {
+				String relationshipTypeUri = entry.getKey();
+				Collection<String> targetUris = entry.getValue();
+				if (targetUris != null && !targetUris.isEmpty()) {
+					// Skip skos:broader as it's already handled by the parent relationship
+					if ("skos:broader".equals(relationshipTypeUri)) continue;
+					JsonArray targetArray = new JsonArray();
+					for (String targetUri : targetUris) {
+						JsonObject targetObject = new JsonObject();
+						targetObject.put("@id", targetUri);
+						targetArray.add(targetObject);
+					}
+					conceptDetails.put(relationshipTypeUri, targetArray);
+				}
+			}
+		}
+
+		// KRT mode: add new concept to NewlyCreated KRT concept scheme
 		if (isKRTClient()) {
 			String newlyAddedConceptSchemeUri = getKRTNewlyAddedSchemeUri();
 			if (newlyAddedConceptSchemeUri != null) {
@@ -683,11 +655,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			}
 		}
 
-		String conceptPayload = conceptDetails.toString();
-
-		logger.info("createConceptBelowConcept making call with payload: {}", conceptPayload);
-		makeRequest(getModelURL(), conceptPayload, RequestType.POST);
-
+		return conceptDetails;
 	}
 
 	/**
@@ -1247,7 +1215,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
 		JsonObject valueObject = new JsonObject();
-		valueObject.put("@value", (long) value);
+		valueObject.put("@value", BigDecimal.valueOf(value).stripTrailingZeros().toPlainString());
 		valueObject.put("@type", "xsd:decimal");
 		createMetadata(concept, metadataTypeUri, valueObject);
 	}
@@ -1495,11 +1463,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
 
 		JsonObject oldValueObject = new JsonObject();
-		oldValueObject.put("@value", (long) oldValue);
+		oldValueObject.put("@value", BigDecimal.valueOf(oldValue).stripTrailingZeros().toPlainString());
 		oldValueObject.put("@type", "xsd:decimal");
 
 		JsonObject newValueObject = new JsonObject();
-		newValueObject.put("@value", (long) newValue);
+		newValueObject.put("@value", BigDecimal.valueOf(newValue).stripTrailingZeros().toPlainString());
 		newValueObject.put("@type", "xsd:decimal");
 
 		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
@@ -1651,7 +1619,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
 
 		JsonObject oldValueObject = new JsonObject();
-		oldValueObject.put("@value", (long) oldValue);
+		oldValueObject.put("@value", BigDecimal.valueOf(oldValue).stripTrailingZeros().toPlainString());
 		oldValueObject.put("@type", "xsd:decimal");
 
 		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
@@ -2409,5 +2377,103 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addTopConceptValueObject.put("@id", conceptSchemeUri);
 		addTopConceptObject.put("value", addTopConceptValueObject);
 		operationList.add(addTopConceptObject);
+	}
+
+	/**
+	 * Add a linguistic system to the model language list.
+	 *
+	 * @param language - language label, e.g. Abkhazian
+	 * @param notation - language notation, e.g. ab
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void addLanguage(String language, String notation) throws OEClientException {
+		logger.info("addLanguage entry: {} {}", language, notation);
+
+		if (StringUtils.isBlank(language)) {
+			throw new OEClientException("language must not be blank");
+		}
+		if (StringUtils.isBlank(notation)) {
+			throw new OEClientException("notation must not be blank");
+		}
+
+		String normalizedLanguage = language.trim();
+		String normalizedNotation = notation.trim();
+
+		String url = getApiURL() + "sys/" + getModelUri() + "?language=en";
+
+		boolean languageExists = languageExists(normalizedNotation);
+
+		if (languageExists) {
+			String payload = buildLanguagePatchPayload(normalizedLanguage, normalizedNotation, true);
+			makeRequest(url, payload, RequestType.PATCH);
+		} else {
+			String payload = buildLanguagePatchPayload(normalizedLanguage, normalizedNotation, false);
+			makeRequest(url, payload, RequestType.PATCH);
+		}
+	}
+
+	private boolean languageExists(String notation) throws OEClientException {
+		String url = getApiURL() + "sys/" + getModelUri() + "/lang:" + notation;
+
+		Map<String, String> queryParameters = new HashMap<>();
+		queryParameters.put(PARAM_PROPERTIES, "skos:notation,meta:displayName,meta:isImported");
+
+		try {
+			String response = getResponse(url, queryParameters);
+			JsonObject jsonResponse = JSON.parse(response);
+			JsonArray graphArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
+
+			if (graphArray.isEmpty()) {
+				logger.debug("languageExists: lang:{} not found (empty graph)", notation);
+				return false;
+			}
+
+			JsonObject languageObject = graphArray.get(0).getAsObject();
+			JsonValue skosNotation = languageObject.get("skos:notation");
+
+			boolean exists = skosNotation != null;
+			logger.debug("languageExists: lang:{} exists={} (skos:notation present={})", notation, exists, skosNotation != null);
+			return exists;
+		} catch (OEClientException e) {
+			if (e.getMessage() != null && e.getMessage().contains(" 404")) {
+				logger.debug("languageExists: lang:{} not found (404)", notation);
+				return false;
+			}
+			throw e;
+		}
+	}
+
+	private String buildLanguagePatchPayload(String language, String notation, boolean useLangFormat) {
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@id", useLangFormat ? "lang:" + notation : "sem:Lang-" + notation);
+
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("dcterms:LinguisticSystem");
+		valueObject.put("@type", typeArray);
+
+		JsonObject titleObject = new JsonObject();
+		titleObject.put("@language", "en");
+		titleObject.put("@value", language);
+		JsonArray titleArray = new JsonArray();
+		titleArray.add(titleObject);
+		valueObject.put("dc:title", titleArray);
+
+		if (!useLangFormat) {
+			JsonObject notationObject = new JsonObject();
+			notationObject.put("@value", notation);
+			JsonArray notationArray = new JsonArray();
+			notationArray.add(notationObject);
+			valueObject.put("skos:notation", notationArray);
+		}
+
+		JsonObject operationObject = new JsonObject();
+		operationObject.put("op", "add");
+		operationObject.put("path", "@graph/0/dcterms:language/4");
+		operationObject.put("value", valueObject);
+
+		JsonArray patchArray = new JsonArray();
+		patchArray.add(operationObject);
+
+		return patchArray.toString();
 	}
 }

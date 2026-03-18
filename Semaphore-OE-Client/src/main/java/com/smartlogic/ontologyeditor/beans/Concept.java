@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor.beans;
 
 import java.util.Collection;
@@ -277,6 +278,53 @@ public class Concept extends AbstractBeanFromJson {
 
   public Collection<String> getClassUris() {
     return classUris;
+  }
+
+  /**
+   * Add an alt label under the specified label type URI (e.g. "skosxl:altLabel" or a custom type).
+   * These alt labels will be included when the concept is created via createConcept or createConceptBelowConcept.
+   *
+   * @param labelTypeUri the label relationship type URI
+   * @param label the label to add
+   */
+  public void addAltLabel(String labelTypeUri, Label label) {
+    altLabelsByUri.computeIfAbsent(labelTypeUri, k -> new HashSet<>()).add(label);
+  }
+
+  /**
+   * Add multiple alt labels under the specified label type URI.
+   *
+   * @param labelTypeUri the label relationship type URI
+   * @param labels the labels to add
+   */
+  public void addAltLabels(String labelTypeUri, Collection<Label> labels) {
+    altLabelsByUri.computeIfAbsent(labelTypeUri, k -> new HashSet<>()).addAll(labels);
+  }
+
+  /**
+   * Get all alt labels grouped by their label type URI.
+   * @return map of label type URI to collection of labels
+   */
+  public Map<String, Collection<Label>> getAltLabelsByUri() {
+    return altLabelsByUri;
+  }
+
+  /**
+   * Add an associative relationship to another concept, to be included at creation time.
+   *
+   * @param relationshipTypeUri the relationship type URI (e.g. "skos:related" or a custom URI)
+   * @param targetConceptUri the URI of the target concept
+   */
+  public void addRelationship(String relationshipTypeUri, String targetConceptUri) {
+    relatedConceptUrisByRelationship.computeIfAbsent(relationshipTypeUri, k -> new HashSet<>()).add(targetConceptUri);
+  }
+
+  /**
+   * Get all relationships set for creation purposes.
+   * @return map of relationship type URI to collection of target concept URIs
+   */
+  public Map<String, Collection<String>> getRelationships() {
+    return relatedConceptUrisByRelationship;
   }
 
   public void populateClasses(JsonObject jsonObject) {
