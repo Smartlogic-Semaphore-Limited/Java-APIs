@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor.beans;
 
 import java.util.Collection;
@@ -6,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.atlas.json.JsonValue;
@@ -32,8 +35,12 @@ public class Concept extends AbstractBeanFromJson {
 
   private Collection<String> classUris = new HashSet<>();
 
+  @JsonIgnore
+  private final JsonObject jsonObject;
+
   public Concept(OEClientReadOnly oeClient, JsonObject jsonObject) {
     logger.debug("Concept - entry: {}", jsonObject);
+    this.jsonObject = jsonObject;
     this.uri = getAsString(jsonObject, "@id");
 
     JsonValue jsonValue = jsonObject.get("@type");
@@ -188,6 +195,7 @@ public class Concept extends AbstractBeanFromJson {
   public Concept(OEClientReadOnly oeClient, String uri, List<Label> labelList) {
     this.oeClient = oeClient;
     this.uri = uri;
+    this.jsonObject = null;
     prefLabels.addAll(labelList);
   }
 
@@ -220,27 +228,32 @@ public class Concept extends AbstractBeanFromJson {
 
   @Override
   public String toString() {
-    StringBuilder stringBuilder = new StringBuilder("Concept:");
-    stringBuilder.append(this.uri).append(" [");
-    String sep = "";
-    for (String type : types) {
-      stringBuilder.append(sep).append(type);
-      sep = ", ";
-    }
-    stringBuilder.append("] ");
-    stringBuilder.append("\nPref Labels: ");
-    for (Label prefLabel : prefLabels) {
-      stringBuilder.append(" \"").append(prefLabel.toString()).append("\"");
-    }
+    return this.asJson();
+//    StringBuilder stringBuilder = new StringBuilder("Concept:");
+//    stringBuilder.append(this.uri).append(" [");
+//    String sep = "";
+//    for (String type : types) {
+//      stringBuilder.append(sep).append(type);
+//      sep = ", ";
+//    }
+//    stringBuilder.append("] ");
+//    stringBuilder.append("Pref Labels: ");
+//    for (Label prefLabel : prefLabels) {
+//      stringBuilder.append(" \"").append(prefLabel.toString()).append("\"");
+//    }
+//
+//    for (Map.Entry<String, Collection<String>> entry : relatedConceptUrisByRelationship
+//        .entrySet()) {
+//      stringBuilder.append("\n").append(entry.getKey()).append(": ");
+//      for (String relatedUri : entry.getValue()) {
+//        stringBuilder.append(" <").append(relatedUri).append(">");
+//      }
+//    }
+//    return stringBuilder.toString();
+  }
 
-    for (Map.Entry<String, Collection<String>> entry : relatedConceptUrisByRelationship
-        .entrySet()) {
-      stringBuilder.append("\n").append(entry.getKey()).append(": ");
-      for (String relatedUri : entry.getValue()) {
-        stringBuilder.append(" <").append(relatedUri).append(">");
-      }
-    }
-    return stringBuilder.toString();
+  public String asJson() {
+    return JSON.toStringFlat(jsonObject);
   }
 
   public Collection<Label> getPrefLabels() {
@@ -265,6 +278,53 @@ public class Concept extends AbstractBeanFromJson {
 
   public Collection<String> getClassUris() {
     return classUris;
+  }
+
+  /**
+   * Add an alt label under the specified label type URI (e.g. "skosxl:altLabel" or a custom type).
+   * These alt labels will be included when the concept is created via createConcept or createConceptBelowConcept.
+   *
+   * @param labelTypeUri the label relationship type URI
+   * @param label the label to add
+   */
+  public void addAltLabel(String labelTypeUri, Label label) {
+    altLabelsByUri.computeIfAbsent(labelTypeUri, k -> new HashSet<>()).add(label);
+  }
+
+  /**
+   * Add multiple alt labels under the specified label type URI.
+   *
+   * @param labelTypeUri the label relationship type URI
+   * @param labels the labels to add
+   */
+  public void addAltLabels(String labelTypeUri, Collection<Label> labels) {
+    altLabelsByUri.computeIfAbsent(labelTypeUri, k -> new HashSet<>()).addAll(labels);
+  }
+
+  /**
+   * Get all alt labels grouped by their label type URI.
+   * @return map of label type URI to collection of labels
+   */
+  public Map<String, Collection<Label>> getAltLabelsByUri() {
+    return altLabelsByUri;
+  }
+
+  /**
+   * Add an associative relationship to another concept, to be included at creation time.
+   *
+   * @param relationshipTypeUri the relationship type URI (e.g. "skos:related" or a custom URI)
+   * @param targetConceptUri the URI of the target concept
+   */
+  public void addRelationship(String relationshipTypeUri, String targetConceptUri) {
+    relatedConceptUrisByRelationship.computeIfAbsent(relationshipTypeUri, k -> new HashSet<>()).add(targetConceptUri);
+  }
+
+  /**
+   * Get all relationships set for creation purposes.
+   * @return map of relationship type URI to collection of target concept URIs
+   */
+  public Map<String, Collection<String>> getRelationships() {
+    return relatedConceptUrisByRelationship;
   }
 
   public void populateClasses(JsonObject jsonObject) {

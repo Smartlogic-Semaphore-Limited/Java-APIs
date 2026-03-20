@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
@@ -33,6 +34,14 @@ public class AddConceptSchemes extends ModelManipulation {
 		addConceptScheme(oeClient, "~ is a cat");
 		addConceptScheme(oeClient, "Are you sure?");
 		addConceptScheme(oeClient, "Sometimes you just need a /");
+
+		// Create multiple concept schemes in a single request
+		List<ConceptScheme> batchSchemes = new ArrayList<ConceptScheme>();
+		batchSchemes.add(buildConceptScheme(oeClient, "Batch Scheme Alpha"));
+		batchSchemes.add(buildConceptScheme(oeClient, "Batch Scheme Beta"));
+		batchSchemes.add(buildConceptScheme(oeClient, "Batch Scheme Gamma"));
+
+		oeClient.createConceptSchemes(batchSchemes);
 	}
 	
 	public void addConceptScheme(OEClientReadWrite oeClient, String schemeName) throws OEClientException {
@@ -42,6 +51,12 @@ public class AddConceptSchemes extends ModelManipulation {
 		ConceptScheme conceptScheme = new ConceptScheme(oeClient, "http://example.com/APITest#" + urlEncode(schemeName), labels);
 
 		oeClient.createConceptScheme(conceptScheme);
+	}
+
+	private ConceptScheme buildConceptScheme(OEClientReadWrite oeClient, String schemeName) {
+		List<Label> labels = new ArrayList<Label>();
+		labels.add(new Label("en", schemeName));
+		return new ConceptScheme(oeClient, "http://example.com/APITest#" + urlEncode(schemeName), labels);
 	}
 
 

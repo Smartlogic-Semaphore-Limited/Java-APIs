@@ -74,11 +74,11 @@ public class OEFilter {
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "\n[" +
+		return this.getClass().getSimpleName() + " " +
                 "conceptClass = " + conceptClass  +
-                "],\n" +
-                "[any label = " + (anyLabelFilter == null ? "null" : anyLabelFilter.toString()) + "],\n" +
-                "[prefLabel = " + (prefLabelFilter == null ? "null" : prefLabelFilter.toString()) + "],\n" +
+                "], " +
+                "[any label = " + (anyLabelFilter == null ? "null" : anyLabelFilter.toString()) + "], " +
+                "[prefLabel = " + (prefLabelFilter == null ? "null" : prefLabelFilter.toString()) + "], " +
                 "[altLabel  = " + (altLabelFilter == null ? "null" : altLabelFilter.toString()) + "]";
 	}
 }

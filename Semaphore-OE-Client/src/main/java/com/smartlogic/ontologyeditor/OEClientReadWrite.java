@@ -1,10 +1,13 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -15,9 +18,11 @@ import java.util.*;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.smartlogic.ontologyeditor.beans.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
+import org.apache.jena.atlas.json.JsonValue;
 
 import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 
@@ -97,6 +102,33 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(url, modelPayload, RequestType.POST);
 
 	}
+
+	public void linkModel(String importedModelUri) throws OEClientException {
+
+		logger.info("linkModel importing URL: {}", importedModelUri);
+
+		String url = getModelURL() + "/" + getModelUri();
+
+		JsonArray jsonArray = new JsonArray();
+
+		JsonObject addObject = new JsonObject();
+		addObject.put("op", "add");
+		addObject.put("path", "@graph/0/owl:imports/1");
+
+		JsonObject linkedModel = new JsonObject();
+		linkedModel.put("@id", importedModelUri);
+
+		addObject.put("value", linkedModel);
+
+		jsonArray.add(addObject);
+		String modelPayload = jsonArray.toString();
+
+		Date startDate = new Date();
+		logger.info("linkModel making call  : {} {} {}", modelPayload, url, startDate.getTime());
+		makeRequest(url, modelPayload, RequestType.PATCH);
+
+	}
+
 
 	/**
 	 * Delete model
@@ -305,6 +337,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * If client is in KRT mode, will also add the new concept to the Newly Created KRT concept scheme,
 	 * making it eligible for review.
 	 *
+	 * All properties set on the concept will be included in the creation request:
+	 * preferred labels, alternative labels (via {@link Concept#addAltLabel}),
+	 * custom classes (via {@link Concept#addClass}), and relationships
+	 * (via {@link Concept#addRelationship}).
+	 *
 	 * @param conceptSchemeUri
 	 *            - the URI of the concept scheme for which the new concept will
 	 *            become a new concept
@@ -318,66 +355,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void createConcept(String conceptSchemeUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
 		logger.info("createConcept entry: {} {}", conceptSchemeUri, concept.getUri());
 
-		JsonArray conceptTypeList = new JsonArray();
-		conceptTypeList.add("skos:Concept");
-
-		JsonArray labelTypeList = new JsonArray();
-		labelTypeList.add("skosxl:Label");
-
-		JsonArray labelLiteralFormDataList = new JsonArray();
-		for (Label label : concept.getPrefLabels()) {
-			JsonObject labelLiteralFormData = new JsonObject();
-			labelLiteralFormData.put("@value", label.getValue());
-			if (label.getLanguageCode() != null) {
-				labelLiteralFormData.put("@language", label.getLanguageCode());
-			}
-			labelLiteralFormDataList.add(labelLiteralFormData);
-		}
-
-		JsonObject newConceptLabelData = new JsonObject();
-		newConceptLabelData.put("@type", labelTypeList);
-		newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
-
-		JsonArray newConceptLabelDataList = new JsonArray();
-		newConceptLabelDataList.add(newConceptLabelData);
-
-		JsonObject relatedConceptSchemeData = new JsonObject();
-		relatedConceptSchemeData.put("@id", conceptSchemeUri);
-
-		JsonObject conceptDetails = new JsonObject();
-		conceptDetails.put("@type", conceptTypeList);
-		conceptDetails.put("skosxl:prefLabel", newConceptLabelDataList);
-		conceptDetails.put("skos:topConceptOf", relatedConceptSchemeData);
-		conceptDetails.put("@id", concept.getUri());
-		for (Identifier identifier : concept.getIdentifiers())
-			conceptDetails.put(identifier.getUri(), identifier.getValue());
-
-		if (metadata != null && !metadata.isEmpty()) {
-			metadata.forEach((key, mdCollectionValue) -> {
-				JsonArray jsonMetadataArray = new JsonArray();
-				if (mdCollectionValue != null && !mdCollectionValue.isEmpty()) {
-					mdCollectionValue.forEach(mdValue -> {
-						JsonObject mdObject = new JsonObject();
-						mdObject.put("@value", mdValue.getValue());
-						if (mdValue.getLanguageCode() != null) {
-							mdObject.put("@language", mdValue.getLanguageCode());
-						}
-						jsonMetadataArray.add(mdObject);
-					});
-					conceptDetails.put(key, jsonMetadataArray);
-				}
-			});
-		}
-
-		/* if in KRT mode, add new concept to NewlyCreated KRT concept scheme as a top concept */
-		if (isKRTClient()) {
-			String newlyAddedConceptSchemeUri = getKRTNewlyAddedSchemeUri();
-			if (newlyAddedConceptSchemeUri != null) {
-				JsonObject newlyCreatedConceptSchemeData = new JsonObject();
-				newlyCreatedConceptSchemeData.put("@id", newlyAddedConceptSchemeUri);
-				conceptDetails.put("skos:topConceptOf", newlyCreatedConceptSchemeData);
-			}
-		}
+		JsonObject conceptDetails = buildConceptJsonLd(concept, conceptSchemeUri, true, metadata);
 
 		String conceptSchemePayload = conceptDetails.toString();
 
@@ -385,6 +363,83 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("createConcept making call  : {}", startDate.getTime());
 
 		makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
+	}
+
+	/**
+	 * Create multiple concepts in a single request using a @graph payload.
+	 * Each concept is paired with a parent URI and a flag indicating whether
+	 * the concept should be a top concept of a concept scheme (true) or a
+	 * narrower concept of a parent concept (false).
+	 *
+	 * @param concepts the list of concepts to create
+	 * @param parentUris the list of parent URIs - either a concept scheme URI (when asTopConcept is true)
+	 *                   or a parent concept URI (when asTopConcept is false)
+	 * @param asTopConcept the list of flags indicating whether each concept is a top concept of a scheme
+	 *                     (true) or a narrower concept below a parent concept (false)
+	 * @throws OEClientException the exception
+	 */
+	public void createConcepts(List<Concept> concepts, List<String> parentUris, List<Boolean> asTopConcept) throws OEClientException {
+		createConcepts(concepts, parentUris, asTopConcept, null);
+	}
+
+	/**
+	 * Create multiple concepts in a single request using a @graph payload,
+	 * optionally with metadata. Each concept is paired with a parent URI and
+	 * a flag indicating whether the concept should be a top concept of a
+	 * concept scheme (true) or a narrower concept of a parent concept (false).
+	 * If metadata is provided, its size must match the concepts list size.
+	 *
+	 * @param concepts the list of concepts to create
+	 * @param parentUris the list of parent URIs - either a concept scheme URI (when asTopConcept is true)
+	 *                   or a parent concept URI (when asTopConcept is false)
+	 * @param asTopConcept the list of flags indicating whether each concept is a top concept of a scheme
+	 *                     (true) or a narrower concept below a parent concept (false)
+	 * @param metadataList optional list of metadata maps, one per concept (may be null)
+	 * @throws OEClientException the exception
+	 */
+	@SuppressWarnings("unchecked")
+	public void createConcepts(List<Concept> concepts, List<String> parentUris, List<Boolean> asTopConcept,
+							   List<Map<String, Collection<MetadataValue>>> metadataList) throws OEClientException {
+		if (concepts == null)
+			throw new IllegalArgumentException("createConcepts cannot take null concepts list");
+		if (parentUris == null)
+			throw new IllegalArgumentException("createConcepts cannot take null parentUris list");
+		if (asTopConcept == null)
+			throw new IllegalArgumentException("createConcepts cannot take null asTopConcept list");
+		if (concepts.size() != parentUris.size())
+			throw new IllegalArgumentException(String.format("concepts size (%d) must match parentUris size (%d)",
+					concepts.size(), parentUris.size()));
+		if (concepts.size() != asTopConcept.size())
+			throw new IllegalArgumentException(String.format("concepts size (%d) must match asTopConcept size (%d)",
+					concepts.size(), asTopConcept.size()));
+		if (metadataList != null && metadataList.size() != concepts.size())
+			throw new IllegalArgumentException(String.format("concepts size (%d) must match metadataList size (%d)",
+					concepts.size(), metadataList.size()));
+		if (concepts.isEmpty())
+			return;
+
+		logger.info("createConcepts entry: concepts count={}", concepts.size());
+
+		JsonObject graphObject = new JsonObject();
+		JsonArray dataArray = new JsonArray();
+
+		for (int i = 0; i < concepts.size(); i++) {
+			Concept concept = concepts.get(i);
+			if (concept == null)
+				throw new IllegalArgumentException("createConcepts: null concept at index " + i);
+			String parentUri = parentUris.get(i);
+			boolean isTopConcept = asTopConcept.get(i);
+			Map<String, Collection<MetadataValue>> metadata = metadataList != null ? metadataList.get(i) : null;
+
+			JsonObject conceptDetails = buildConceptJsonLd(concept, parentUri, isTopConcept, metadata);
+			dataArray.add(conceptDetails);
+		}
+
+		graphObject.put("@graph", dataArray);
+
+		String createConceptsPayload = graphObject.toString();
+		logger.info("createConcepts payload: {}", createConceptsPayload);
+		makeRequest(getModelURL(), createConceptsPayload, RequestType.POST);
 	}
 
 	/**
@@ -446,42 +501,113 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void createConceptBelowConcept(String parentConceptUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
 		logger.info("createConceptBelowConcept entry: {} {} {}", parentConceptUri, concept.getUri(), metadata == null ? "" : metadata.keySet());
 
+		JsonObject conceptDetails = buildConceptJsonLd(concept, parentConceptUri, false, metadata);
+
+		String conceptPayload = conceptDetails.toString();
+
+		logger.info("createConceptBelowConcept making call with payload: {}", conceptPayload);
+		makeRequest(getModelURL(), conceptPayload, RequestType.POST);
+
+	}
+
+	/**
+	 * Build a JSON-LD object for a concept with all its properties: preferred labels,
+	 * alternative labels, custom classes, metadata, relationships, and identifiers.
+	 *
+	 * @param concept the concept to serialize
+	 * @param parentUri the parent URI - either a concept scheme URI (if isTopConcept) or a parent concept URI
+	 * @param isTopConcept true if the concept is a top concept of a scheme, false if narrower of a parent concept
+	 * @param metadata optional metadata map
+	 * @return the JSON-LD object representing the concept
+	 */
+	private JsonObject buildConceptJsonLd(Concept concept, String parentUri, boolean isTopConcept,
+										  Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
+
+		// @type: use custom classes if set, otherwise default to skos:Concept
 		JsonArray conceptTypeList = new JsonArray();
-		conceptTypeList.add("skos:Concept");
+		if (concept.getClassUris() != null && !concept.getClassUris().isEmpty()) {
+			for (String classUri : concept.getClassUris()) {
+				conceptTypeList.add(classUri);
+			}
+		} else {
+			conceptTypeList.add("skos:Concept");
+		}
 
-		JsonArray labelTypeList = new JsonArray();
-		labelTypeList.add("skosxl:Label");
-
-		JsonArray labelLiteralFormDataList = new JsonArray();
+		// Preferred labels
+		JsonArray newConceptLabelDataList = new JsonArray();
 		for (Label label : concept.getPrefLabels()) {
+			JsonObject newConceptLabelData = new JsonObject();
+			JsonArray labelTypeList = new JsonArray();
+			labelTypeList.add("skosxl:Label");
+			newConceptLabelData.put("@type", labelTypeList);
+
+			JsonArray labelLiteralFormDataList = new JsonArray();
 			JsonObject labelLiteralFormData = new JsonObject();
 			labelLiteralFormData.put("@value", label.getValue());
 			if (label.getLanguageCode() != null) {
 				labelLiteralFormData.put("@language", label.getLanguageCode());
 			}
 			labelLiteralFormDataList.add(labelLiteralFormData);
+			newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
+
+			newConceptLabelDataList.add(newConceptLabelData);
 		}
 
-		JsonObject newConceptLabelData = new JsonObject();
-		newConceptLabelData.put("@type", labelTypeList);
-		newConceptLabelData.put("skosxl:literalForm", labelLiteralFormDataList);
-
-		JsonArray newConceptLabelDataList = new JsonArray();
-		newConceptLabelDataList.add(newConceptLabelData);
-
-		JsonObject relatedConceptSchemeData = new JsonObject();
-		relatedConceptSchemeData.put("@id", parentConceptUri);
-		JsonArray relatedConceptSchemeArray = new JsonArray();
-		relatedConceptSchemeArray.add(relatedConceptSchemeData);
-		
+		// Build the concept object
 		JsonObject conceptDetails = new JsonObject();
 		conceptDetails.put("@type", conceptTypeList);
 		conceptDetails.put("skosxl:prefLabel", newConceptLabelDataList);
-		conceptDetails.put("skos:broader", relatedConceptSchemeArray);
 		conceptDetails.put("@id", concept.getUri());
-		for (Identifier identifier : concept.getIdentifiers())
-			conceptDetails.put(identifier.getUri(), identifier.getValue());
 
+		// Parent relationship (top concept of scheme or narrower of parent concept)
+		if (isTopConcept) {
+			JsonObject relatedConceptSchemeData = new JsonObject();
+			relatedConceptSchemeData.put("@id", parentUri);
+			conceptDetails.put("skos:topConceptOf", relatedConceptSchemeData);
+		} else {
+			JsonObject broaderConceptData = new JsonObject();
+			broaderConceptData.put("@id", parentUri);
+			JsonArray broaderArray = new JsonArray();
+			broaderArray.add(broaderConceptData);
+			conceptDetails.put("skos:broader", broaderArray);
+		}
+
+		// Identifiers (e.g. sem:guid)
+		for (Identifier identifier : concept.getIdentifiers()) {
+			conceptDetails.put(identifier.getUri(), identifier.getValue());
+		}
+
+		// Alternative labels (skosxl:altLabel or custom label types)
+		Map<String, Collection<Label>> altLabelsByUri = concept.getAltLabelsByUri();
+		if (altLabelsByUri != null && !altLabelsByUri.isEmpty()) {
+			for (Map.Entry<String, Collection<Label>> entry : altLabelsByUri.entrySet()) {
+				String labelTypeUri = entry.getKey();
+				Collection<Label> altLabels = entry.getValue();
+				if (altLabels != null && !altLabels.isEmpty()) {
+					JsonArray altLabelArray = new JsonArray();
+					for (Label altLabel : altLabels) {
+						JsonObject altLabelData = new JsonObject();
+						JsonArray altLabelTypeList = new JsonArray();
+						altLabelTypeList.add("skosxl:Label");
+						altLabelData.put("@type", altLabelTypeList);
+
+						JsonArray altLiteralFormList = new JsonArray();
+						JsonObject altLiteralForm = new JsonObject();
+						altLiteralForm.put("@value", altLabel.getValue());
+						if (altLabel.getLanguageCode() != null) {
+							altLiteralForm.put("@language", altLabel.getLanguageCode());
+						}
+						altLiteralFormList.add(altLiteralForm);
+						altLabelData.put("skosxl:literalForm", altLiteralFormList);
+
+						altLabelArray.add(altLabelData);
+					}
+					conceptDetails.put(labelTypeUri, altLabelArray);
+				}
+			}
+		}
+
+		// Metadata
 		if (metadata != null && !metadata.isEmpty()) {
 			metadata.forEach((key, mdCollectionValue) -> {
 				JsonArray jsonMetadataArray = new JsonArray();
@@ -499,7 +625,27 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			});
 		}
 
-		/* if in KRT mode, add new concept to NewlyCreate KRT concept scheme as a top concept */
+		// Associative relationships to existing concepts
+		Map<String, Collection<String>> relationships = concept.getRelationships();
+		if (relationships != null && !relationships.isEmpty()) {
+			for (Map.Entry<String, Collection<String>> entry : relationships.entrySet()) {
+				String relationshipTypeUri = entry.getKey();
+				Collection<String> targetUris = entry.getValue();
+				if (targetUris != null && !targetUris.isEmpty()) {
+					// Skip skos:broader as it's already handled by the parent relationship
+					if ("skos:broader".equals(relationshipTypeUri)) continue;
+					JsonArray targetArray = new JsonArray();
+					for (String targetUri : targetUris) {
+						JsonObject targetObject = new JsonObject();
+						targetObject.put("@id", targetUri);
+						targetArray.add(targetObject);
+					}
+					conceptDetails.put(relationshipTypeUri, targetArray);
+				}
+			}
+		}
+
+		// KRT mode: add new concept to NewlyCreated KRT concept scheme
 		if (isKRTClient()) {
 			String newlyAddedConceptSchemeUri = getKRTNewlyAddedSchemeUri();
 			if (newlyAddedConceptSchemeUri != null) {
@@ -509,11 +655,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			}
 		}
 
-		String conceptPayload = conceptDetails.toString();
-
-		logger.info("createConceptBelowConcept making call with payload: {}", conceptPayload);
-		makeRequest(getModelURL(), conceptPayload, RequestType.POST);
-
+		return conceptDetails;
 	}
 
 	/**
@@ -552,6 +694,53 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("createConceptScheme making call  : {}", startDate.getTime());
 		makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
+	}
+
+	/**
+	 * Create multiple concept schemes in a single request using a @graph payload.
+	 *
+	 * @param conceptSchemes the list of concept schemes to create
+	 * @throws OEClientException the exception
+	 */
+	public void createConceptSchemes(List<ConceptScheme> conceptSchemes) throws OEClientException {
+		if (conceptSchemes == null)
+			throw new IllegalArgumentException("createConceptSchemes cannot take null conceptSchemes list");
+		if (conceptSchemes.isEmpty())
+			return;
+
+		logger.info("createConceptSchemes entry: count={}", conceptSchemes.size());
+
+		JsonObject graphObject = new JsonObject();
+		JsonArray dataArray = new JsonArray();
+
+		for (ConceptScheme conceptScheme : conceptSchemes) {
+			JsonObject conceptSchemeDetails = new JsonObject();
+
+			JsonArray conceptSchemeTypeList = new JsonArray();
+			conceptSchemeTypeList.add("skos:ConceptScheme");
+			conceptSchemeDetails.put("@type", conceptSchemeTypeList);
+
+			JsonArray labelDataList = new JsonArray();
+			for (Label label : conceptScheme.getPrefLabels()) {
+				JsonObject labelData = new JsonObject();
+				labelData.put("@value", label.getValue());
+				if (label.getLanguageCode() != null) {
+					labelData.put("@language", label.getLanguageCode());
+				}
+				labelDataList.add(labelData);
+			}
+
+			conceptSchemeDetails.put("rdfs:label", labelDataList);
+			conceptSchemeDetails.put("@id", conceptScheme.getUri());
+
+			dataArray.add(conceptSchemeDetails);
+		}
+
+		graphObject.put("@graph", dataArray);
+
+		String createConceptSchemesPayload = graphObject.toString();
+		logger.info("createConceptSchemes payload: {}", createConceptSchemesPayload);
+		makeRequest(getModelURL(), createConceptSchemesPayload, RequestType.POST);
 	}
 
 	/**
@@ -698,17 +887,47 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getModelURL(), updateLabelPayload, RequestType.PATCH);
 	}
 
+	/**
+	 * Create/add preferred labels to multiple existing concepts. Each concept URI is paired with a label
+	 * by array index. The relationship type is defaulted to "skosxl:prefLabel".
+	 *
+	 * @param conceptUris array of concept URIs
+	 * @param labels array of labels (must be same length as conceptUris)
+	 * @throws OEClientException the exception
+	 */
 	@SuppressWarnings("unchecked")
 	public void createLabels(String[] conceptUris, Label[] labels) throws OEClientException {
+		String[] relationshipTypeUris = new String[conceptUris == null ? 0 : conceptUris.length];
+		Arrays.fill(relationshipTypeUris, "skosxl:prefLabel");
+		createLabels(conceptUris, relationshipTypeUris, labels);
+	}
+
+	/**
+	 * Create/add labels to multiple existing concepts with specified relationship types.
+	 * Each concept URI is paired with a relationship type URI and a label by array index.
+	 *
+	 * @param conceptUris array of concept URIs
+	 * @param relationshipTypeUris array of relationship type URIs (e.g. "skosxl:prefLabel", "skosxl:altLabel")
+	 * @param labels array of labels (must be same length as conceptUris and relationshipTypeUris)
+	 * @throws OEClientException the exception
+	 */
+	@SuppressWarnings("unchecked")
+	public void createLabels(String[] conceptUris, String[] relationshipTypeUris, Label[] labels) throws OEClientException {
 		if (conceptUris == null)
 			throw new IllegalArgumentException("createLabels cannot take null concept URIs array");
+		if (relationshipTypeUris == null)
+			throw new IllegalArgumentException("createLabels cannot take null relationship type URIs array");
 		if (labels == null)
 			throw new IllegalArgumentException("createLabels cannot take null labels array");
-		logger.info("createLabels: {} conceptUris, {} labels provided", conceptUris.length, labels.length);
+		logger.info("createLabels: {} conceptUris, {} relationshipTypeUris, {} labels provided",
+				conceptUris.length, relationshipTypeUris.length, labels.length);
 
 		if ((conceptUris.length != labels.length))
 			throw new IllegalArgumentException(String.format("conceptUris size (%d) must match labels size (%d)",
 					conceptUris.length, labels.length));
+		if ((conceptUris.length != relationshipTypeUris.length))
+			throw new IllegalArgumentException(String.format("conceptUris size (%d) must match relationshipTypeUris size (%d)",
+					conceptUris.length, relationshipTypeUris.length));
 		if ((conceptUris.length == 0))
 			return;
 
@@ -718,6 +937,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		JsonArray dataArray = new JsonArray();
 		for (int i = 0; i < conceptUris.length; i++) {
 			String conceptUri = conceptUris[i];
+			String relationshipTypeUri = relationshipTypeUris[i];
 			Label label = labels[i];
 
 			JsonObject instanceObject = new JsonObject();
@@ -740,7 +960,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			literalFormArray.add(literalFormObject);
 			labelObject.put("skosxl:literalForm", literalFormArray);
 
-			instanceObject.put("skosxl:prefLabel", labelObject);
+			instanceObject.put(relationshipTypeUri, labelObject);
 
 			/* if a KRT client, add the parent concept to the Modified scheme */
 			if (isKRTClient()) {
@@ -995,7 +1215,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
 		JsonObject valueObject = new JsonObject();
-		valueObject.put("@value", (long) value);
+		valueObject.put("@value", BigDecimal.valueOf(value).stripTrailingZeros().toPlainString());
 		valueObject.put("@type", "xsd:decimal");
 		createMetadata(concept, metadataTypeUri, valueObject);
 	}
@@ -1206,7 +1426,134 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
 
 	}
-	
+
+	/**
+	 * Update an integer metadata value on a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current integer value
+	 * @param newValue the new integer value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadata(Concept concept, String metadataTypeUri, int oldValue, int newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldValue);
+		oldValueObject.put("@type", "xsd:integer");
+
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newValue);
+		newValueObject.put("@type", "xsd:integer");
+
+		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
+	}
+
+	/**
+	 * Update a decimal metadata value on a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current decimal value
+	 * @param newValue the new decimal value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadata(Concept concept, String metadataTypeUri, double oldValue, double newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", BigDecimal.valueOf(oldValue).stripTrailingZeros().toPlainString());
+		oldValueObject.put("@type", "xsd:decimal");
+
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", BigDecimal.valueOf(newValue).stripTrailingZeros().toPlainString());
+		newValueObject.put("@type", "xsd:decimal");
+
+		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
+	}
+
+	/**
+	 * Update a date metadata value on a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current date value
+	 * @param newValue the new date value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadata(Concept concept, String metadataTypeUri, Date oldValue, Date newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", xsdDateFormat.format(oldValue));
+		oldValueObject.put("@type", "xsd:date");
+
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", xsdDateFormat.format(newValue));
+		newValueObject.put("@type", "xsd:date");
+
+		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
+	}
+
+	/**
+	 * Update a URI metadata value on a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current URI value
+	 * @param newValue the new URI value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadata(Concept concept, String metadataTypeUri, URI oldValue, URI newValue) throws OEClientException {
+		logger.info("updateMetadata entry: {} {} {} {}", concept.getUri(), metadataTypeUri, oldValue, newValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldValue.toString());
+		oldValueObject.put("@type", "xsd:anyURI");
+
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newValue.toString());
+		newValueObject.put("@type", "xsd:anyURI");
+
+		updateTypedMetadata(concept, metadataTypeUri, oldValueObject, newValueObject);
+	}
+
+	private void updateTypedMetadata(Concept concept, String metadataTypeUri, JsonObject oldValueObject, JsonObject newValueObject) throws OEClientException {
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/1");
+		JsonObject testObject1 = new JsonObject();
+		testObject1.put("@id", concept.getUri());
+		testOperation1.put("value", testObject1);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", String.format("@graph/1/%s/2", getTildered(metadataTypeUri)));
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		checkKRTModified(operationList, "1");
+
+		String updateMetadataPayload = operationList.toString();
+		logger.info("updateTypedMetadata payload: {}", updateMetadataPayload);
+		makeRequest(getModelURL(), updateMetadataPayload, RequestType.PATCH);
+	}
+
 	@SuppressWarnings("unchecked")
 	public void deleteMetadata(Concept concept, String metadataTypeUri, boolean oldValue) throws OEClientException {
 		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
@@ -1241,30 +1588,137 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("deleteMetadata payload: {}", createMetadataPayload);
 		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH );
 	}
-	
+
+	/**
+	 * Delete an integer metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current integer value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadata(Concept concept, String metadataTypeUri, int oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldValue);
+		oldValueObject.put("@type", "xsd:integer");
+
+		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
+	}
+
+	/**
+	 * Delete a decimal metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current decimal value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadata(Concept concept, String metadataTypeUri, double oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", BigDecimal.valueOf(oldValue).stripTrailingZeros().toPlainString());
+		oldValueObject.put("@type", "xsd:decimal");
+
+		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
+	}
+
+	/**
+	 * Delete a date metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current date value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadata(Concept concept, String metadataTypeUri, Date oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", xsdDateFormat.format(oldValue));
+		oldValueObject.put("@type", "xsd:date");
+
+		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
+	}
+
+	/**
+	 * Delete a URI metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current URI value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadata(Concept concept, String metadataTypeUri, URI oldValue) throws OEClientException {
+		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
+
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldValue.toString());
+		oldValueObject.put("@type", "xsd:anyURI");
+
+		deleteTypedMetadata(concept, metadataTypeUri, oldValueObject);
+	}
+
+	private void deleteTypedMetadata(Concept concept, String metadataTypeUri, JsonObject oldValueObject) throws OEClientException {
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/1");
+		JsonObject testObject1 = new JsonObject();
+		testObject1.put("@id", concept.getUri());
+		testOperation1.put("value", testObject1);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", String.format("@graph/1/%s/0", getTildered(metadataTypeUri)));
+		operationList.add(removeOperation);
+
+		String deleteMetadataPayload = operationList.toString();
+		logger.info("deleteTypedMetadata payload: {}", deleteMetadataPayload);
+		makeRequest(getModelURL(), deleteMetadataPayload, RequestType.PATCH);
+	}
+
 	public void deleteConcept(Concept concept) throws OEClientException {
 		logger.info("deleteConcept entry: {} {} {}", concept.getUri());
-
-		String url = getApiURL();
-		url = url.substring(0, url.length() - 1);
-		logger.info("deleteConcept - URL: {}", url);
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("mode", "empty");
 		
-		StringBuilder pathBuilder = new StringBuilder(getModelUri());
+		StringBuilder pathBuilder = new StringBuilder(getModelURL());
 		pathBuilder.append("/");
-		pathBuilder.append(getEscapedUri(getEscapedUri("<" + concept.getUri() + ">")));
-		String path = pathBuilder.toString();
-		logger.info("deleteConcept - path: {}", path);
-		queryParameters.put("path", path);
+		pathBuilder.append(getEscapedUri("<" + concept.getUri() + ">"));
+		String fullUrl = pathBuilder.toString();
+		logger.info("deleteConcept - fullUrl: {}", fullUrl);
 
-		makeRequest(url, queryParameters, null, RequestType.DELETE );
-
+		makeRequest(fullUrl, queryParameters, null, RequestType.DELETE );
 	}
 
-	@SuppressWarnings("unchecked")
-	public void deleteRelationship(String relationshipTypeUri, Concept concept1, Concept concept2)
+	public void deleteConceptScheme(ConceptScheme conceptScheme) throws OEClientException {
+		logger.info("deleteConceptScheme entry: {} {} {}", conceptScheme.getUri());
+
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		queryParameters.put("mode", "empty");
+
+		StringBuilder pathBuilder = new StringBuilder(getModelURL());
+		pathBuilder.append("/");
+		pathBuilder.append(getEscapedUri("<" + conceptScheme.getUri() + ">"));
+		String fullUrl = pathBuilder.toString();
+		logger.info("deleteConceptScheme - fullUrl: {}", fullUrl);
+
+		makeRequest(fullUrl, queryParameters, null, RequestType.DELETE );
+	}
+
+	public void deleteRelationship(String relationshipTypeUri, AbstractBeanFromJson concept1, AbstractBeanFromJson concept2)
 			throws OEClientException {
 		logger.info("deleteRelationship entry: {} {} {}", relationshipTypeUri, concept1.getUri(), concept2.getUri());
 
@@ -1532,6 +1986,336 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		checkResponseStatus(response);
 	}
+
+	// ======================================================================
+	// Concept Scheme update
+	// ======================================================================
+
+	/**
+	 * Update the label of a concept scheme.
+	 *
+	 * @param conceptScheme the concept scheme to update
+	 * @param oldLabel the existing label to replace
+	 * @param newLabel the new label value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateConceptScheme(ConceptScheme conceptScheme, Label oldLabel, Label newLabel) throws OEClientException {
+		logger.info("updateConceptScheme entry: {} {} {}", conceptScheme.getUri(), oldLabel.getValue(), newLabel.getValue());
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", conceptScheme.getUri());
+		testOperation1.put("value", testValue);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldLabel.getValue());
+		if (oldLabel.getLanguageCode() != null) {
+			oldValueObject.put("@language", oldLabel.getLanguageCode());
+		}
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/rdfs:label/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/rdfs:label/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newLabel.getValue());
+		if (newLabel.getLanguageCode() != null) {
+			newValueObject.put("@language", newLabel.getLanguageCode());
+		}
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getModelURL() + "/" + getEscapedUri(conceptScheme.getUri());
+		String payload = operationList.toString();
+		logger.info("updateConceptScheme payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	// ======================================================================
+	// Hierarchical Relationship Type
+	// ======================================================================
+
+	/**
+	 * Create a hierarchical relationship type (broader/narrower).
+	 *
+	 * @param broaderLabel the label for the broader (forward) direction
+	 * @param broaderUri the URI for the broader property
+	 * @param narrowerLabel the label for the narrower (inverse) direction
+	 * @param narrowerUri the URI for the narrower property
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void createHierarchicalRelationshipType(Label broaderLabel, String broaderUri,
+			Label narrowerLabel, String narrowerUri) throws OEClientException {
+		logger.info("createHierarchicalRelationshipType entry: {} {} {} {}",
+				broaderLabel, broaderUri, narrowerLabel, narrowerUri);
+
+		JsonObject broaderType = getHierarchicalRelationshipTypeJsonObject(broaderLabel, broaderUri, "skos:broader");
+		JsonObject narrowerType = getHierarchicalRelationshipTypeJsonObject(narrowerLabel, narrowerUri, "skos:narrower");
+
+		JsonArray inverseOfArray = new JsonArray();
+		inverseOfArray.add(narrowerType);
+		broaderType.put("owl:inverseOf", inverseOfArray);
+
+		String payload = broaderType.toString();
+		logger.info("createHierarchicalRelationshipType making call: {}", payload);
+		makeRequest(getModelURL(), payload, RequestType.POST);
+	}
+
+	private JsonObject getHierarchicalRelationshipTypeJsonObject(Label label, String uri, String parentProperty) {
+		JsonObject relationshipTypeObject = new JsonObject();
+
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("owl:ObjectProperty");
+		relationshipTypeObject.put("@type", typeArray);
+		relationshipTypeObject.put("@id", uri);
+
+		JsonArray labelArray = new JsonArray();
+		JsonObject labelObject = new JsonObject();
+		labelObject.put("@value", label.getValue());
+		labelObject.put("@language", label.getLanguageCode());
+		labelArray.add(labelObject);
+		relationshipTypeObject.put("rdfs:label", labelArray);
+
+		JsonArray domainArray = new JsonArray();
+		JsonObject domainObject = new JsonObject();
+		domainObject.put("@id", "skos:Concept");
+		domainArray.add(domainObject);
+		relationshipTypeObject.put("rdfs:domain", domainArray);
+
+		JsonArray rangeArray = new JsonArray();
+		JsonObject rangeObject = new JsonObject();
+		rangeObject.put("@id", "skos:Concept");
+		rangeArray.add(rangeObject);
+		relationshipTypeObject.put("rdfs:range", rangeArray);
+
+		JsonArray subPropertyOfArray = new JsonArray();
+		JsonObject subPropertyOfObject = new JsonObject();
+		subPropertyOfObject.put("@id", parentProperty);
+		subPropertyOfArray.add(subPropertyOfObject);
+		relationshipTypeObject.put("rdfs:subPropertyOf", subPropertyOfArray);
+
+		return relationshipTypeObject;
+	}
+
+	// ======================================================================
+	// Delete / Update Relationship Types
+	// ======================================================================
+
+	/**
+	 * Delete a relationship type (hierarchical or associative) from the model.
+	 *
+	 * @param relationshipTypeUri the URI of the relationship type to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteRelationshipType(String relationshipTypeUri) throws OEClientException {
+		logger.info("deleteRelationshipType entry: {}", relationshipTypeUri);
+
+		String url = getModelURL() + "/" + getEscapedUri(relationshipTypeUri);
+		logger.info("deleteRelationshipType URL: {}", url);
+		makeRequest(url, null, RequestType.DELETE);
+	}
+
+	/**
+	 * Update the label of a relationship type.
+	 *
+	 * @param relationshipTypeUri the URI of the relationship type
+	 * @param oldLabel the current label
+	 * @param newLabel the new label
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateRelationshipType(String relationshipTypeUri, Label oldLabel, Label newLabel) throws OEClientException {
+		logger.info("updateRelationshipType entry: {} {} {}", relationshipTypeUri, oldLabel.getValue(), newLabel.getValue());
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", relationshipTypeUri);
+		testOperation1.put("value", testValue);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldLabel.getValue());
+		if (oldLabel.getLanguageCode() != null) {
+			oldValueObject.put("@language", oldLabel.getLanguageCode());
+		}
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/rdfs:label/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/rdfs:label/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newLabel.getValue());
+		if (newLabel.getLanguageCode() != null) {
+			newValueObject.put("@language", newLabel.getLanguageCode());
+		}
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getModelURL() + "/" + getEscapedUri(relationshipTypeUri);
+		String payload = operationList.toString();
+		logger.info("updateRelationshipType payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	// ======================================================================
+	// Update / Delete Metadata Types
+	// ======================================================================
+
+	/**
+	 * Update the label of a metadata type.
+	 *
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldLabel the current label
+	 * @param newLabel the new label
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateMetadataType(String metadataTypeUri, Label oldLabel, Label newLabel) throws OEClientException {
+		logger.info("updateMetadataType entry: {} {} {}", metadataTypeUri, oldLabel.getValue(), newLabel.getValue());
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation1 = new JsonObject();
+		testOperation1.put("op", "test");
+		testOperation1.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", metadataTypeUri);
+		testOperation1.put("value", testValue);
+		operationList.add(testOperation1);
+
+		JsonObject testOperation2 = new JsonObject();
+		testOperation2.put("op", "test");
+		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		JsonObject oldValueObject = new JsonObject();
+		oldValueObject.put("@value", oldLabel.getValue());
+		if (oldLabel.getLanguageCode() != null) {
+			oldValueObject.put("@language", oldLabel.getLanguageCode());
+		}
+		testOperation2.put("value", oldValueObject);
+		operationList.add(testOperation2);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/rdfs:label/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/rdfs:label/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newLabel.getValue());
+		if (newLabel.getLanguageCode() != null) {
+			newValueObject.put("@language", newLabel.getLanguageCode());
+		}
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getModelURL() + "/" + getEscapedUri(metadataTypeUri);
+		String payload = operationList.toString();
+		logger.info("updateMetadataType payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	/**
+	 * Delete a metadata type from the model.
+	 *
+	 * @param metadataTypeUri the URI of the metadata type to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteMetadataType(String metadataTypeUri) throws OEClientException {
+		logger.info("deleteMetadataType entry: {}", metadataTypeUri);
+
+		String url = getModelURL() + "/" + getEscapedUri(metadataTypeUri);
+		logger.info("deleteMetadataType URL: {}", url);
+		makeRequest(url, null, RequestType.DELETE);
+	}
+
+	// ======================================================================
+	// Delete Alt Label Types
+	// ======================================================================
+
+	/**
+	 * Delete an alt label type from the model.
+	 *
+	 * @param altLabelTypeUri the URI of the alt label type to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteAltLabelType(String altLabelTypeUri) throws OEClientException {
+		logger.info("deleteAltLabelType entry: {}", altLabelTypeUri);
+
+		String url = getModelURL() + "/" + getEscapedUri(altLabelTypeUri);
+		logger.info("deleteAltLabelType URL: {}", url);
+		makeRequest(url, null, RequestType.DELETE);
+	}
+
+	// ======================================================================
+	// Update Model
+	// ======================================================================
+
+	/**
+	 * Update the display name of a model.
+	 *
+	 * @param model the model to update
+	 * @param newDisplayName the new display name
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateModel(Model model, String newDisplayName) throws OEClientException {
+		logger.info("updateModel entry: {} {}", model.getUri(), newDisplayName);
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", model.getUri());
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/meta:displayName/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/meta:displayName/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newDisplayName);
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("updateModel payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
 	/**
 	 * Checks if the client is in KRT mode, and if so, add the concept to the Modified KRT concept scheme.
 	 * @param operationList the JSON PATCH operation list object
@@ -1593,5 +2377,103 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addTopConceptValueObject.put("@id", conceptSchemeUri);
 		addTopConceptObject.put("value", addTopConceptValueObject);
 		operationList.add(addTopConceptObject);
+	}
+
+	/**
+	 * Add a linguistic system to the model language list.
+	 *
+	 * @param language - language label, e.g. Abkhazian
+	 * @param notation - language notation, e.g. ab
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void addLanguage(String language, String notation) throws OEClientException {
+		logger.info("addLanguage entry: {} {}", language, notation);
+
+		if (StringUtils.isBlank(language)) {
+			throw new OEClientException("language must not be blank");
+		}
+		if (StringUtils.isBlank(notation)) {
+			throw new OEClientException("notation must not be blank");
+		}
+
+		String normalizedLanguage = language.trim();
+		String normalizedNotation = notation.trim();
+
+		String url = getApiURL() + "sys/" + getModelUri() + "?language=en";
+
+		boolean languageExists = languageExists(normalizedNotation);
+
+		if (languageExists) {
+			String payload = buildLanguagePatchPayload(normalizedLanguage, normalizedNotation, true);
+			makeRequest(url, payload, RequestType.PATCH);
+		} else {
+			String payload = buildLanguagePatchPayload(normalizedLanguage, normalizedNotation, false);
+			makeRequest(url, payload, RequestType.PATCH);
+		}
+	}
+
+	private boolean languageExists(String notation) throws OEClientException {
+		String url = getApiURL() + "sys/" + getModelUri() + "/lang:" + notation;
+
+		Map<String, String> queryParameters = new HashMap<>();
+		queryParameters.put(PARAM_PROPERTIES, "skos:notation,meta:displayName,meta:isImported");
+
+		try {
+			String response = getResponse(url, queryParameters);
+			JsonObject jsonResponse = JSON.parse(response);
+			JsonArray graphArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
+
+			if (graphArray.isEmpty()) {
+				logger.debug("languageExists: lang:{} not found (empty graph)", notation);
+				return false;
+			}
+
+			JsonObject languageObject = graphArray.get(0).getAsObject();
+			JsonValue skosNotation = languageObject.get("skos:notation");
+
+			boolean exists = skosNotation != null;
+			logger.debug("languageExists: lang:{} exists={} (skos:notation present={})", notation, exists, skosNotation != null);
+			return exists;
+		} catch (OEClientException e) {
+			if (e.getMessage() != null && e.getMessage().contains(" 404")) {
+				logger.debug("languageExists: lang:{} not found (404)", notation);
+				return false;
+			}
+			throw e;
+		}
+	}
+
+	private String buildLanguagePatchPayload(String language, String notation, boolean useLangFormat) {
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@id", useLangFormat ? "lang:" + notation : "sem:Lang-" + notation);
+
+		JsonArray typeArray = new JsonArray();
+		typeArray.add("dcterms:LinguisticSystem");
+		valueObject.put("@type", typeArray);
+
+		JsonObject titleObject = new JsonObject();
+		titleObject.put("@language", "en");
+		titleObject.put("@value", language);
+		JsonArray titleArray = new JsonArray();
+		titleArray.add(titleObject);
+		valueObject.put("dc:title", titleArray);
+
+		if (!useLangFormat) {
+			JsonObject notationObject = new JsonObject();
+			notationObject.put("@value", notation);
+			JsonArray notationArray = new JsonArray();
+			notationArray.add(notationObject);
+			valueObject.put("skos:notation", notationArray);
+		}
+
+		JsonObject operationObject = new JsonObject();
+		operationObject.put("op", "add");
+		operationObject.put("path", "@graph/0/dcterms:language/4");
+		operationObject.put("value", valueObject);
+
+		JsonArray patchArray = new JsonArray();
+		patchArray.add(operationObject);
+
+		return patchArray.toString();
 	}
 }
