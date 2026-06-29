@@ -67,11 +67,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 		
 	/**
-	 * createModel - create a task within the current model
+	 * createModel - create a model
 	 * @param model - the model to be created
+	 * @return the URI of the newly created model from the x-location-uri header, or null
 	 * @throws OEClientException  - an error has occurred contacting the server
 	 */
-	public void createModel(Model model) throws OEClientException {
+	public String createModel(Model model) throws OEClientException {
 		logger.info("createModel entry: {}", model.getLabel());
 
 		String url = getApiURL() + "sys/sys:Model/rdf:instance";
@@ -94,12 +95,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		defaultNamespaceList.add(model.getDefaultNamespace());
 		modelObject.put("swa:defaultNamespace", defaultNamespaceList);
 
-		modelObject.put("rdfs:comment", model.getComment());
+		if (model.getComment() != null ) {
+			modelObject.put("rdfs:comment", model.getComment());
+		}
 		String modelPayload = modelObject.toString();
 
 		Date startDate = new Date();
 		logger.info("createModel making call  : {} {}", modelPayload, startDate.getTime());
-		makeRequest(url, modelPayload, RequestType.POST);
+		return makeRequest(url, modelPayload, RequestType.POST);
 
 	}
 
@@ -151,9 +154,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * createTask - create a task within the current model
 	 * @param task 
 	 *          - the task to be created
-	 * @throws OEClientException 
+	 * @return the URI of the newly created task from the x-location-uri header, or null
+	 * @throws OEClientException
 	 */
-	public void createTask(Task task) throws OEClientException {
+	public String createTask(Task task) throws OEClientException {
 		logger.info("createTask entry: {}", task.getLabel());
 
 		String url = getModelSysURL() + "/meta:hasTask";
@@ -176,8 +180,33 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		Date startDate = new Date();
 		logger.info("createTask making call  : {} {}", taskPayload, startDate.getTime());
-		makeRequest(url, taskPayload, RequestType.POST);
+		return makeRequest(url, taskPayload, RequestType.POST);
 
+	}
+
+	/**
+	 * createTaskAndReturn - create a task and return a new task instance with server-assigned identifiers.
+	 * This method does not mutate the input task.
+	 *
+	 * @param task
+	 *          - the task to be created
+	 * @return a new Task containing the created task id/graphUri when available
+	 * @throws OEClientException
+	 */
+	public Task createTaskAndReturn(Task task) throws OEClientException {
+		String createdTaskUri = createTask(task);
+		if (createdTaskUri == null) {
+			return new Task(task.getLabel(), null, null);
+		}
+
+		for (Task existingTask : getAllTasks()) {
+			if (createdTaskUri.equals(existingTask.getId()) || createdTaskUri.equals(existingTask.getGraphUri())) {
+				return existingTask;
+			}
+		}
+
+		logger.warn("createTaskAndReturn could not resolve graphUri for task URI: {}", createdTaskUri);
+		return new Task(task.getLabel(), createdTaskUri, createdTaskUri);
 	}
 
 	public void commitTask(Task task) throws OEClientException {
@@ -225,7 +254,15 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
-	public void createClass(Label label, String classUri, ConceptClass[] superClasses) throws OEClientException {
+	/**
+	 * createClass - create a class
+	 * @param label the label for the class
+	 * @param classUri the URI of the class
+	 * @param superClasses the super classes
+	 * @return the URI of the newly created class from the x-location-uri header, or null
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public String createClass(Label label, String classUri, ConceptClass[] superClasses) throws OEClientException {
 		logger.info("createClass entry: {} {}", label, classUri);
 
 		JsonObject classObject = new JsonObject();
@@ -260,7 +297,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		Date startDate = new Date();
 		logger.info("commitTask making call  : {} {}", classPayload, startDate.getTime());
-		makeRequest(getModelURL(), classPayload, RequestType.POST);
+		return makeRequest(getModelURL(), classPayload, RequestType.POST);
 
 
 
@@ -273,8 +310,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param concepts the List of Concept objects to add.
 	 * @param mds the List of optional metadata values to add to each concept. If there is no metadata for a concept,
 	 *            add an empty map.
+	 * @return the URI of the first newly created concept from the x-location-uri header, or null
 	 */
-	public void createConcepts(String conceptSchemeUri, List<Concept> concepts, List<Map<String, Collection<MetadataValue>>> mds) throws OEClientException {
+	public String createConcepts(String conceptSchemeUri, List<Concept> concepts, List<Map<String, Collection<MetadataValue>>> mds) throws OEClientException {
 		logger.info("createConcepts entry: scheme uri: {}, concepts: {}, mds: {}", conceptSchemeUri,
 				concepts != null ? concepts.toString() : "null",
 				mds != null ? mds.toString() : "null");
@@ -287,33 +325,46 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throw new OEClientException("The concept list and the metadata list are not the same size.");
 		}
 
+		String firstUri = null;
 		for (int n = 0; n < concepts.size(); n++) {
 			try {
-				createConcept(conceptSchemeUri, concepts.get(n), mds != null ? mds.get(n) : null);
+				String uri = createConcept(conceptSchemeUri, concepts.get(n), mds != null ? mds.get(n) : null);
+				if (n == 0) {
+					firstUri = uri;
+				}
 			} catch (OEClientException e) {
 				logger.warn("Failed to create concept: {}", concepts.get(n), e);
 			}
 		}
+		return firstUri;
 	}
 
 	/**
 	 * Helper method to add multiple concepts to model in one method call.
 	 * @param conceptSchemeUri the concept scheme under which the concepts should be added.
 	 * @param concepts the set of Concept objects to add.
+	 * @return the URI of the first newly created concept from the x-location-uri header, or null
 	 */
-	public void createConcepts(String conceptSchemeUri, Set<Concept> concepts) throws OEClientException {
+	public String createConcepts(String conceptSchemeUri, Set<Concept> concepts) throws OEClientException {
 		logger.info("createConcepts entry: scheme uri: {}, concepts: {}", conceptSchemeUri,
 				concepts != null ? concepts.toString() : "null");
 		if (concepts == null) {
 			throw new OEClientException("concepts cannot be null");
 		}
+		String firstUri = null;
+		int count = 0;
 		for (Concept concept : concepts) {
 			try {
-				createConcept(conceptSchemeUri, concept);
+				String uri = createConcept(conceptSchemeUri, concept);
+				if (count == 0) {
+					firstUri = uri;
+				}
+				count++;
 			} catch (OEClientException e) {
 				logger.warn("Failed to create concept: {}", concept, e);
 			}
 		}
+		return firstUri;
 	}
 
 	/**
@@ -325,11 +376,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param concept
 	 *            - the concept to create. The preferred labels and class of
 	 *            this concept will be added
+	 * @return the URI of the newly created concept from the x-location-uri header, or null
 	 * @throws OEClientException
 	 */
-	public void createConcept(String conceptSchemeUri, Concept concept) throws OEClientException {
+	public String createConcept(String conceptSchemeUri, Concept concept) throws OEClientException {
 		logger.info("createConcept entry: {} {}", conceptSchemeUri, concept.getUri());
-		createConcept(conceptSchemeUri, concept, null);
+		return createConcept(conceptSchemeUri, concept, null);
 	}
 
 	/**
@@ -350,9 +402,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *            this concept will be added
 	 * @param metadata
 	 *            - optional map of metadata key,value pairs to be added to the concept when it is created.
+	 * @return the URI of the newly created concept from the x-location-uri header, or null
 	 * @throws OEClientException
 	 */
-	public void createConcept(String conceptSchemeUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
+	public String createConcept(String conceptSchemeUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
 		logger.info("createConcept entry: {} {}", conceptSchemeUri, concept.getUri());
 
 		JsonObject conceptDetails = buildConceptJsonLd(concept, conceptSchemeUri, true, metadata);
@@ -362,7 +415,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		Date startDate = new Date();
 		logger.info("createConcept making call  : {}", startDate.getTime());
 
-		makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
+		return makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
 	}
 
 	/**
@@ -376,10 +429,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *                   or a parent concept URI (when asTopConcept is false)
 	 * @param asTopConcept the list of flags indicating whether each concept is a top concept of a scheme
 	 *                     (true) or a narrower concept below a parent concept (false)
+	 * @return the URI of the first newly created concept from the x-location-uri header, or null
 	 * @throws OEClientException the exception
 	 */
-	public void createConcepts(List<Concept> concepts, List<String> parentUris, List<Boolean> asTopConcept) throws OEClientException {
-		createConcepts(concepts, parentUris, asTopConcept, null);
+	public String createConcepts(List<Concept> concepts, List<String> parentUris, List<Boolean> asTopConcept) throws OEClientException {
+		return createConcepts(concepts, parentUris, asTopConcept, null);
 	}
 
 	/**
@@ -395,11 +449,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param asTopConcept the list of flags indicating whether each concept is a top concept of a scheme
 	 *                     (true) or a narrower concept below a parent concept (false)
 	 * @param metadataList optional list of metadata maps, one per concept (may be null)
+	 * @return the URI of the first newly created concept from the x-location-uri header, or null
 	 * @throws OEClientException the exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void createConcepts(List<Concept> concepts, List<String> parentUris, List<Boolean> asTopConcept,
-							   List<Map<String, Collection<MetadataValue>>> metadataList) throws OEClientException {
+	public String createConcepts(List<Concept> concepts, List<String> parentUris, List<Boolean> asTopConcept,
+						   List<Map<String, Collection<MetadataValue>>> metadataList) throws OEClientException {
 		if (concepts == null)
 			throw new IllegalArgumentException("createConcepts cannot take null concepts list");
 		if (parentUris == null)
@@ -416,7 +471,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throw new IllegalArgumentException(String.format("concepts size (%d) must match metadataList size (%d)",
 					concepts.size(), metadataList.size()));
 		if (concepts.isEmpty())
-			return;
+			return null;
 
 		logger.info("createConcepts entry: concepts count={}", concepts.size());
 
@@ -439,7 +494,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String createConceptsPayload = graphObject.toString();
 		logger.info("createConcepts payload: {}", createConceptsPayload);
-		makeRequest(getModelURL(), createConceptsPayload, RequestType.POST);
+		return makeRequest(getModelURL(), createConceptsPayload, RequestType.POST);
 	}
 
 	/**
@@ -450,8 +505,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param concepts the List of Concept objects to add.
 	 * @param mds the List of optional metadata values to add to each concept. If there is no metadata for a concept,
 	 *            add an empty map.
+	 * @return the URI of the first newly created concept from the x-location-uri header, or null
 	 */
-	public void createConceptsBelowConcept(String parentConceptUri, List<Concept> concepts, List<Map<String, Collection<MetadataValue>>> mds) throws OEClientException {
+	public String createConceptsBelowConcept(String parentConceptUri, List<Concept> concepts, List<Map<String, Collection<MetadataValue>>> mds) throws OEClientException {
 		logger.info("createConcepts entry: parent concept uri: {}, concepts: {}, mds: {}", parentConceptUri,
 				concepts != null ? concepts.toString() : "null",
 				mds != null ? mds.toString() : "null");
@@ -464,41 +520,69 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throw new OEClientException("The concept list and the metadata list are not the same size.");
 		}
 
+		String firstUri = null;
 		for (int n = 0; n < concepts.size(); n++) {
 			try {
-				createConceptBelowConcept(parentConceptUri, concepts.get(n), mds != null ? mds.get(n) : null);
+				String uri = createConceptBelowConcept(parentConceptUri, concepts.get(n), mds != null ? mds.get(n) : null);
+				if (n == 0) {
+					firstUri = uri;
+				}
 			} catch (OEClientException e) {
 				logger.warn("Failed to create concept: {}", concepts.get(n), e);
 			}
 		}
+		return firstUri;
 	}
 
 	/**
 	 * Create multiple concepts below the specified concept.
 	 * @param parentConceptUri the pareant concept uri
 	 * @param concepts the set of concepts to create below the parent
+	 * @return the URI of the first newly created concept from the x-location-uri header, or null
 	 * @throws OEClientException excetion
 	 */
-	public void createConceptsBelowConcept(String parentConceptUri, Set<Concept> concepts) throws OEClientException {
+	public String createConceptsBelowConcept(String parentConceptUri, Set<Concept> concepts) throws OEClientException {
 		logger.info("createConceptsBelowConcept entry: parent concept uri: {}, concepts: {}", parentConceptUri,
 				concepts != null ? concepts.toString() : "null");
 		if (concepts == null) {
 			throw new OEClientException("concepts set cannot be null");
 		}
+		String firstUri = null;
+		int count = 0;
 		for (Concept concept : concepts) {
 			try {
-				createConceptBelowConcept(parentConceptUri, concept);
+				String uri = createConceptBelowConcept(parentConceptUri, concept);
+				if (count == 0) {
+					firstUri = uri;
+				}
+				count++;
 			} catch (OEClientException e) {
 				logger.warn("Failed to create concept: {}", concept, e);
 			}
 		}
+		return firstUri;
 	}
 
-	public void createConceptBelowConcept(String parentConceptUri, Concept concept) throws OEClientException {
-		createConceptBelowConcept(parentConceptUri, concept, null);
+	/**
+	 * createConceptBelowConcept - create a concept as a narrower concept under another concept
+	 * @param parentConceptUri the parent concept uri
+	 * @param concept the concept to create
+	 * @return the URI of the newly created concept from the x-location-uri header, or null
+	 * @throws OEClientException
+	 */
+	public String createConceptBelowConcept(String parentConceptUri, Concept concept) throws OEClientException {
+		return createConceptBelowConcept(parentConceptUri, concept, null);
 	}
 
-	public void createConceptBelowConcept(String parentConceptUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
+	/**
+	 * createConceptBelowConcept - create a concept as a narrower concept under another concept with metadata
+	 * @param parentConceptUri the parent concept uri
+	 * @param concept the concept to create
+	 * @param metadata optional metadata to add to the concept
+	 * @return the URI of the newly created concept from the x-location-uri header, or null
+	 * @throws OEClientException
+	 */
+	public String createConceptBelowConcept(String parentConceptUri, Concept concept, Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
 		logger.info("createConceptBelowConcept entry: {} {} {}", parentConceptUri, concept.getUri(), metadata == null ? "" : metadata.keySet());
 
 		JsonObject conceptDetails = buildConceptJsonLd(concept, parentConceptUri, false, metadata);
@@ -506,7 +590,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		String conceptPayload = conceptDetails.toString();
 
 		logger.info("createConceptBelowConcept making call with payload: {}", conceptPayload);
-		makeRequest(getModelURL(), conceptPayload, RequestType.POST);
+		return makeRequest(getModelURL(), conceptPayload, RequestType.POST);
 
 	}
 
@@ -665,9 +749,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param conceptScheme
 	 *            - the concept scheme to create, the labels of this concept
 	 *            will be created
-	 * @throws OEClientException 
+	 * @return the URI of the newly created concept scheme from the x-location-uri header, or null
+	 * @throws OEClientException
 	 */
-	public void createConceptScheme(ConceptScheme conceptScheme) throws OEClientException {
+	public String createConceptScheme(ConceptScheme conceptScheme) throws OEClientException {
 		logger.info("createConceptScheme entry: {}", conceptScheme.getUri());
 
 		JsonObject conceptSchemeDetails = new JsonObject();
@@ -693,20 +778,35 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		Date startDate = new Date();
 		logger.info("createConceptScheme making call  : {}", startDate.getTime());
-		makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
+		return makeRequest(getModelURL(), conceptSchemePayload, RequestType.POST);
+	}
+
+	/**
+	 * createConceptSchemeAndReturn - create a concept scheme and return a new concept scheme instance
+	 * with the server-assigned URI when available. This method does not mutate the input concept scheme.
+	 *
+	 * @param conceptScheme the concept scheme to create
+	 * @return a new ConceptScheme instance with labels copied from the input and URI from server response when present
+	 * @throws OEClientException if the request fails
+	 */
+	public ConceptScheme createConceptSchemeAndReturn(ConceptScheme conceptScheme) throws OEClientException {
+		String createdUri = createConceptScheme(conceptScheme);
+		String conceptSchemeUri = createdUri != null ? createdUri : conceptScheme.getUri();
+		return new ConceptScheme(this, conceptSchemeUri, new ArrayList<>(conceptScheme.getPrefLabels()));
 	}
 
 	/**
 	 * Create multiple concept schemes in a single request using a @graph payload.
 	 *
 	 * @param conceptSchemes the list of concept schemes to create
+	 * @return the URI of the first newly created concept scheme from the x-location-uri header, or null
 	 * @throws OEClientException the exception
 	 */
-	public void createConceptSchemes(List<ConceptScheme> conceptSchemes) throws OEClientException {
+	public String createConceptSchemes(List<ConceptScheme> conceptSchemes) throws OEClientException {
 		if (conceptSchemes == null)
 			throw new IllegalArgumentException("createConceptSchemes cannot take null conceptSchemes list");
 		if (conceptSchemes.isEmpty())
-			return;
+			return null;
 
 		logger.info("createConceptSchemes entry: count={}", conceptSchemes.size());
 
@@ -740,7 +840,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String createConceptSchemesPayload = graphObject.toString();
 		logger.info("createConceptSchemes payload: {}", createConceptSchemesPayload);
-		makeRequest(getModelURL(), createConceptSchemesPayload, RequestType.POST);
+		return makeRequest(getModelURL(), createConceptSchemesPayload, RequestType.POST);
 	}
 
 	/**
@@ -834,6 +934,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 */
 	@SuppressWarnings({ "unchecked" })
 	public void updateLabel(Label label, String newLabelLanguage, String newLabelValue) throws OEClientException {
+		if(label.getUri() == null) {
+			throw new IllegalArgumentException("Label URI is required");
+		}
 		logger.info("updateLabel entry: {}", label.getUri());
 
 
@@ -893,13 +996,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *
 	 * @param conceptUris array of concept URIs
 	 * @param labels array of labels (must be same length as conceptUris)
+	 * @return the URI of the first newly created label from the x-location-uri header, or null
 	 * @throws OEClientException the exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void createLabels(String[] conceptUris, Label[] labels) throws OEClientException {
+	public String createLabels(String[] conceptUris, Label[] labels) throws OEClientException {
 		String[] relationshipTypeUris = new String[conceptUris == null ? 0 : conceptUris.length];
 		Arrays.fill(relationshipTypeUris, "skosxl:prefLabel");
-		createLabels(conceptUris, relationshipTypeUris, labels);
+		return createLabels(conceptUris, relationshipTypeUris, labels);
 	}
 
 	/**
@@ -909,10 +1013,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param conceptUris array of concept URIs
 	 * @param relationshipTypeUris array of relationship type URIs (e.g. "skosxl:prefLabel", "skosxl:altLabel")
 	 * @param labels array of labels (must be same length as conceptUris and relationshipTypeUris)
+	 * @return the URI of the first newly created label from the x-location-uri header, or null
 	 * @throws OEClientException the exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void createLabels(String[] conceptUris, String[] relationshipTypeUris, Label[] labels) throws OEClientException {
+	public String createLabels(String[] conceptUris, String[] relationshipTypeUris, Label[] labels) throws OEClientException {
 		if (conceptUris == null)
 			throw new IllegalArgumentException("createLabels cannot take null concept URIs array");
 		if (relationshipTypeUris == null)
@@ -929,7 +1034,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			throw new IllegalArgumentException(String.format("conceptUris size (%d) must match relationshipTypeUris size (%d)",
 					conceptUris.length, relationshipTypeUris.length));
 		if ((conceptUris.length == 0))
-			return;
+			return null;
 
 
 		JsonObject graphObject = new JsonObject();
@@ -976,7 +1081,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		String createLabelsPayload = graphObject.toString();
 		logger.info("createLabels payload: {}", createLabelsPayload);
-		makeRequest(getModelURL(), createLabelsPayload, RequestType.POST);
+		return makeRequest(getModelURL(), createLabelsPayload, RequestType.POST);
 
 	}
 
@@ -987,11 +1092,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param concept the concept
 	 * @param relationshipTypeUri the relationship type uri
 	 * @param label the label object
+	 * @return the URI of the newly created label from the x-location-uri header, or null
 	 * @throws OEClientException the exception
 	 */
-	public void createLabel(Concept concept, String relationshipTypeUri, Label label) throws OEClientException {
+	public String createLabel(Concept concept, String relationshipTypeUri, Label label) throws OEClientException {
 		logger.info("createLabel entry: {} {} {}", concept, relationshipTypeUri, label);
-		createLabel(concept.getUri(), relationshipTypeUri, label);
+		return createLabel(concept.getUri(), relationshipTypeUri, label);
 	}
 
 	/**
@@ -999,46 +1105,29 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param conceptUri the concept URI
 	 * @param relationshipTypeUri the relationship type URI
 	 * @param label the label object
+	 * @return the URI of the newly created label from the x-location-uri header, or null
 	 * @throws OEClientException exception
 	 */
-	public void createLabel(String conceptUri, String relationshipTypeUri, Label label) throws OEClientException {
+	public String createLabel(String conceptUri, String relationshipTypeUri, Label label) throws OEClientException {
 		logger.info("createLabel entry: {} {} {}", conceptUri, relationshipTypeUri, label);
 
-		JsonArray operationList = new JsonArray();
-		JsonObject testOperation = new JsonObject();
-		testOperation.put("op", "test");
-		testOperation.put("path", "@graph/0");
-		JsonObject valueObject = new JsonObject();
-		valueObject.put("@id", conceptUri);
-		testOperation.put("value", valueObject);
-		operationList.add(testOperation);
-
-		JsonObject addOperation = new JsonObject();
-		addOperation.put("op", "add");
-		addOperation.put("path", String.format("@graph/0/%s/-", getTildered(relationshipTypeUri)));
-
-		JsonObject value2Object = new JsonObject();
-		JsonArray value2Typearray = new JsonArray();
-		value2Typearray.add("skosxl:Label");
-		value2Object.put("@type", value2Typearray);
-
-		JsonArray litFormArray = new JsonArray();
-		JsonObject litFormObject = new JsonObject();
-		litFormObject.put("@value", label.getValue());
+		JsonObject instanceObject = new JsonObject();
+		instanceObject.put("@id", conceptUri);
+		JsonArray literalFormArray = new JsonArray();
+		JsonObject labelObject = new JsonObject();
+		literalFormArray.add(labelObject);
+		labelObject.put("@type", "skosxl:Label");
+		JsonObject literalFormObject = new JsonObject();
+		literalFormObject.put("@value", label.getValue());
 		if (label.getLanguageCode() != null) {
-			litFormObject.put("@language", label.getLanguageCode());
+			literalFormObject.put("@language", label.getLanguageCode());
 		}
-		litFormArray.add(litFormObject);
-		value2Object.put("skosxl:literalForm", litFormArray);
-		addOperation.put("value", value2Object);
+		labelObject.put("skosxl:literalForm", literalFormObject);
+		instanceObject.put(relationshipTypeUri, literalFormArray);
 
-		operationList.add(addOperation);
 
-		checkKRTModified(operationList, "0");
-
-		String createRelationshipPayload = operationList.toString();
-		logger.info("createRelationship payload: {}", createRelationshipPayload);
-		makeRequest(getModelURL(), createRelationshipPayload, RequestType.PATCH);
+		logger.info("createRelationship payload: {}", instanceObject);
+		return makeRequest(getModelURL(), instanceObject.toString(), RequestType.POST);
 
 	}
 
@@ -1184,62 +1273,62 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
-	public void createMetadata(Concept concept, String metadataTypeUri, String metadataValue, String metadataLanguage) throws OEClientException {
+	public String createMetadata(Concept concept, String metadataTypeUri, String metadataValue, String metadataLanguage) throws OEClientException {
 		JsonObject valueObject = new JsonObject();
 		valueObject.put("@language", metadataLanguage);
 		valueObject.put("@value", metadataValue);
 
-		createMetadata(concept, metadataTypeUri, valueObject);
+		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
-	public void createMetadata(Concept concept, String metadataTypeUri, URI uri)
+	public String createMetadata(Concept concept, String metadataTypeUri, URI uri)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, uri.toString());
 		JsonObject valueObject = new JsonObject();
 		valueObject.put("@value", uri.toString());
 		valueObject.put("@type", "xsd:anyURI");
-		createMetadata(concept, metadataTypeUri, valueObject);
+		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
 	private final static SimpleDateFormat xsdDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	public void createMetadata(Concept concept, String metadataTypeUri, Date date)
+	public String createMetadata(Concept concept, String metadataTypeUri, Date date)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, date.toString());
 		JsonObject valueObject = new JsonObject();
 		valueObject.put("@value", xsdDateFormat.format(date));
 		valueObject.put("@type", "xsd:date");
-		createMetadata(concept, metadataTypeUri, valueObject);
+		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
-	public void createMetadata(Concept concept, String metadataTypeUri, double value)
+	public String createMetadata(Concept concept, String metadataTypeUri, double value)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
 		JsonObject valueObject = new JsonObject();
 		valueObject.put("@value", BigDecimal.valueOf(value).stripTrailingZeros().toPlainString());
 		valueObject.put("@type", "xsd:decimal");
-		createMetadata(concept, metadataTypeUri, valueObject);
+		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
-	public void createMetadata(Concept concept, String metadataTypeUri, int value)
+	public String createMetadata(Concept concept, String metadataTypeUri, int value)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
 		JsonObject valueObject = new JsonObject();
 		valueObject.put("@value", value);
 		valueObject.put("@type", "xsd:integer");
-		createMetadata(concept, metadataTypeUri, valueObject);
+		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
-	public void createMetadata(Concept concept, String metadataTypeUri, boolean value)
+	public String createMetadata(Concept concept, String metadataTypeUri, boolean value)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
 		JsonObject valueObject = new JsonObject();
 		valueObject.put("@value", value);
 		valueObject.put("@type", "xsd:boolean");
-		createMetadata(concept, metadataTypeUri, valueObject);
+		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void createMetadata(Concept concept, String metadataTypeUri, JsonObject valueObject)
+	private String createMetadata(Concept concept, String metadataTypeUri, JsonObject valueObject)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, valueObject);
 
@@ -1267,40 +1356,40 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		String createMetadataPayload = operationList.toString();
 		logger.info("createMetadata payload: {}", createMetadataPayload);
 
-		makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH);
+		return makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH);
 	}
 
-	public void createMetadataTypeString(Label label, String metadataTypeUri) throws OEClientException {
+	public String createMetadataTypeString(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
-		createMetadataType(label, metadataTypeUri, "xsd:string");
+		return createMetadataType(label, metadataTypeUri, "xsd:string");
 	}
 
-	public void createMetadataTypeInteger(Label label, String metadataTypeUri) throws OEClientException {
+	public String createMetadataTypeInteger(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
-		createMetadataType(label, metadataTypeUri, "xsd:integer");
+		return createMetadataType(label, metadataTypeUri, "xsd:integer");
 	}
 
-	public void createMetadataTypeDate(Label label, String metadataTypeUri) throws OEClientException {
+	public String createMetadataTypeDate(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
-		createMetadataType(label, metadataTypeUri, "xsd:date");
+		return createMetadataType(label, metadataTypeUri, "xsd:date");
 	}
 
-	public void createMetadataTypeDecimal(Label label, String metadataTypeUri) throws OEClientException {
+	public String createMetadataTypeDecimal(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
-		createMetadataType(label, metadataTypeUri, "xsd:decimal");
+		return createMetadataType(label, metadataTypeUri, "xsd:decimal");
 	}
 
-	public void createMetadataTypeAnyURI(Label label, String metadataTypeUri) throws OEClientException {
+	public String createMetadataTypeAnyURI(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
-		createMetadataType(label, metadataTypeUri, "xsd:anyURI");
+		return createMetadataType(label, metadataTypeUri, "xsd:anyURI");
 	}
 
-	public void createMetadataTypeBoolean(Label label, String metadataTypeUri) throws OEClientException {
+	public String createMetadataTypeBoolean(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
-		createMetadataType(label, metadataTypeUri, "xsd:boolean");
+		return createMetadataType(label, metadataTypeUri, "xsd:boolean");
 	}
 
-	private void createMetadataType(Label label, String metadataTypeUri, String metadataDataRange) throws OEClientException {
+	private String createMetadataType(Label label, String metadataTypeUri, String metadataDataRange) throws OEClientException {
 
 		JsonArray operationList = new JsonArray();
 
@@ -1336,7 +1425,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		logger.info("createMetadata payload: {}", createMetadataPayload);
 
-		makeRequest(getModelURL(), createMetadataPayload, RequestType.POST );
+		return makeRequest(getModelURL(), createMetadataPayload, RequestType.POST );
 	}
 
 	public void updateMetadata(Concept concept, String metadataTypeUri, String oldValueLanguage, String oldValue, String newValueLanguage, String newValue) throws OEClientException {
@@ -1689,10 +1778,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	public void deleteConcept(Concept concept) throws OEClientException {
+		deleteConcept(concept, "empty");
+	}
+
+	public void deleteConcept(Concept concept, String deleteMode) throws OEClientException {
 		logger.info("deleteConcept entry: {} {} {}", concept.getUri());
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
-		queryParameters.put("mode", "empty");
+		queryParameters.put("mode", deleteMode);
 		
 		StringBuilder pathBuilder = new StringBuilder(getModelURL());
 		pathBuilder.append("/");
@@ -1701,6 +1794,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("deleteConcept - fullUrl: {}", fullUrl);
 
 		makeRequest(fullUrl, queryParameters, null, RequestType.DELETE );
+	}
+
+	public void deleteConceptWithSubtree(Concept concept) throws OEClientException {
+		deleteConcept(concept, "empty");
 	}
 
 	public void deleteConceptScheme(ConceptScheme conceptScheme) throws OEClientException {
@@ -2039,7 +2136,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		addOperation.put("value", newValueObject);
 		operationList.add(addOperation);
 
-		String url = getModelURL() + "/" + getEscapedUri(conceptScheme.getUri());
+		String url = getModelURL() + "/" + getEscapedUri("<" + conceptScheme.getUri() + ">");
+
 		String payload = operationList.toString();
 		logger.info("updateConceptScheme payload: {}", payload);
 		makeRequest(url, payload, RequestType.PATCH);
@@ -2250,7 +2348,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void deleteMetadataType(String metadataTypeUri) throws OEClientException {
 		logger.info("deleteMetadataType entry: {}", metadataTypeUri);
 
-		String url = getModelURL() + "/" + getEscapedUri(metadataTypeUri);
+		String url = getModelURL() + "/" + getEscapedUri("<" + metadataTypeUri + ">");
 		logger.info("deleteMetadataType URL: {}", url);
 		makeRequest(url, null, RequestType.DELETE);
 	}
@@ -2268,7 +2366,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public void deleteAltLabelType(String altLabelTypeUri) throws OEClientException {
 		logger.info("deleteAltLabelType entry: {}", altLabelTypeUri);
 
-		String url = getModelURL() + "/" + getEscapedUri(altLabelTypeUri);
+		String url = getModelURL() + "/" + getEscapedUri("<" + altLabelTypeUri + ">");
 		logger.info("deleteAltLabelType URL: {}", url);
 		makeRequest(url, null, RequestType.DELETE);
 	}
@@ -2291,20 +2389,18 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonObject testOperation = new JsonObject();
 		testOperation.put("op", "test");
-		testOperation.put("path", "@graph/0");
-		JsonObject testValue = new JsonObject();
-		testValue.put("@id", model.getUri());
-		testOperation.put("value", testValue);
+		testOperation.put("path", "@graph/0/rdfs:label/0");
+		testOperation.put("@value", model.getLabel().getValue());
 		operationList.add(testOperation);
 
 		JsonObject removeOperation = new JsonObject();
 		removeOperation.put("op", "remove");
-		removeOperation.put("path", "@graph/0/meta:displayName/0");
+		removeOperation.put("path", "@graph/0/rdfs:label/0");
 		operationList.add(removeOperation);
 
 		JsonObject addOperation = new JsonObject();
 		addOperation.put("op", "add");
-		addOperation.put("path", "@graph/0/meta:displayName/-");
+		addOperation.put("path", "@graph/0/rdfs:label/-");
 		JsonObject newValueObject = new JsonObject();
 		newValueObject.put("@value", newDisplayName);
 		addOperation.put("value", newValueObject);

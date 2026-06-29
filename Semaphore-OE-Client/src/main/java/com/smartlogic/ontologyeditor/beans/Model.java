@@ -1,7 +1,11 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor.beans;
 
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.atlas.json.JsonValue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Model {
 
@@ -20,13 +24,22 @@ public class Model {
 		}
 		uri = jsonObject.get("meta:graphUri").getAsObject().get("@id").getAsString().value();
 		comment = null;
+		languages = new ArrayList<>();
+		jsonObject.get("dcterms:language").getAsArray().forEach(jsonValue -> {
+			languages.add(new ModelLanguage(jsonValue.getAsObject()));
+		});
+	}
+
+	public Model(String uri, Label label, String comment) {
+		this(uri, label, comment, new ArrayList<>());
 	}
 	
-	public Model(String uri, Label label, String comment) {
+	public Model(String uri, Label label, String comment, List<ModelLanguage> languages) {
 		this.uri = uri;
 		this.label = label;
 		this.comment = comment;
-	}
+        this.languages = languages;
+    }
 
 	public String getDefaultNamespace() {
 		return defaultNamespace;
@@ -43,7 +56,13 @@ public class Model {
 	public Label getLabel() {
 		return label;
 	}
-	
+
+	private final List<ModelLanguage> languages;
+
+	public List<ModelLanguage> getLanguages() {
+		return languages;
+	}
+
 	private String uri;
 	public void setUri(String uri) {
 		this.uri = uri;
@@ -71,10 +90,23 @@ public class Model {
 		if (uri == null) {
 			if (other.uri != null)
 				return false;
-		} else 
-			return uri.equals(other.uri);
-
-		return label.equals(other.label);
+		} else {
+			if(!uri.equals(other.uri)) {
+				return false;
+			}
+		}
+		if(label != null ) {
+             if(!label.equals(other.label)) {
+				 return false;
+			 }
+		}
+		if(comment != null) {
+			return comment.equals(other.comment);
+		} else {
+			if (other.comment != null)
+				return false;
+		}
+		return true;
 	}
 
 	@Override

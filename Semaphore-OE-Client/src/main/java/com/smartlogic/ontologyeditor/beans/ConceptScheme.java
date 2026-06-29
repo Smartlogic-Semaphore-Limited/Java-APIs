@@ -1,8 +1,10 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor.beans;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
@@ -55,6 +57,10 @@ public class ConceptScheme extends AbstractBeanFromJson {
     prefLabels.addAll(labelList);
   }
 
+  public Collection<String> getTopConceptUris() {
+    return topConceptUris;
+  }
+
   @Override
   public String toString() {
     StringBuilder stringBuilder = new StringBuilder("Concept:");
@@ -78,5 +84,18 @@ public class ConceptScheme extends AbstractBeanFromJson {
 
   public Collection<Label> getPrefLabels() {
     return prefLabels;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    ConceptScheme that = (ConceptScheme) o;
+    return Objects.equals(types, that.types) && Objects.equals(prefLabels, that.prefLabels) && Objects.equals(topConceptUris, that.topConceptUris);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), types, prefLabels, topConceptUris);
   }
 }

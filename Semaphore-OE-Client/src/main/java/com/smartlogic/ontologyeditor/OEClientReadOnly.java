@@ -35,7 +35,7 @@ public class OEClientReadOnly {
   public static final String PARAM_FILTERS = "filters";
   public static final String PATH_SKOS_CONCEPT_META_TRANSITIVE_INSTANCE = "/skos:Concept/meta:transitiveInstance";
 
-  private static final String BASIC_PROPERTIES = "sem:guid,skosxl:prefLabel/[]";
+  private static final String BASIC_PROPERTIES = "sem:guid,skosxl:prefLabel/[],rdf:type";
   private static final String CONCEPT_SCHEME_PROPERTIES = "rdf:type,rdfs:label,sem:guid,skos:hasTopConcept";
 
   private static final Map<String, String> prefixMapping = new HashMap<>();
@@ -290,7 +290,7 @@ public class OEClientReadOnly {
     String url = getApiURL() + "sys/" + modelUri;
     logger.info("getModel URL: {}", url);
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put(PARAM_PROPERTIES, "meta:displayName,meta:graphUri");
+    queryParameters.put(PARAM_PROPERTIES, "meta:displayName,meta:graphUri,dcterms:language/[]");
 
     String response = getResponse(url, queryParameters);
     JsonObject jsonResponse = JSON.parse(response);
@@ -1096,10 +1096,11 @@ public class OEClientReadOnly {
 
   protected enum RequestType { POST, DELETE, PATCH }
 
-  protected void makeRequest(String url, String payload, RequestType requestType) throws OEClientException {
-    makeRequest(url, null, payload, requestType);
+  protected String makeRequest(String url, String payload, RequestType requestType) throws OEClientException {
+    return makeRequest(url, null, payload, requestType);
   }
-    protected void makeRequest(String url, Map<String, String> queryParameters, String payload, RequestType requestType) throws OEClientException {
+
+  protected String makeRequest(String url, Map<String, String> queryParameters, String payload, RequestType requestType) throws OEClientException {
 
     String urlToUse = getURLwithParameters(url, queryParameters);
 
@@ -1129,6 +1130,15 @@ public class OEClientReadOnly {
     }
 
     checkResponseStatus(response);
+
+    // Return the x-location-uri header URI for POST requests (resource creation), null otherwise
+    if (RequestType.POST == requestType) {
+      String locationUri = response.headers().firstValue("x-location-uri").orElse(null);
+      if(locationUri != null) {
+        return URLDecoder.decode(locationUri, StandardCharsets.UTF_8).replaceFirst("^<", "").replaceFirst(">$", "");
+      }
+    }
+    return null;
 
   }
 
