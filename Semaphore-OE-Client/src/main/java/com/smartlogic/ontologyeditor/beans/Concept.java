@@ -38,6 +38,13 @@ public class Concept extends AbstractBeanFromJson {
   @JsonIgnore
   private final JsonObject jsonObject;
 
+  /**
+   * Create a concept for outbound use when no source JSON is available.
+   *
+   * @param prefLabels the preferred labels to assign to the concept
+   * @param altLabels unused legacy parameter for alternative labels
+   * @param relatedConceptUrisByRelationship relationship targets keyed by relationship URI
+   */
   public Concept(List<Label> prefLabels, List<Label> altLabels, Map<String, Collection<String>> relatedConceptUrisByRelationship) {
     this.prefLabels = prefLabels;
     this.relatedConceptUrisByRelationship = relatedConceptUrisByRelationship;
@@ -264,6 +271,11 @@ public class Concept extends AbstractBeanFromJson {
 //    return stringBuilder.toString();
   }
 
+  /**
+   * Return the raw JSON for a server-loaded concept, or a string representation for manually created concepts.
+   *
+   * @return the concept JSON or fallback string representation
+   */
   public String asJson() {
     if (jsonObject == null) {
       StringBuilder stringBuilder = new StringBuilder("Concept [uri=");

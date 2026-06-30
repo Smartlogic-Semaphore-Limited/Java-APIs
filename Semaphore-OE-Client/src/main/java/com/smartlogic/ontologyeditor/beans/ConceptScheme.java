@@ -57,6 +57,11 @@ public class ConceptScheme extends AbstractBeanFromJson {
     prefLabels.addAll(labelList);
   }
 
+  /**
+   * Get the URIs of the top concepts that belong to this concept scheme.
+   *
+   * @return the top concept URIs
+   */
   public Collection<String> getTopConceptUris() {
     return topConceptUris;
   }

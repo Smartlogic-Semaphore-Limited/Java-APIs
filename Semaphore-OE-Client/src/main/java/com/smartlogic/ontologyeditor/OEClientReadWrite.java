@@ -106,6 +106,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
+	/**
+	 * Link another model into the current model as an {@code owl:imports} entry.
+	 *
+	 * @param importedModelUri the URI of the model to import
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public void linkModel(String importedModelUri) throws OEClientException {
 
 		logger.info("linkModel importing URL: {}", importedModelUri);
@@ -1273,6 +1279,16 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
+	/**
+	 * Create a string metadata value on a concept with an optional language tag.
+	 *
+	 * @param concept the concept that will receive the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param metadataValue the string value to add
+	 * @param metadataLanguage the language tag for the value, or {@code null}
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadata(Concept concept, String metadataTypeUri, String metadataValue, String metadataLanguage) throws OEClientException {
 		JsonObject valueObject = new JsonObject();
 		valueObject.put("@language", metadataLanguage);
@@ -1281,6 +1297,15 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
+	/**
+	 * Create a URI-typed metadata value on a concept.
+	 *
+	 * @param concept the concept that will receive the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param uri the URI value to add
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadata(Concept concept, String metadataTypeUri, URI uri)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, uri.toString());
@@ -1291,6 +1316,15 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	private final static SimpleDateFormat xsdDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	/**
+	 * Create a date metadata value on a concept.
+	 *
+	 * @param concept the concept that will receive the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param date the date value to add
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadata(Concept concept, String metadataTypeUri, Date date)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, date.toString());
@@ -1300,6 +1334,15 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
+	/**
+	 * Create a decimal metadata value on a concept.
+	 *
+	 * @param concept the concept that will receive the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param value the decimal value to add
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadata(Concept concept, String metadataTypeUri, double value)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
@@ -1309,6 +1352,15 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
+	/**
+	 * Create an integer metadata value on a concept.
+	 *
+	 * @param concept the concept that will receive the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param value the integer value to add
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadata(Concept concept, String metadataTypeUri, int value)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
@@ -1318,6 +1370,15 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		return createMetadata(concept, metadataTypeUri, valueObject);
 	}
 
+	/**
+	 * Create a boolean metadata value on a concept.
+	 *
+	 * @param concept the concept that will receive the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param value the boolean value to add
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadata(Concept concept, String metadataTypeUri, boolean value)
 			throws OEClientException {
 		logger.info("createMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, value);
@@ -1359,31 +1420,79 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		return makeRequest(getModelURL(), createMetadataPayload, RequestType.PATCH);
 	}
 
+	/**
+	 * Create a string metadata type definition.
+	 *
+	 * @param label the display label for the metadata type
+	 * @param metadataTypeUri the URI of the metadata type to create
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadataTypeString(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
 		return createMetadataType(label, metadataTypeUri, "xsd:string");
 	}
 
+	/**
+	 * Create an integer metadata type definition.
+	 *
+	 * @param label the display label for the metadata type
+	 * @param metadataTypeUri the URI of the metadata type to create
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadataTypeInteger(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
 		return createMetadataType(label, metadataTypeUri, "xsd:integer");
 	}
 
+	/**
+	 * Create a date metadata type definition.
+	 *
+	 * @param label the display label for the metadata type
+	 * @param metadataTypeUri the URI of the metadata type to create
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadataTypeDate(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
 		return createMetadataType(label, metadataTypeUri, "xsd:date");
 	}
 
+	/**
+	 * Create a decimal metadata type definition.
+	 *
+	 * @param label the display label for the metadata type
+	 * @param metadataTypeUri the URI of the metadata type to create
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadataTypeDecimal(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
 		return createMetadataType(label, metadataTypeUri, "xsd:decimal");
 	}
 
+	/**
+	 * Create an anyURI metadata type definition.
+	 *
+	 * @param label the display label for the metadata type
+	 * @param metadataTypeUri the URI of the metadata type to create
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadataTypeAnyURI(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
 		return createMetadataType(label, metadataTypeUri, "xsd:anyURI");
 	}
 
+	/**
+	 * Create a boolean metadata type definition.
+	 *
+	 * @param label the display label for the metadata type
+	 * @param metadataTypeUri the URI of the metadata type to create
+	 * @return the URI returned by the server, or {@code null}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public String createMetadataTypeBoolean(Label label, String metadataTypeUri) throws OEClientException {
 		logger.info("createMetadataTypeString entry: {} {}", label.getValue(), metadataTypeUri);
 		return createMetadataType(label, metadataTypeUri, "xsd:boolean");
@@ -1644,6 +1753,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	@SuppressWarnings("unchecked")
+	/**
+	 * Delete a boolean metadata value from a concept.
+	 *
+	 * @param concept the concept holding the metadata
+	 * @param metadataTypeUri the URI of the metadata type
+	 * @param oldValue the current boolean value to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public void deleteMetadata(Concept concept, String metadataTypeUri, boolean oldValue) throws OEClientException {
 		logger.info("deleteMetadata entry: {} {} {}", concept.getUri(), metadataTypeUri, oldValue);
 
@@ -1781,6 +1898,13 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		deleteConcept(concept, "empty");
 	}
 
+	/**
+	 * Delete a concept using the specified delete mode.
+	 *
+	 * @param concept the concept to delete
+	 * @param deleteMode the delete mode, such as {@code empty} or {@code subtree}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public void deleteConcept(Concept concept, String deleteMode) throws OEClientException {
 		logger.info("deleteConcept entry: {} {} {}", concept.getUri());
 
@@ -1796,10 +1920,22 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(fullUrl, queryParameters, null, RequestType.DELETE );
 	}
 
+	/**
+	 * Delete a concept and all of its descendants.
+	 *
+	 * @param concept the root concept of the subtree to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public void deleteConceptWithSubtree(Concept concept) throws OEClientException {
-		deleteConcept(concept, "empty");
+		deleteConcept(concept, "subtree");
 	}
 
+	/**
+	 * Delete a concept scheme from the current model.
+	 *
+	 * @param conceptScheme the concept scheme to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public void deleteConceptScheme(ConceptScheme conceptScheme) throws OEClientException {
 		logger.info("deleteConceptScheme entry: {} {} {}", conceptScheme.getUri());
 
@@ -1815,6 +1951,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(fullUrl, queryParameters, null, RequestType.DELETE );
 	}
 
+	/**
+	 * Delete a relationship between two resources.
+	 *
+	 * @param relationshipTypeUri the URI of the relationship type to remove
+	 * @param concept1 the source resource
+	 * @param concept2 the target resource
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public void deleteRelationship(String relationshipTypeUri, AbstractBeanFromJson concept1, AbstractBeanFromJson concept2)
 			throws OEClientException {
 		logger.info("deleteRelationship entry: {} {} {}", relationshipTypeUri, concept1.getUri(), concept2.getUri());

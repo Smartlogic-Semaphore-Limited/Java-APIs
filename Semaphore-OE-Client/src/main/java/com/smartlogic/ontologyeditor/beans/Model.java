@@ -25,20 +25,29 @@ public class Model {
 		uri = jsonObject.get("meta:graphUri").getAsObject().get("@id").getAsString().value();
 		comment = null;
 		languages = new ArrayList<>();
-		jsonObject.get("dcterms:language").getAsArray().forEach(jsonValue -> {
-			languages.add(new ModelLanguage(jsonValue.getAsObject()));
-		});
+		JsonValue languagesValue = jsonObject.get("dcterms:language");
+		if (languagesValue != null) {
+			languagesValue.getAsArray().forEach(jsonValue -> languages.add(new ModelLanguage(jsonValue.getAsObject())));
+		}
 	}
 
 	public Model(String uri, Label label, String comment) {
 		this(uri, label, comment, new ArrayList<>());
 	}
 	
+	/**
+	 * Create a model with explicit URI, label, comment, and languages.
+	 *
+	 * @param uri the model URI
+	 * @param label the model display label
+	 * @param comment the model comment
+	 * @param languages the languages associated with the model
+	 */
 	public Model(String uri, Label label, String comment, List<ModelLanguage> languages) {
 		this.uri = uri;
 		this.label = label;
 		this.comment = comment;
-        this.languages = languages;
+        this.languages = languages == null ? new ArrayList<>() : languages;
     }
 
 	public String getDefaultNamespace() {
@@ -59,6 +68,11 @@ public class Model {
 
 	private final List<ModelLanguage> languages;
 
+	/**
+	 * Get the languages associated with the model.
+	 *
+	 * @return the model languages, never {@code null}
+	 */
 	public List<ModelLanguage> getLanguages() {
 		return languages;
 	}
