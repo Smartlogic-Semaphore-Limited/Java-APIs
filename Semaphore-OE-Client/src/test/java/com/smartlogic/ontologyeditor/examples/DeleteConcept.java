@@ -16,7 +16,7 @@ public class DeleteConcept extends ModelManipulation {
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
 
-		Concept concept = oeClient.getConcept("http://example.com/APITest#MyAddedConcept");
+		Concept concept = oeClient.getConcept("http://example.com/APITest#MyChildConcept");
 
 		oeClient.deleteConcept(concept);
 	}
