@@ -109,10 +109,12 @@ public class Model {
 				return false;
 			}
 		}
-		if(label != null ) {
+		if (label != null) {
              if(!label.equals(other.label)) {
 				 return false;
 			 }
+		} else if (other.label != null) {
+			return false;
 		}
 		if(comment != null) {
 			return comment.equals(other.comment);

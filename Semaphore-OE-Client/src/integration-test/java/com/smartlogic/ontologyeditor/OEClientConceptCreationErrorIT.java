@@ -77,8 +77,8 @@ public class OEClientConceptCreationErrorIT extends AbstractModelScopedIT {
     try {
       oeClient.createConcepts(List.of((Concept) null), List.of(finalScheme.getUri()), List.of(true));
       fail("Should throw IllegalArgumentException for null concept in list");
-    } catch (NullPointerException e) {
-      assertNotNull("Exception should be thrown for null concept in list", e);
+    } catch (IllegalArgumentException e) {
+      assertTrue("Exception message should mention null concept", e.getMessage().contains("null concept"));
     }
   }
 

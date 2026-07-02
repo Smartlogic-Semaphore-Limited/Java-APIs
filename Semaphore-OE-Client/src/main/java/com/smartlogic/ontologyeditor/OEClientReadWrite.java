@@ -1130,6 +1130,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		labelObject.put("skosxl:literalForm", literalFormArray);
 		instanceObject.put(relationshipTypeUri, labelObject);
 
+		if (isKRTClient()) {
+			String modifiedSchemeUri = getKRTModifiedSchemeUri();
+			if (modifiedSchemeUri != null) {
+				instanceObject.put("skos:topConceptOf", modifiedSchemeUri);
+			}
+		}
 
 		logger.info("createRelationship payload: {}", instanceObject);
 		return makeRequest(getModelURL(), instanceObject.toString(), RequestType.POST);
@@ -1290,7 +1296,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 */
 	public String createMetadata(Concept concept, String metadataTypeUri, String metadataValue, String metadataLanguage) throws OEClientException {
 		JsonObject valueObject = new JsonObject();
-		valueObject.put("@language", metadataLanguage);
+		if (metadataLanguage != null && !metadataLanguage.isBlank()) {
+			valueObject.put("@language", metadataLanguage);
+		}
 		valueObject.put("@value", metadataValue);
 
 		return createMetadata(concept, metadataTypeUri, valueObject);

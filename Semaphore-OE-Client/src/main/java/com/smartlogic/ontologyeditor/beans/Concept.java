@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.jena.atlas.json.JSON;
@@ -47,7 +48,7 @@ public class Concept extends AbstractBeanFromJson {
    */
   public Concept(List<Label> prefLabels, List<Label> altLabels, Map<String, Collection<String>> relatedConceptUrisByRelationship) {
     this.prefLabels = prefLabels;
-    this.relatedConceptUrisByRelationship = relatedConceptUrisByRelationship;
+    this.relatedConceptUrisByRelationship = relatedConceptUrisByRelationship != null ? relatedConceptUrisByRelationship : new HashMap<>();
     this.jsonObject = null;
 
   }
@@ -150,8 +151,8 @@ public class Concept extends AbstractBeanFromJson {
           metadataValues.add(new MetadataValue(getAsString(jsonMetadata, "@language"),
               getAsString(jsonMetadata, "@value")));
         } else {
-          metadataValues.add(new MetadataValue("",
-                  jsonValue.toString()));
+          String rawVal = jsonValue.isString() ? jsonValue.getAsString().value() : jsonValue.toString();
+          metadataValues.add(new MetadataValue("", rawVal));
         }
       }
     }
@@ -309,7 +310,9 @@ public class Concept extends AbstractBeanFromJson {
   }
 
   public Collection<String> getClassUris() {
-    return Collections.unmodifiableCollection(types);
+    return types.stream()
+        .filter(t -> !"skos:Concept".equals(t))
+        .collect(Collectors.toList());
   }
 
   /**
