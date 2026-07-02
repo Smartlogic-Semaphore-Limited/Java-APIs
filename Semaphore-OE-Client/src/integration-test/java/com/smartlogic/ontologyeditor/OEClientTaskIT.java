@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Integration tests for task management operations.
@@ -26,6 +27,10 @@ public class OEClientTaskIT extends AbstractModelScopedIT {
     Task newTask = oeClient.createTaskAndReturn(task);
     assertNotNull(newTask);
     assertNotNull(newTask.getGraphUri());
+
+    boolean taskExistsOnServer = oeClient.getAllTasks().stream()
+        .anyMatch(t -> newTask.getId().equals(t.getId()));
+    assertTrue("Created task should be retrievable from server", taskExistsOnServer);
   }
 
   @Test

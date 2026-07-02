@@ -61,7 +61,7 @@ public class OEClientConceptCreationErrorIT extends AbstractModelScopedIT {
     // Should complete without error (no-op)
     oeClient.createConcepts(scheme.getUri(), Collections.emptyList(), Collections.emptyList());
 
-    assertNotNull("Empty concept list should be handled gracefully", scheme.getUri());
+    assertEquals("Empty concept list should not create any concepts", 0, oeClient.getConceptCount());
   }
 
   @Test

@@ -22,7 +22,8 @@ public class OEClientPublisherIT extends AbstractModelScopedIT {
 
     oeClient.uploadPublisherConfiguration(zipData);
 
-    assertNotNull("Publisher configuration should be uploaded", zipData);
+    byte[] downloaded = oeClient.downloadPublisherConfiguration();
+    assertNotNull("Publisher configuration should be retrievable after upload", downloaded);
   }
 
   @Test
