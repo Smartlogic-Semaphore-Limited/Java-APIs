@@ -6,6 +6,7 @@ import com.smartlogic.ontologyeditor.beans.Concept;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Label;
 import com.smartlogic.ontologyeditor.beans.MetadataValue;
+import com.smartlogic.ontologyeditor.beans.Model;
 import com.smartlogic.ontologyeditor.beans.Task;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
@@ -243,8 +244,14 @@ public class OEClientReadWriteTest {
     client.createLabel("urn:concept:1", "skosxl:prefLabel", new Label("en", "Hello"));
 
     assertEquals(1, client.makeRequestCallCount);
-    assertTrue(client.lastPayload.contains("urn:concept:1"));
-    assertTrue(client.lastPayload.contains("skosxl:prefLabel"));
+    JsonObject payload = JSON.parse(client.lastPayload);
+    assertEquals("urn:concept:1", payload.get("@id").getAsString().value());
+    JsonObject labelObj = payload.get("skosxl:prefLabel").getAsObject();
+    assertEquals("skosxl:Label", labelObj.get("@type").getAsString().value());
+    JsonArray literalForms = labelObj.get("skosxl:literalForm").getAsArray();
+    assertEquals(1, literalForms.size());
+    assertEquals("Hello", literalForms.get(0).getAsObject().get("@value").getAsString().value());
+    assertEquals("en", literalForms.get(0).getAsObject().get("@language").getAsString().value());
   }
 
   @Test
@@ -382,6 +389,49 @@ public class OEClientReadWriteTest {
 
     assertEquals(1, client.makeRequestCallCount);
     assertTrue(client.lastPayload.contains("xsd:date"));
+  }
+
+  @Test
+  public void createConceptWithCustomClassAlwaysIncludesSkosConceptType() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Concept concept = new Concept(client, "urn:concept:1", List.of(new Label("en", "Custom")));
+    concept.addClass("ex:CustomClass");
+
+    client.createConcepts(
+        List.of(concept),
+        List.of("urn:scheme:1"),
+        List.of(true),
+        List.of(Collections.emptyMap()));
+
+    JsonObject payload = JSON.parse(client.lastPayload);
+    String typesStr = payload.get("@graph").getAsArray().get(0).getAsObject().get("@type").getAsArray().toString();
+    assertTrue(typesStr.contains("skos:Concept"));
+    assertTrue(typesStr.contains("ex:CustomClass"));
+  }
+
+  @Test
+  public void updateModelPatchTestOperationUsesValueKey() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Old Name"), null);
+
+    client.updateModel(model, "New Name");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    com.google.gson.JsonObject testOp = patch.get(0).getAsJsonObject();
+    assertEquals("test", testOp.get("op").getAsString());
+    assertTrue(testOp.has("value"));
+    assertFalse(testOp.has("@value"));
+    assertEquals("Old Name", testOp.getAsJsonObject("value").get("@value").getAsString());
+  }
+
+  @Test
+  public void addLanguagePayloadUsesAppendPath() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+
+    client.addLanguage("English", "en");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    assertEquals("@graph/0/dcterms:language/-", patch.get(0).getAsJsonObject().get("path").getAsString());
   }
 
   private static CapturingReadWriteClient newClient() {
