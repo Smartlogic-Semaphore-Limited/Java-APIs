@@ -19,9 +19,15 @@ public class ModelLanguage {
      */
     public ModelLanguage(JsonObject jsonObject) {
         this.uri = jsonObject.get("@id").getAsString().value();
-        JsonObject title = jsonObject.get("dc:title").getAsArray().get(0).getAsObject();
-        this.title = new Label(title.get("@language").getAsString().value(), title.get("@value").getAsString().value());
-        this.notation = jsonObject.get("skos:notation").getAsArray().get(0).getAsObject().get("@value").getAsString().value();
+        if (jsonObject.hasKey("dc:title") && !jsonObject.get("dc:title").getAsArray().isEmpty()) {
+            JsonObject titleObj = jsonObject.get("dc:title").getAsArray().get(0).getAsObject();
+            String lang = titleObj.hasKey("@language") ? titleObj.get("@language").getAsString().value() : null;
+            String val = titleObj.get("@value").getAsString().value();
+            this.title = new Label(lang, val);
+        }
+        if (jsonObject.hasKey("skos:notation") && !jsonObject.get("skos:notation").getAsArray().isEmpty()) {
+            this.notation = jsonObject.get("skos:notation").getAsArray().get(0).getAsObject().get("@value").getAsString().value();
+        }
     }
 
     /**

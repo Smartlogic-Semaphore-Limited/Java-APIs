@@ -613,14 +613,13 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	private JsonObject buildConceptJsonLd(Concept concept, String parentUri, boolean isTopConcept,
 										  Map<String, Collection<MetadataValue>> metadata) throws OEClientException {
 
-		// @type: use custom classes if set, otherwise default to skos:Concept
+		// @type: always include skos:Concept, then add any custom classes on top
 		JsonArray conceptTypeList = new JsonArray();
+		conceptTypeList.add("skos:Concept");
 		if (concept.getClassUris() != null && !concept.getClassUris().isEmpty()) {
 			for (String classUri : concept.getClassUris()) {
 				conceptTypeList.add(classUri);
 			}
-		} else {
-			conceptTypeList.add("skos:Concept");
 		}
 
 		// Preferred labels
@@ -1119,17 +1118,17 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonObject instanceObject = new JsonObject();
 		instanceObject.put("@id", conceptUri);
-		JsonArray literalFormArray = new JsonArray();
 		JsonObject labelObject = new JsonObject();
-		literalFormArray.add(labelObject);
 		labelObject.put("@type", "skosxl:Label");
 		JsonObject literalFormObject = new JsonObject();
 		literalFormObject.put("@value", label.getValue());
 		if (label.getLanguageCode() != null) {
 			literalFormObject.put("@language", label.getLanguageCode());
 		}
-		labelObject.put("skosxl:literalForm", literalFormObject);
-		instanceObject.put(relationshipTypeUri, literalFormArray);
+		JsonArray literalFormArray = new JsonArray();
+		literalFormArray.add(literalFormObject);
+		labelObject.put("skosxl:literalForm", literalFormArray);
+		instanceObject.put(relationshipTypeUri, labelObject);
 
 
 		logger.info("createRelationship payload: {}", instanceObject);
@@ -1906,7 +1905,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public void deleteConcept(Concept concept, String deleteMode) throws OEClientException {
-		logger.info("deleteConcept entry: {} {} {}", concept.getUri());
+		logger.info("deleteConcept entry: {} {}", concept.getUri(), deleteMode);
 
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("mode", deleteMode);
@@ -2534,7 +2533,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		JsonObject testOperation = new JsonObject();
 		testOperation.put("op", "test");
 		testOperation.put("path", "@graph/0/rdfs:label/0");
-		testOperation.put("@value", model.getLabel().getValue());
+		JsonObject testValue = new JsonObject();
+		testValue.put("@value", model.getLabel().getValue());
+		testOperation.put("value", testValue);
 		operationList.add(testOperation);
 
 		JsonObject removeOperation = new JsonObject();
@@ -2708,7 +2709,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonObject operationObject = new JsonObject();
 		operationObject.put("op", "add");
-		operationObject.put("path", "@graph/0/dcterms:language/4");
+		operationObject.put("path", "@graph/0/dcterms:language/-");
 		operationObject.put("value", valueObject);
 
 		JsonArray patchArray = new JsonArray();
