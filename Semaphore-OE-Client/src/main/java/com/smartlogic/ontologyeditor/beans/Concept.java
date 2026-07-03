@@ -289,9 +289,7 @@ public class Concept extends AbstractBeanFromJson {
   }
 
   public Collection<String> getClassUris() {
-    return types.stream()
-        .filter(t -> !"skos:Concept".equals(t))
-        .collect(Collectors.toList());
+    return Collections.unmodifiableCollection(types);
   }
 
   /**

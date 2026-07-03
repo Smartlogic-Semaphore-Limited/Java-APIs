@@ -1938,24 +1938,44 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	/**
-	 * Delete a concept scheme from the current model.
+	 * Delete a concept scheme from the current model with 'empty' mode.
 	 *
 	 * @param conceptScheme the concept scheme to delete
 	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public void deleteConceptScheme(ConceptScheme conceptScheme) throws OEClientException {
-		logger.info("deleteConceptScheme entry: {} {} {}", conceptScheme.getUri());
+		deleteConceptScheme(conceptScheme, "empty");
+	}
 
-		Map<String, String> queryParameters = new HashMap<String, String>();
-		queryParameters.put("mode", "empty");
 
-		StringBuilder pathBuilder = new StringBuilder(getModelURL());
-		pathBuilder.append("/");
-		pathBuilder.append(getEscapedUri("<" + conceptScheme.getUri() + ">"));
-		String fullUrl = pathBuilder.toString();
+	/**
+	 * Delete a concept scheme from the current model.
+	 *
+	 * @param conceptScheme the concept scheme to delete
+	 * @param deleteMode the delete mode, such as {@code empty} or {@code subtree}
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteConceptScheme(ConceptScheme conceptScheme, String deleteMode) throws OEClientException {
+		logger.info("deleteConceptScheme entry: {} {}", conceptScheme.getUri(), deleteMode);
+
+		Map<String, String> queryParameters = new HashMap<>();
+		queryParameters.put("mode", deleteMode);
+
+        String fullUrl = getModelURL() + "/" +
+                getEscapedUri("<" + conceptScheme.getUri() + ">");
 		logger.info("deleteConceptScheme - fullUrl: {}", fullUrl);
 
 		makeRequest(fullUrl, queryParameters, null, RequestType.DELETE );
+	}
+
+	/**
+	 * Delete a concept-scheme and all of its descendants.
+	 *
+	 * @param conceptScheme the root concept scheme of the subtree to delete
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void deleteConceptSchemeWithSubtree(ConceptScheme conceptScheme) throws OEClientException {
+		deleteConceptScheme(conceptScheme, "subtree");
 	}
 
 	/**
@@ -2252,24 +2272,16 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonArray operationList = new JsonArray();
 
-		JsonObject testOperation1 = new JsonObject();
-		testOperation1.put("op", "test");
-		testOperation1.put("path", "@graph/0");
-		JsonObject testValue = new JsonObject();
-		testValue.put("@id", conceptScheme.getUri());
-		testOperation1.put("value", testValue);
-		operationList.add(testOperation1);
-
-		JsonObject testOperation2 = new JsonObject();
-		testOperation2.put("op", "test");
-		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0/rdfs:label/0");
 		JsonObject oldValueObject = new JsonObject();
 		oldValueObject.put("@value", oldLabel.getValue());
 		if (oldLabel.getLanguageCode() != null) {
 			oldValueObject.put("@language", oldLabel.getLanguageCode());
 		}
-		testOperation2.put("value", oldValueObject);
-		operationList.add(testOperation2);
+		testOperation.put("value", oldValueObject);
+		operationList.add(testOperation);
 
 		JsonObject removeOperation = new JsonObject();
 		removeOperation.put("op", "remove");
@@ -2391,24 +2403,16 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonArray operationList = new JsonArray();
 
-		JsonObject testOperation1 = new JsonObject();
-		testOperation1.put("op", "test");
-		testOperation1.put("path", "@graph/0");
-		JsonObject testValue = new JsonObject();
-		testValue.put("@id", relationshipTypeUri);
-		testOperation1.put("value", testValue);
-		operationList.add(testOperation1);
-
-		JsonObject testOperation2 = new JsonObject();
-		testOperation2.put("op", "test");
-		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0/rdfs:label/0");
 		JsonObject oldValueObject = new JsonObject();
 		oldValueObject.put("@value", oldLabel.getValue());
 		if (oldLabel.getLanguageCode() != null) {
 			oldValueObject.put("@language", oldLabel.getLanguageCode());
 		}
-		testOperation2.put("value", oldValueObject);
-		operationList.add(testOperation2);
+		testOperation.put("value", oldValueObject);
+		operationList.add(testOperation);
 
 		JsonObject removeOperation = new JsonObject();
 		removeOperation.put("op", "remove");
@@ -2449,24 +2453,24 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonArray operationList = new JsonArray();
 
-		JsonObject testOperation1 = new JsonObject();
-		testOperation1.put("op", "test");
-		testOperation1.put("path", "@graph/0");
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0");
 		JsonObject testValue = new JsonObject();
 		testValue.put("@id", metadataTypeUri);
-		testOperation1.put("value", testValue);
-		operationList.add(testOperation1);
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
 
-		JsonObject testOperation2 = new JsonObject();
-		testOperation2.put("op", "test");
-		testOperation2.put("path", "@graph/0/rdfs:label/0");
+		testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0/rdfs:label/0");
 		JsonObject oldValueObject = new JsonObject();
 		oldValueObject.put("@value", oldLabel.getValue());
 		if (oldLabel.getLanguageCode() != null) {
 			oldValueObject.put("@language", oldLabel.getLanguageCode());
 		}
-		testOperation2.put("value", oldValueObject);
-		operationList.add(testOperation2);
+		testOperation.put("value", oldValueObject);
+		operationList.add(testOperation);
 
 		JsonObject removeOperation = new JsonObject();
 		removeOperation.put("op", "remove");
