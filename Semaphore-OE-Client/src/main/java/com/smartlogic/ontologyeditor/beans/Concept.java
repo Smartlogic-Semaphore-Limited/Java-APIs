@@ -249,27 +249,6 @@ public class Concept extends AbstractBeanFromJson {
   @Override
   public String toString() {
     return this.asJson();
-//    StringBuilder stringBuilder = new StringBuilder("Concept:");
-//    stringBuilder.append(this.uri).append(" [");
-//    String sep = "";
-//    for (String type : types) {
-//      stringBuilder.append(sep).append(type);
-//      sep = ", ";
-//    }
-//    stringBuilder.append("] ");
-//    stringBuilder.append("Pref Labels: ");
-//    for (Label prefLabel : prefLabels) {
-//      stringBuilder.append(" \"").append(prefLabel.toString()).append("\"");
-//    }
-//
-//    for (Map.Entry<String, Collection<String>> entry : relatedConceptUrisByRelationship
-//        .entrySet()) {
-//      stringBuilder.append("\n").append(entry.getKey()).append(": ");
-//      for (String relatedUri : entry.getValue()) {
-//        stringBuilder.append(" <").append(relatedUri).append(">");
-//      }
-//    }
-//    return stringBuilder.toString();
   }
 
   /**
