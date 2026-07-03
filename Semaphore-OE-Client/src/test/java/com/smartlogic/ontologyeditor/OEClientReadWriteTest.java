@@ -199,6 +199,19 @@ public class OEClientReadWriteTest {
   }
 
   @Test
+  public void createTaskAndReturnThrowsWhenServerReturnsNoUri() {
+    CapturingReadWriteClient client = newClient();
+    client.nextMakeRequestResponse = null;
+
+    try {
+      client.createTaskAndReturn(new Task(new Label("en", "Task A")));
+      fail("Expected OEClientException when server returns no URI");
+    } catch (OEClientException ex) {
+      assertTrue(ex.getMessage().contains("did not return a URI"));
+    }
+  }
+
+  @Test
   public void createConceptSchemeAndReturnUsesServerUriWhenPresent() throws OEClientException {
     CapturingReadWriteClient client = newClient();
     client.nextMakeRequestResponse = "urn:scheme:new";

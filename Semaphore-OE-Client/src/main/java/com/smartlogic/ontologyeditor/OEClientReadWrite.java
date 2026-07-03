@@ -202,7 +202,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public Task createTaskAndReturn(Task task) throws OEClientException {
 		String createdTaskUri = createTask(task);
 		if (createdTaskUri == null) {
-			return new Task(task.getLabel(), null, null);
+			throw new OEClientException("Task creation did not return a URI — cannot resolve the created task");
 		}
 
 		for (Task existingTask : getAllTasks()) {
