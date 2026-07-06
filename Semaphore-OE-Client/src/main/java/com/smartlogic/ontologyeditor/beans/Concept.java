@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.jena.atlas.json.JSON;
@@ -42,11 +40,13 @@ public class Concept extends AbstractBeanFromJson {
   /**
    * Create a concept for outbound use when no source JSON is available.
    *
+   * @param oeClient the OE client to use for operations
    * @param prefLabels the preferred labels to assign to the concept
    * @param altLabels unused legacy parameter for alternative labels
    * @param relatedConceptUrisByRelationship relationship targets keyed by relationship URI
    */
-  public Concept(List<Label> prefLabels, List<Label> altLabels, Map<String, Collection<String>> relatedConceptUrisByRelationship) {
+  public Concept(OEClientReadOnly oeClient, List<Label> prefLabels, List<Label> altLabels, Map<String, Collection<String>> relatedConceptUrisByRelationship) {
+    this.oeClient = oeClient;
     this.prefLabels = prefLabels;
     this.relatedConceptUrisByRelationship = relatedConceptUrisByRelationship != null ? relatedConceptUrisByRelationship : new HashMap<>();
     this.jsonObject = null;
@@ -57,6 +57,7 @@ public class Concept extends AbstractBeanFromJson {
     logger.debug("Concept - entry: {}", jsonObject);
     this.jsonObject = jsonObject;
     this.uri = getAsString(jsonObject, "@id");
+    this.oeClient = oeClient;
 
     JsonValue jsonValue = jsonObject.get("@type");
     if (jsonValue != null) {

@@ -29,14 +29,11 @@ public abstract class AbstractOEIntegrationTest {
     @Before
     public void setUpClient() throws CloudException {
         String baseUrl = System.getenv("OE_BASE_URL");
-        String modelUri = System.getenv("OE_MODEL_URI");
 
         Assume.assumeTrue("OE_BASE_URL not set — skipping integration tests", baseUrl != null);
-        Assume.assumeTrue("OE_MODEL_URI not set — skipping integration tests", modelUri != null);
 
         oeClient = new OEClientReadWrite();
         oeClient.setBaseURL(baseUrl);
-        oeClient.setModelUri(modelUri);
 
         String token = System.getenv("OE_TOKEN");
         if (token != null && !token.isBlank()) {

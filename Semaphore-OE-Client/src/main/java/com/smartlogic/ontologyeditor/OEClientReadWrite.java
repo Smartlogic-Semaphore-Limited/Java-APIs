@@ -1909,7 +1909,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * Delete a concept using the specified delete mode.
 	 *
 	 * @param concept the concept to delete
-	 * @param deleteMode the delete mode, such as {@code empty} or {@code subtree}
+	 * @param deleteMode the delete mode, such as {@code empty} or {@code withSubtree}
 	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public void deleteConcept(Concept concept, String deleteMode) throws OEClientException {
@@ -1934,7 +1934,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public void deleteConceptWithSubtree(Concept concept) throws OEClientException {
-		deleteConcept(concept, "subtree");
+		deleteConcept(concept, "withSubtree");
 	}
 
 	/**
@@ -1975,7 +1975,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @throws OEClientException - an error has occurred contacting the server
 	 */
 	public void deleteConceptSchemeWithSubtree(ConceptScheme conceptScheme) throws OEClientException {
-		deleteConceptScheme(conceptScheme, "subtree");
+		deleteConceptScheme(conceptScheme, "withSubtree");
 	}
 
 	/**
@@ -2069,14 +2069,6 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonArray operationList = new JsonArray();
 
-		JsonObject testOperation1 = new JsonObject();
-		testOperation1.put("op", "test");
-		testOperation1.put("path","@graph/5");
-		JsonObject value1 = new JsonObject();
-		value1.put("@id", concept.getUri()); 
-		testOperation1.put("value", value1);
-		operationList.add(testOperation1);
-
 		String pathToRemove = "@graph/5/" + getTildered(relationshipTypeUri) + "/0";
 		JsonObject testOperation2 = new JsonObject();
 		testOperation2.put("op", "test");
@@ -2106,8 +2098,9 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		operationList.add(removeOperation3);
 
 		String deleteLabelPayload = operationList.toString();
+		String url = getModelURL() + "/" + getEscapedUri("<" + concept.getUri() + ">");
 		logger.info("deleteLabel payload: {}", deleteLabelPayload);
-		makeRequest(getModelURL(), deleteLabelPayload, RequestType.PATCH );
+		makeRequest(url, deleteLabelPayload, RequestType.PATCH );
 	}
 
 	@SuppressWarnings("unchecked")

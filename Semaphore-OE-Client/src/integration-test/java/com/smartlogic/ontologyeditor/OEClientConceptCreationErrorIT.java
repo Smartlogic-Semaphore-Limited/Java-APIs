@@ -7,6 +7,7 @@ import com.smartlogic.ontologyeditor.beans.Label;
 import com.smartlogic.ontologyeditor.beans.MetadataValue;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,7 +76,9 @@ public class OEClientConceptCreationErrorIT extends AbstractModelScopedIT {
     ConceptScheme finalScheme = scheme;
 
     try {
-      oeClient.createConcepts(List.of((Concept) null), List.of(finalScheme.getUri()), List.of(true));
+      List<Concept> concepts = new ArrayList<>();
+      concepts.add(null); // Add a null concept to the list
+      oeClient.createConcepts(concepts, List.of(finalScheme.getUri()), List.of(true));
       fail("Should throw IllegalArgumentException for null concept in list");
     } catch (IllegalArgumentException e) {
       assertTrue("Exception message should mention null concept", e.getMessage().contains("null concept"));
