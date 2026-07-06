@@ -8,6 +8,7 @@ import com.smartlogic.cloud.CloudException;
 import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
+import com.smartlogic.ontologyeditor.beans.ConceptClass;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Label;
 
@@ -19,6 +20,9 @@ public class AddConceptClasses extends ModelManipulation {
 	
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
+
+		oeClient.createClass(new Label("en", "Bluery"), "http://example.com/APITest#Bluery", new ConceptClass[]{});
+		oeClient.createClass(new Label("en", "Greenery"), "http://example.com/APITest#Greenery", new ConceptClass[]{});
 
 		List<Label> csLabels = new ArrayList<Label>();
 		csLabels.add(new Label("en", "Concept Scheme for Add Concept Classes"));

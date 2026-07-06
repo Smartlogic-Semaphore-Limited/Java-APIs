@@ -8,6 +8,7 @@ import com.smartlogic.cloud.CloudException;
 import com.smartlogic.ontologyeditor.OEClientException;
 import com.smartlogic.ontologyeditor.OEClientReadWrite;
 import com.smartlogic.ontologyeditor.beans.Concept;
+import com.smartlogic.ontologyeditor.beans.ConceptClass;
 import com.smartlogic.ontologyeditor.beans.ConceptScheme;
 import com.smartlogic.ontologyeditor.beans.Identifier;
 import com.smartlogic.ontologyeditor.beans.Label;
@@ -26,6 +27,9 @@ public class AddFullConcept extends ModelManipulation {
 
 	@Override
 	protected void alterModel(OEClientReadWrite oeClient) throws OEClientException {
+
+		// 0. Create a custom class
+		oeClient.createClass(new Label("en", "My Custom Class"), "http://example.com/APITest#MyCustomClass", new ConceptClass[]{});
 
 		// 1. Create a concept scheme
 		List<Label> csLabels = new ArrayList<>();
@@ -57,7 +61,7 @@ public class AddFullConcept extends ModelManipulation {
 		fullConcept.addClass("http://example.com/APITest#MyCustomClass");
 
 		// Identifier
-		fullConcept.addIdentifier(new Identifier("sem:guid", "12345-abcde"));
+		fullConcept.addIdentifier(new Identifier("sem:guid", "a500a11c-6f0a-46dd-836e-1aac80144d09"));
 
 		// Relationship to existing concept
 		fullConcept.addRelationship("skos:related", relatedConcept.getUri());
