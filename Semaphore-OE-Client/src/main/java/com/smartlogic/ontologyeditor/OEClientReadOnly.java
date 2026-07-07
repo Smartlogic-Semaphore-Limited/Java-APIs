@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor;
 
 import java.io.IOException;
@@ -34,7 +35,7 @@ public class OEClientReadOnly {
   public static final String PARAM_FILTERS = "filters";
   public static final String PATH_SKOS_CONCEPT_META_TRANSITIVE_INSTANCE = "/skos:Concept/meta:transitiveInstance";
 
-  private static final String BASIC_PROPERTIES = "sem:guid,skosxl:prefLabel/[]";
+  private static final String BASIC_PROPERTIES = "sem:guid,skosxl:prefLabel/[],rdf:type";
   private static final String CONCEPT_SCHEME_PROPERTIES = "rdf:type,rdfs:label,sem:guid,skos:hasTopConcept";
 
   private static final Map<String, String> prefixMapping = new HashMap<>();
@@ -274,6 +275,33 @@ public class OEClientReadOnly {
       models.add(new Model(modelObject));
     }
     return models;
+  }
+
+  /**
+   * Get a single model's details by its URI.
+   *
+   * @param modelUri the URI of the model to retrieve
+   * @return the model details
+   * @throws OEClientException - an error has occurred contacting the server
+   */
+  public Model getModel(String modelUri) throws OEClientException {
+    logger.info("getModel entry: {}", modelUri);
+
+    String url = getApiURL() + "sys/" + modelUri;
+    logger.info("getModel URL: {}", url);
+    Map<String, String> queryParameters = new HashMap<>();
+    queryParameters.put(PARAM_PROPERTIES, "meta:displayName,meta:graphUri,dcterms:language/[]");
+
+    String response = getResponse(url, queryParameters);
+    JsonObject jsonResponse = JSON.parse(response);
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
+
+    if (jsonArray.size() == 0) {
+      throw new OEClientException("Model not found: " + modelUri);
+    }
+
+    JsonObject modelObject = jsonArray.get(0).getAsObject();
+    return new Model(modelObject);
   }
 
   /**
@@ -1068,10 +1096,11 @@ public class OEClientReadOnly {
 
   protected enum RequestType { POST, DELETE, PATCH }
 
-  protected void makeRequest(String url, String payload, RequestType requestType) throws OEClientException {
-    makeRequest(url, null, payload, requestType);
+  protected String makeRequest(String url, String payload, RequestType requestType) throws OEClientException {
+    return makeRequest(url, null, payload, requestType);
   }
-    protected void makeRequest(String url, Map<String, String> queryParameters, String payload, RequestType requestType) throws OEClientException {
+
+  protected String makeRequest(String url, Map<String, String> queryParameters, String payload, RequestType requestType) throws OEClientException {
 
     String urlToUse = getURLwithParameters(url, queryParameters);
 
@@ -1101,6 +1130,15 @@ public class OEClientReadOnly {
     }
 
     checkResponseStatus(response);
+
+    // Return the x-location-uri header URI for POST requests (resource creation), null otherwise
+    if (RequestType.POST == requestType) {
+      String locationUri = response.headers().firstValue("x-location-uri").orElse(null);
+      if(locationUri != null) {
+        return URLDecoder.decode(locationUri, StandardCharsets.UTF_8).replaceFirst("^<", "").replaceFirst(">$", "");
+      }
+    }
+    return null;
 
   }
 
@@ -1197,6 +1235,43 @@ public class OEClientReadOnly {
 
   private <T> boolean isSuccess(HttpResponse<T> response) {
     return ((response.statusCode() > 199) && (response.statusCode() < 300));
+  }
+
+  /**
+   * Get the count of concepts in the model
+   *
+   * @return - the count of skos:Concept instances in the model
+   * @throws OEClientException - an error has occurred contacting the server
+   */
+  public long getConceptCount() throws OEClientException {
+    logger.info("getConceptCount entry");
+
+    String url = getModelURL() + "/skos:Concept?properties=meta:meta/(meta:localTransitiveInstance)/meta:count&language=en";
+
+    Map<String, String> queryParameters = new HashMap<>();
+    String responseBody = getResponse(url, queryParameters);
+    logger.debug("getConceptCount response: {}", responseBody);
+
+    try {
+      JsonObject jsonResponse = JSON.parse(responseBody);
+      JsonArray graphArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
+
+      if (graphArray.size() > 0) {
+        JsonObject conceptObject = graphArray.get(0).getAsObject();
+        JsonObject metaObject = conceptObject.get("meta:meta").getAsObject();
+        JsonObject transitiveInstanceObject = metaObject.get("meta:localTransitiveInstance").getAsObject();
+        long count = transitiveInstanceObject.get("meta:count").getAsNumber().value().longValue();
+
+        logger.info("getConceptCount result: {}", count);
+        return count;
+      }
+    } catch (Exception e) {
+      logger.error("Error parsing concept count response", e);
+      throw new OEClientException("Failed to parse concept count response: " + e.getMessage(), e);
+    }
+
+    logger.warn("getConceptCount: No data found in response");
+    return 0;
   }
 
 }

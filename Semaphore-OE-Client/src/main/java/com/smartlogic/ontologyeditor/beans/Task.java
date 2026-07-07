@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor.beans;
 
 import org.apache.jena.atlas.json.JsonObject;

@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor.examples;
 
 import java.io.IOException;
@@ -35,6 +36,13 @@ public class AddConceptLabels extends ModelManipulation {
 		Label[] labels = new Label[] { new Label("de", "F1"), new Label("fr", "F2"), new Label("de", "D3") };
 
 		oeClient.createLabels(uris, labels);
+
+		// Add labels with explicit relationship types across multiple concepts
+		String[] uris2 = new String[] { concept1.getUri(), concept2.getUri(), concept3.getUri() };
+		String[] relTypes = new String[] { "skosxl:altLabel", "skosxl:altLabel", "skosxl:altLabel" };
+		Label[] altLabels = new Label[] { new Label("fr", "Alt1"), new Label("de", "Alt2"), new Label("fr", "Alt3") };
+
+		oeClient.createLabels(uris2, relTypes, altLabels);
 	}
 
 	private Concept addConcept(OEClientReadWrite oeClient, ConceptScheme conceptScheme, String label) throws OEClientException {
