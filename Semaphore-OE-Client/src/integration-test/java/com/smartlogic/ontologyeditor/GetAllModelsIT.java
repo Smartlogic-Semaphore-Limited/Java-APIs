@@ -21,30 +21,39 @@ import static org.junit.Assert.assertNull;
  * verifies that a non-null collection is returned.
  *
  * <p>Skipped automatically when {@code OE_BASE_URL} / {@code OE_MODEL_URI} env
- * vars are not set. See {@link AbstractOEIntegrationTest} for configuration.
+ * vars are not set. See {@link AbstractModelScopedIT} for configuration.
  */
-public class GetAllModelsIT extends AbstractOEIntegrationTest {
+public class GetAllModelsIT extends AbstractModelScopedIT {
     private static final Model EXPECTED_MY_EXAMPLE_MODEL = new Model("model:myExample", new Label("", "myExample"), null);
     @Test
-    public void getAllModels_expectMyExample() throws OEClientException {
+    public void getAllModels_expectNoModels() throws OEClientException {
         List<Model> models = oeClient.getAllModels().stream().toList();
         assertNotNull("getAllModels() must return a non-null collection", models);
-        assertEquals("Expected exactly one model in the collection", 1, models.size());
-        assertEquals("Has myExample model present", EXPECTED_MY_EXAMPLE_MODEL, models.get(0));
+        assertEquals("Expected no models in the collection", 0, models.size());
     }
 
     @Test
     public void getModel_shortURI() throws OEClientException {
-        Model model = oeClient.getModel("model:myExample");
-        assertNotNull("getModel() must return a non-null object", model);
-        assertEquals("Has myExample model present", EXPECTED_MY_EXAMPLE_MODEL, model);
+        oeClient.createModel(EXPECTED_MY_EXAMPLE_MODEL);
+        try {
+            Model model = oeClient.getModel("model:myExample");
+            assertNotNull("getModel() must return a non-null object", model);
+            assertEquals("Has myExample model present", EXPECTED_MY_EXAMPLE_MODEL, model);
+        } finally {
+            oeClient.deleteModel(EXPECTED_MY_EXAMPLE_MODEL);
+        }
     }
 
     @Test
     public void getModel_fullURI() throws OEClientException {
-        Model model = oeClient.getModel("urn:x-evn-master:myExample");
-        assertNotNull("getModel() must return a non-null object", model);
-        assertEquals("Has myExample model present", EXPECTED_MY_EXAMPLE_MODEL, model);
+        oeClient.createModel(EXPECTED_MY_EXAMPLE_MODEL);
+        try {
+            Model model = oeClient.getModel("urn:x-evn-master:myExample");
+            assertNotNull("getModel() must return a non-null object", model);
+            assertEquals("Has myExample model present", EXPECTED_MY_EXAMPLE_MODEL, model);
+        } finally {
+            oeClient.deleteModel(EXPECTED_MY_EXAMPLE_MODEL);
+        }
     }
 
     @Test
