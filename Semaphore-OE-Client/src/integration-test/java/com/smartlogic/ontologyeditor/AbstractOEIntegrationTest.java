@@ -28,7 +28,10 @@ public abstract class AbstractOEIntegrationTest {
 
     @Before
     public void setUpClient() throws CloudException {
-        String baseUrl = System.getenv("OE_BASE_URL");
+        String baseUrl = System.getProperty("OE_BASE_URL");
+        if (baseUrl == null) {
+            baseUrl = System.getenv("OE_BASE_URL");
+        }
 
         Assume.assumeTrue("OE_BASE_URL not set — skipping integration tests", baseUrl != null);
 
