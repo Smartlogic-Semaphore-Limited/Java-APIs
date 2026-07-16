@@ -5,13 +5,14 @@ this.workbenchContainer = null
 this.workbenchPort = null
 
 smartlogic([
-  docker: "maven:3.6.3-openjdk-17",
-  builder: smartlogic.mavenBuilder(args: {["-Dgpg.useagent=true -P integration -DOE_BASE_URL=http://${env.NODE_NAME}:${this.workbenchPort}/"]}, credentialIds: ["MavenCentral"]),
+  docker: "maven@sha256:7f46feaf907771cd14e38d0b901d6372e50e68bf4e2197b0f181eb16f051081b", //   maven:3.6.3-openjdk-17
+  builder: smartlogic.mavenBuilder(args: { getMvnArgs() }, credentialIds: ["MavenCentral"]),
   beforeBuild: {
     dockerUtils.withRegistry() {
-      def image = docker.image("sl-cart01:8082/semaphore-kmm:master")
+      def image = docker.image("sl-cart01:8082/semaphore-kmm:${params.KMM_IMAGE_TAG}")
       image.pull()
-      this.workbenchContainer = dockerUtils.run(image, [containerArgs: "-v ${env.SEMAPHORE_LICENCE_DIR}:/var/opt/semaphore/studio/data/licenses", runArgs: "-v ${env.SEMAPHORE_LICENCE_DIR}:/var/opt/semaphore/studio/data/licenses", privileges: true])
+      def containerArgs = "-v ${env.SEMAPHORE_LICENCE_DIR}:/var/opt/semaphore/studio/data/licenses"
+      this.workbenchContainer = dockerUtils.run(image, [containerArgs: containerArgs, privileges: true])
       this.workbenchPort = dockerUtils.getPort(this.workbenchContainer, 5082)
     }
   },
@@ -26,8 +27,19 @@ smartlogic([
     }
     it()
   },
+  parameters: [
+    string(name: 'KMM_IMAGE_TAG', defaultValue: "master", description: 'The tag of the KMM image to use'),
+  ],
   settings: [
     polaris: [scan: [buildTool: "mvn"]],
     includeSemaphoreLicense: 'valid_licence_unlimited',
   ]
 ])
+
+def getMvnArgs() {
+    [
+        "-Dgpg.useagent=true",
+        "-P integration",
+        "-DOE_BASE_URL=http://${env.NODE_NAME}:${this.workbenchPort}/"
+    ]
+}
