@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
  * Integration test – retrieves the list of models from the live OE server and
  * verifies that a non-null collection is returned.
  *
- * <p>Skipped automatically when {@code OE_BASE_URL} / {@code OE_MODEL_URI} env
+ * <p>Skipped automatically when {@code OE_BASE_URL} environment variable or system property is not set. See {@link AbstractModelScopedIT} for configuration.
  * vars are not set. See {@link AbstractModelScopedIT} for configuration.
  */
 public class GetAllModelsIT extends AbstractModelScopedIT {
@@ -43,7 +43,7 @@ public class GetAllModelsIT extends AbstractModelScopedIT {
         String fullUri = "urn:x-evn-master:" + testModel.getUri().substring(testModel.getUri().lastIndexOf(':') + 1);
         Model model = oeClient.getModel(fullUri);
         assertNotNull("getModel() must return a non-null object", model);
-        assertEquals("Has myExample model present", testModel, model);
+        assertEquals("Has test model present", testModel, model);
     }
 
     @Test
