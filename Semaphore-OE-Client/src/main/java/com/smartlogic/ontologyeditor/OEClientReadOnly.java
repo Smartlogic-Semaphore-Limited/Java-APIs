@@ -255,7 +255,7 @@ public class OEClientReadOnly {
   public Collection<Model> getAllModels() throws OEClientException {
     logger.info("getAllModels entry");
 
-    String url = getApiURL() + "specialgraph:system/teamwork:Vocabulary/rdf:instance";
+    String url = getApiURL() + "sys/sys:Model/rdf:instance";
     logger.info("getAllModels URL: {}", url);
     Map<String, String> queryParameters = new HashMap<>();
     queryParameters.put(PARAM_PROPERTIES, "meta:displayName,meta:graphUri");
