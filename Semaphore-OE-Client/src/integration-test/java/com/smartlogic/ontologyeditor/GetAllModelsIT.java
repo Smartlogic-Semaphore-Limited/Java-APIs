@@ -81,7 +81,7 @@ public class GetAllModelsIT extends AbstractModelScopedIT {
 
     @After
     public void deleteModels() throws OEClientException {
-        List<Model> modelsToDelete = oeClient.getAllModels().stream().filter(model -> model.getLabel().getValue().startsWith("OE_CLIENT_EXAMPLE_")).filter(model -> !model.getLabel().getValue().endsWith("_owl")).toList();
+        List<Model> modelsToDelete = oeClient.getAllModels().stream().filter(model -> model.getLabel().getValue().startsWith("OE_CLIENT_EXAMPLE_")).toList();
         for(Model model: modelsToDelete) {
             oeClient.deleteModel(model);
         }
