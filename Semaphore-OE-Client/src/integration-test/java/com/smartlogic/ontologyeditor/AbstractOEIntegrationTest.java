@@ -9,18 +9,17 @@ import org.junit.Before;
 /**
  * Base class for OE Client integration tests.
  *
- * <p>Connection details are read exclusively from environment variables so that no credentials
+ * <p>Connection details are read exclusively from environment variables or system properties so that no credentials
  * are ever committed to the (public) repository:
  *
  * <ul>
  *   <li>{@code OE_BASE_URL}   – required, e.g. {@code http://myserver:5080}</li>
- *   <li>{@code OE_MODEL_URI}  – required, e.g. {@code model:MyModel}</li>
  *   <li>{@code OE_TOKEN}      – optional static bearer token</li>
  *   <li>{@code OE_TOKEN_URL}  – optional cloud token endpoint (used together with OE_API_KEY)</li>
  *   <li>{@code OE_API_KEY}    – optional cloud API key</li>
  * </ul>
  *
- * If {@code OE_BASE_URL} or {@code OE_MODEL_URI} are absent the test is skipped automatically.
+ * If {@code OE_BASE_URL} is absent the test is skipped automatically.
  */
 public abstract class AbstractOEIntegrationTest {
 
@@ -28,20 +27,32 @@ public abstract class AbstractOEIntegrationTest {
 
     @Before
     public void setUpClient() throws CloudException {
-        String baseUrl = System.getenv("OE_BASE_URL");
+        String baseUrl = System.getProperty("OE_BASE_URL");
+        if (baseUrl == null || baseUrl.isBlank()) {
+            baseUrl = System.getenv("OE_BASE_URL");
+        }
 
-        Assume.assumeTrue("OE_BASE_URL not set — skipping integration tests", baseUrl != null);
+        Assume.assumeTrue("OE_BASE_URL not set — skipping integration tests", baseUrl != null && !baseUrl.isBlank());
 
         oeClient = new OEClientReadWrite();
         oeClient.setBaseURL(baseUrl);
 
-        String token = System.getenv("OE_TOKEN");
+        String token = System.getProperty("OE_TOKEN");
+        if (token == null || token.isBlank()) {
+            token = System.getenv("OE_TOKEN");
+        }
         if (token != null && !token.isBlank()) {
             oeClient.setToken(token);
         }
 
-        String tokenUrl = System.getenv("OE_TOKEN_URL");
-        String apiKey = System.getenv("OE_API_KEY");
+        String tokenUrl = System.getProperty("OE_TOKEN_URL");
+        if (tokenUrl == null || tokenUrl.isBlank()) {
+            tokenUrl = System.getenv("OE_TOKEN_URL");
+        }
+        String apiKey = System.getProperty("OE_API_KEY");
+        if (apiKey == null || apiKey.isBlank()) {
+            apiKey = System.getenv("OE_API_KEY");
+        }
         if (tokenUrl != null && !tokenUrl.isBlank() && apiKey != null && !apiKey.isBlank()) {
             TokenFetcher tokenFetcher = new TokenFetcher(tokenUrl, apiKey);
             oeClient.setCloudToken(tokenFetcher.getAccessToken());
