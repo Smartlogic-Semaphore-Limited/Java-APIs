@@ -133,6 +133,42 @@ public class OEClientReadOnlyTest {
     assertFalse(builder.build().headers().firstValue("X-Transaction-Message").isPresent());
   }
 
+  @Test
+  public void transactionMessageStripsCarriageReturnAndNewline() {
+    StubReadOnlyClient client = newClient();
+    client.setOperationSource("KMM\r\nAI Assistant");
+    client.setTransactionMessage("New concept\r\nCreated");
+
+    HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create("http://localhost"));
+    client.applyTransactionMessageHeaders(builder);
+
+    assertEquals("New conceptCreated (via KMMAI Assistant)",
+            builder.build().headers().firstValue("X-Transaction-Message").orElse(null));
+  }
+
+  @Test
+  public void rawTransactionMessageJsonStripsCarriageReturnAndNewline() {
+    StubReadOnlyClient client = newClient();
+    client.setTransactionMessageJson("{\r\n  \"templateKey\": \"concept-added\"\r\n}");
+
+    HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create("http://localhost"));
+    client.applyTransactionMessageHeaders(builder);
+
+    assertEquals("{  \"templateKey\": \"concept-added\"}",
+            builder.build().headers().firstValue("X-Transaction-Message-Json").orElse(null));
+  }
+
+  @Test
+  public void whitespaceOnlyTransactionMessageIsNotSent() {
+    StubReadOnlyClient client = newClient();
+    client.setTransactionMessage("   ");
+
+    HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create("http://localhost"));
+    client.applyTransactionMessageHeaders(builder);
+
+    assertFalse(builder.build().headers().firstValue("X-Transaction-Message").isPresent());
+  }
+
   private static StubReadOnlyClient newClient() {
     StubReadOnlyClient client = new StubReadOnlyClient();
     client.setBaseURL("http://localhost");

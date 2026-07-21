@@ -182,12 +182,13 @@ public class OEClientReadOnly {
    * Set a persistent label identifying who/what is driving operations through this client
    * instance (e.g. "KMM AI Assistant" for an MCP server, or a username for a direct user action).
    * When set, it is automatically appended as {@code " (via {operationSource})"} to any simple
-   * text transaction message set via {@link #setTransactionMessage(String)}.
+   * text transaction message set via {@link #setTransactionMessage(String)}. Any CR/LF characters
+   * are stripped since the value ends up in an HTTP header.
    *
    * @param operationSource - the label to append to transaction messages, or {@code null} to stop appending one
    */
   public void setOperationSource(String operationSource) {
-    this.operationSource = operationSource;
+    this.operationSource = sanitizeHeaderValue(operationSource);
   }
 
   private String transactionMessage;
@@ -196,14 +197,15 @@ public class OEClientReadOnly {
   /**
    * Attach a simple text transaction message to the next modifying request (POST/PATCH/DELETE)
    * issued by this client. This message is persisted in history and visible when changes are
-   * later retrieved. The message is one-shot: it is consumed (cleared) once the request has been
-   * sent, whether the operationSource suffix (see {@link #setOperationSource(String)}) is applied
-   * or not.
+   * later retrieved. The message is one-shot: it is consumed (cleared) once it has been applied
+   * to the outgoing request, whether the operationSource suffix (see
+   * {@link #setOperationSource(String)}) is applied or not. Any CR/LF characters are stripped
+   * since the value ends up in an HTTP header.
    *
    * @param message - the free text transaction message
    */
   public void setTransactionMessage(String message) {
-    this.transactionMessage = message;
+    this.transactionMessage = sanitizeHeaderValue(message);
     this.transactionMessageJson = null;
   }
 
@@ -211,7 +213,7 @@ public class OEClientReadOnly {
    * Attach a structured (translatable) transaction message to the next modifying request
    * (POST/PATCH/DELETE) issued by this client, built from a template key and its parameters. See
    * TransactionMessages.properties for the available template keys. The message is one-shot: it
-   * is consumed (cleared) once the request has been sent.
+   * is consumed (cleared) once it has been applied to the outgoing request.
    *
    * @param templateKey - key used to look up the message template
    * @param params - parameters required by the given template
@@ -227,12 +229,15 @@ public class OEClientReadOnly {
   /**
    * Attach an already-built structured transaction message (raw JSON, matching the
    * {@code X-Transaction-Message-Json} contract) to the next modifying request issued by this
-   * client. The message is one-shot: it is consumed (cleared) once the request has been sent.
+   * client. The message is one-shot: it is consumed (cleared) once it has been applied to the
+   * outgoing request. Any CR/LF characters are stripped since the value ends up in an HTTP
+   * header; this is safe even for pretty-printed JSON since whitespace outside of string values
+   * is not significant in JSON.
    *
    * @param transactionMessageJson - raw JSON with {@code templateKey} and {@code params} keys
    */
   public void setTransactionMessageJson(String transactionMessageJson) {
-    this.transactionMessageJson = transactionMessageJson;
+    this.transactionMessageJson = sanitizeHeaderValue(transactionMessageJson);
     this.transactionMessage = null;
   }
 
@@ -247,6 +252,22 @@ public class OEClientReadOnly {
   }
 
   /**
+   * Strip CR/LF characters from a value that will be sent as an HTTP header, since
+   * {@link HttpRequest.Builder#header(String, String)} rejects header values containing them
+   * (header injection prevention) and throws {@link IllegalArgumentException} at request build
+   * time rather than a catchable {@link OEClientException}.
+   *
+   * @param value - the candidate header value
+   * @return the value with any CR/LF characters removed, or the original value if it is {@code null}
+   */
+  private static String sanitizeHeaderValue(String value) {
+    if (value == null) {
+      return null;
+    }
+    return value.replace("\r", "").replace("\n", "");
+  }
+
+  /**
    * Apply, then consume (one-shot), any pending transaction message onto a request about to be
    * sent. Only relevant for modifying requests (POST/PATCH/DELETE); harmless no-op otherwise.
    *
@@ -255,7 +276,7 @@ public class OEClientReadOnly {
   protected void applyTransactionMessageHeaders(HttpRequest.Builder requestBuilder) {
     if (transactionMessageJson != null) {
       requestBuilder.header("X-Transaction-Message-Json", transactionMessageJson);
-    } else if (StringUtils.isNotEmpty(transactionMessage)) {
+    } else if (StringUtils.isNotBlank(transactionMessage)) {
       String messageToSend = transactionMessage;
       if (StringUtils.isNotBlank(operationSource)) {
         messageToSend = messageToSend + " (via " + operationSource + ")";
