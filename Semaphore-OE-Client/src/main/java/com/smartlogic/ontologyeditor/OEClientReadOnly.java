@@ -9,6 +9,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import com.google.gson.Gson;
 import com.smartlogic.cloud.Token;
 import com.smartlogic.ontologyeditor.beans.*;
 import org.apache.commons.lang3.StringUtils;
@@ -169,6 +170,99 @@ public class OEClientReadOnly {
   }
   public void setKRTClient(boolean krtClient) {
     isKRTClient = krtClient;
+  }
+
+  private String operationSource;
+
+  public String getOperationSource() {
+    return operationSource;
+  }
+
+  /**
+   * Set a persistent label identifying who/what is driving operations through this client
+   * instance (e.g. "KMM AI Assistant" for an MCP server, or a username for a direct user action).
+   * When set, it is automatically appended as {@code " (via {operationSource})"} to any simple
+   * text transaction message set via {@link #setTransactionMessage(String)}.
+   *
+   * @param operationSource - the label to append to transaction messages, or {@code null} to stop appending one
+   */
+  public void setOperationSource(String operationSource) {
+    this.operationSource = operationSource;
+  }
+
+  private String transactionMessage;
+  private String transactionMessageJson;
+
+  /**
+   * Attach a simple text transaction message to the next modifying request (POST/PATCH/DELETE)
+   * issued by this client. This message is persisted in history and visible when changes are
+   * later retrieved. The message is one-shot: it is consumed (cleared) once the request has been
+   * sent, whether the operationSource suffix (see {@link #setOperationSource(String)}) is applied
+   * or not.
+   *
+   * @param message - the free text transaction message
+   */
+  public void setTransactionMessage(String message) {
+    this.transactionMessage = message;
+    this.transactionMessageJson = null;
+  }
+
+  /**
+   * Attach a structured (translatable) transaction message to the next modifying request
+   * (POST/PATCH/DELETE) issued by this client, built from a template key and its parameters. See
+   * TransactionMessages.properties for the available template keys. The message is one-shot: it
+   * is consumed (cleared) once the request has been sent.
+   *
+   * @param templateKey - key used to look up the message template
+   * @param params - parameters required by the given template
+   */
+  public void setTransactionMessage(String templateKey, List<Object> params) {
+    Map<String, Object> messageMap = new LinkedHashMap<>();
+    messageMap.put("templateKey", templateKey);
+    messageMap.put("params", params);
+    this.transactionMessageJson = new Gson().toJson(messageMap);
+    this.transactionMessage = null;
+  }
+
+  /**
+   * Attach an already-built structured transaction message (raw JSON, matching the
+   * {@code X-Transaction-Message-Json} contract) to the next modifying request issued by this
+   * client. The message is one-shot: it is consumed (cleared) once the request has been sent.
+   *
+   * @param transactionMessageJson - raw JSON with {@code templateKey} and {@code params} keys
+   */
+  public void setTransactionMessageJson(String transactionMessageJson) {
+    this.transactionMessageJson = transactionMessageJson;
+    this.transactionMessage = null;
+  }
+
+  /**
+   * Clear any transaction message previously set via {@link #setTransactionMessage(String)},
+   * {@link #setTransactionMessage(String, List)} or {@link #setTransactionMessageJson(String)}
+   * without sending a request.
+   */
+  public void clearTransactionMessage() {
+    this.transactionMessage = null;
+    this.transactionMessageJson = null;
+  }
+
+  /**
+   * Apply, then consume (one-shot), any pending transaction message onto a request about to be
+   * sent. Only relevant for modifying requests (POST/PATCH/DELETE); harmless no-op otherwise.
+   *
+   * @param requestBuilder - the request builder for the outgoing modifying request
+   */
+  protected void applyTransactionMessageHeaders(HttpRequest.Builder requestBuilder) {
+    if (transactionMessageJson != null) {
+      requestBuilder.header("X-Transaction-Message-Json", transactionMessageJson);
+    } else if (StringUtils.isNotEmpty(transactionMessage)) {
+      String messageToSend = transactionMessage;
+      if (StringUtils.isNotBlank(operationSource)) {
+        messageToSend = messageToSend + " (via " + operationSource + ")";
+      }
+      requestBuilder.header("X-Transaction-Message", messageToSend);
+    }
+    clearTransactionMessage();
   }
 
   protected String getWrappedUri(String uriString) throws OEClientException {
@@ -1111,6 +1205,7 @@ public class OEClientReadOnly {
     HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(urlToUse))
             .header("Accept", "application/ld+json,application/json");
     addHeaders(requestBuilder);
+    applyTransactionMessageHeaders(requestBuilder);
 
     if (RequestType.POST == requestType) {
       requestBuilder.method("POST", bodyPublisher)
