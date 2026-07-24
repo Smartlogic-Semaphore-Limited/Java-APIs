@@ -42,5 +42,18 @@ public class OEClientRelationshipTypeIT extends AbstractModelScopedIT {
         .orElseThrow(() -> new AssertionError("Label relationship type not found after creation"));
   }
 
+  @Test
+  public void createSymmetricRelationshipType() throws OEClientException {
+    String symmetricUri = "http://example.test/symmetricRelType_" + UUID.randomUUID();
+    Label label = new Label("en", "Symmetric Relationship");
+
+    oeClient.createSymmetricRelationshipType(label, symmetricUri);
+
+    oeClient.getAssociativeRelationshipTypes().stream()
+        .filter(rt -> rt.getUri().equals(symmetricUri))
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("Symmetric relationship type not found after creation"));
+  }
+
 }
 
