@@ -1163,6 +1163,34 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	}
 
+	/**
+	 * Create a new symmetric associative relationship type in the model. Unlike
+	 * {@link #createRelationshipType(Label, String, Label, String)}, a symmetric relationship type
+	 * has a single URI (it is its own inverse) and is typed as {@code owl:SymmetricProperty} in
+	 * addition to {@code owl:ObjectProperty}, so relating concept A to concept B implies the
+	 * reverse relationship B to A without needing a separate inverse relationship type.
+	 *
+	 * @param label
+	 *            the label of the symmetric relationship type
+	 * @param uri
+	 *            the URI to assign to the new relationship type
+	 */
+	public void createSymmetricRelationshipType(Label label, String uri) {
+		logger.info("createSymmetricRelationshipType entry: {} {}", label, uri);
+
+		JsonObject relationshipType = getRelationshipTypeJsonObject(label, uri, true);
+
+		String relationshipTypePayload = relationshipType.toString();
+
+		logger.info("createSymmetricRelationshipType making call  : {}", relationshipTypePayload);
+		try {
+			makeRequest(getModelURL(), relationshipTypePayload, RequestType.POST);
+		} catch (OEClientException e) {
+			logger.error("createSymmetricRelationshipType failed: {}", e.getMessage());
+		}
+
+	}
+
 	public void createLabelRelationshipType(Label forwardLabel, String forwardUri) {
 		logger.info("createLabelRelationshipType entry: {} {}", forwardLabel, forwardUri);
 
@@ -1212,12 +1240,19 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	private JsonObject getRelationshipTypeJsonObject(Label forwardLabel, String forwardUri) {
+		return getRelationshipTypeJsonObject(forwardLabel, forwardUri, false);
+	}
+
+	private JsonObject getRelationshipTypeJsonObject(Label forwardLabel, String forwardUri, boolean symmetric) {
 
 		JsonObject relationshipTypeObject = new JsonObject();
 
 
 		JsonArray typeArray = new JsonArray();
 		typeArray.add("owl:ObjectProperty");
+		if (symmetric) {
+			typeArray.add("owl:SymmetricProperty");
+		}
 		relationshipTypeObject.put("@type", typeArray);
 		relationshipTypeObject.put("@id", forwardUri);
 
