@@ -489,6 +489,38 @@ public class OEClientReadWriteTest {
     assertEquals("@graph/0/dcterms:language/-", patch.get(0).getAsJsonObject().get("path").getAsString());
   }
 
+  @Test
+  public void createSymmetricRelationshipTypeIncludesSymmetricPropertyType() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Label label = new Label("en", "Related To");
+    String uri = "urn:relType:symmetric";
+
+    client.createSymmetricRelationshipType(label, uri);
+
+    assertEquals(1, client.makeRequestCallCount);
+    JsonObject payload = JSON.parse(client.lastPayload);
+    JsonArray typeArray = payload.get("@type").getAsArray();
+    List<String> types = new ArrayList<>();
+    typeArray.forEach(value -> types.add(value.getAsString().value()));
+    assertTrue("Should be typed as owl:ObjectProperty", types.contains("owl:ObjectProperty"));
+    assertTrue("Should be typed as owl:SymmetricProperty", types.contains("owl:SymmetricProperty"));
+    assertEquals(uri, payload.get("@id").getAsString().value());
+    assertNull("A symmetric relationship type must not have a separate inverse", payload.get("owl:inverseOf"));
+  }
+
+  @Test
+  public void createRelationshipTypeDoesNotIncludeSymmetricPropertyType() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Label forwardLabel = new Label("en", "Forward");
+    Label inverseLabel = new Label("en", "Inverse");
+
+    client.createRelationshipType(forwardLabel, "urn:relType:forward", inverseLabel, "urn:relType:inverse");
+
+    assertEquals(1, client.makeRequestCallCount);
+    assertFalse("Non-symmetric relationship types must not be typed as owl:SymmetricProperty",
+        client.lastPayload.contains("owl:SymmetricProperty"));
+  }
+
   private static CapturingReadWriteClient newClient() {
     CapturingReadWriteClient client = new CapturingReadWriteClient();
     client.setBaseURL("http://localhost");
