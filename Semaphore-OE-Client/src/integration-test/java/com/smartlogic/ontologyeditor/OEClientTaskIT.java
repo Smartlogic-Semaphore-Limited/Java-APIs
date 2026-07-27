@@ -95,8 +95,11 @@ public class OEClientTaskIT extends AbstractModelScopedIT {
       assertEquals("Only the change made before the cutoff should be committed to master",
           1, oeClient.getAllConceptSchemes().size());
       assertTrue("Master should contain the change made before the cutoff",
-          oeClient.getAllConceptSchemes().stream()
+              oeClient.getAllConceptSchemes().stream()
               .anyMatch(scheme -> "example:schemeBeforeCutoff".equals(scheme.getUri())));
+      assertTrue("Master should contain the change made before the cutoff",
+              oeClient.getAllConceptSchemes().stream()
+                      .noneMatch(scheme -> "example:schemeAfterCutoff".equals(scheme.getUri())));
 
       oeClient.setModelUri(newTask.getGraphUri());
       // The task's view merges master's committed changes with its own remaining uncommitted
