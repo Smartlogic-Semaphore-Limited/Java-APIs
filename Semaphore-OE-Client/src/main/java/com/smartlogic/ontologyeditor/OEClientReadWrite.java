@@ -270,6 +270,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		queryParameters.put("action", "commit");
 		queryParameters.put("checkConstraints", "true");
 		queryParameters.put(PARAM_FILTERS, buildCommitFilters(upToDate));
+		queryParameters.put("sparqlFilter", "not exists { ?subject sem:accepted false }");
+		if (label.getLanguageCode() != null) {
+			queryParameters.put("language", label.getLanguageCode());
+		}
 		
 		JsonObject taskObject = new JsonObject();
 		JsonObject commitObject = new JsonObject();
@@ -286,7 +290,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		commitObject.put("rdfs:label", labelArray);
 		JsonArray commentArray = new JsonArray();
 		JsonObject commentObject = new JsonObject();
-		commentObject.put("@language", "");
+		if (label.getLanguageCode() != null) {
+			commentObject.put("@language", label.getLanguageCode());
+		} else {
+			commentObject.put("@language", "");
+		}
 		commentObject.put("@value", comment);
 		commentArray.add(commentObject);
 		commitObject.put("rdfs:comment", commentArray);

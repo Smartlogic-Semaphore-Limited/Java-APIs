@@ -237,6 +237,23 @@ public class OEClientReadWriteTest {
     assertEquals("true", client.lastQueryParameters.get("checkConstraints"));
     assertEquals("subject(teamwork:status = teamwork:Uncommitted)",
         client.lastQueryParameters.get("filters"));
+    assertEquals("not exists { ?subject sem:accepted false }",
+        client.lastQueryParameters.get("sparqlFilter"));
+    assertEquals("en", client.lastQueryParameters.get("language"));
+  }
+
+  @Test
+  public void commitTaskUsesLabelLanguageForCommentLanguage() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task A"), "urn:task:id:123", "task:test:taskA");
+
+    client.commitTask(task, new Label("en", "My commit"), "My comment");
+
+    JsonObject payload = JSON.parse(client.lastPayload);
+    JsonObject commentObject =
+        payload.get("@graph").getAsObject().get("rdfs:comment").getAsArray().get(0).getAsObject();
+    assertEquals("en", commentObject.get("@language").getAsString().value());
+    assertEquals("My comment", commentObject.get("@value").getAsString().value());
   }
 
   @Test
