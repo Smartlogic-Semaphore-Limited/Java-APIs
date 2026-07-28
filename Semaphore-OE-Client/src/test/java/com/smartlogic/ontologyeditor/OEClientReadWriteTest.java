@@ -212,6 +212,65 @@ public class OEClientReadWriteTest {
   }
 
   @Test
+  public void deleteTaskSendsDeleteRequestToTaskSysUrl() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task A"), "urn:task:id:123", "task:test:taskA");
+
+    client.deleteTask(task);
+
+    assertEquals(1, client.makeRequestCallCount);
+    assertEquals(OEClientReadOnly.RequestType.DELETE, client.lastRequestType);
+    assertEquals("http://localhost/api/sys/task:test:taskA", client.lastUrl);
+  }
+
+  @Test
+  public void commitTaskCommitsAllUncommittedChangesWhenNoDateSupplied() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task A"), "urn:task:id:123", "task:test:taskA");
+
+    client.commitTask(task, new Label("en", "My commit"), "My comment");
+
+    assertEquals(1, client.makeRequestCallCount);
+    assertEquals("http://localhost/api/sys/task:test:taskA/teamwork:Change/rdf:instance", client.lastUrl);
+    assertNotNull(client.lastQueryParameters);
+    assertEquals("commit", client.lastQueryParameters.get("action"));
+    assertEquals("true", client.lastQueryParameters.get("checkConstraints"));
+    assertEquals("subject(teamwork:status = teamwork:Uncommitted)",
+        client.lastQueryParameters.get("filters"));
+    assertEquals("not exists { ?subject sem:accepted false }",
+        client.lastQueryParameters.get("sparqlFilter"));
+    assertEquals("en", client.lastQueryParameters.get("language"));
+  }
+
+  @Test
+  public void commitTaskUsesLabelLanguageForCommentLanguage() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task A"), "urn:task:id:123", "task:test:taskA");
+
+    client.commitTask(task, new Label("en", "My commit"), "My comment");
+
+    JsonObject payload = JSON.parse(client.lastPayload);
+    JsonObject commentObject =
+        payload.get("@graph").getAsObject().get("rdfs:comment").getAsArray().get(0).getAsObject();
+    assertEquals("en", commentObject.get("@language").getAsString().value());
+    assertEquals("My comment", commentObject.get("@value").getAsString().value());
+  }
+
+  @Test
+  public void commitTaskUpToDateAddsCutoffFilterAheadOfStatusFilter() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task A"), "urn:task:id:123", "task:test:taskA");
+    Date cutoff = new Date(1784876604438L);
+
+    client.commitTask(task, new Label("en", "My commit"), "My comment", cutoff);
+
+    assertEquals(
+        "subject(dcterms:created <= \"" + cutoff.toInstant() + "\"^^xsd:dateTime),"
+            + "subject(teamwork:status = teamwork:Uncommitted)",
+        client.lastQueryParameters.get("filters"));
+  }
+
+  @Test
   public void createConceptSchemeAndReturnUsesServerUriWhenPresent() throws OEClientException {
     CapturingReadWriteClient client = newClient();
     client.nextMakeRequestResponse = "urn:scheme:new";
@@ -654,6 +713,8 @@ public class OEClientReadWriteTest {
   private static class CapturingReadWriteClient extends OEClientReadWrite {
     private String lastPayload;
     private String lastUrl;
+    private Map<String, String> lastQueryParameters;
+    private RequestType lastRequestType;
     private int makeRequestCallCount;
     private String nextMakeRequestResponse;
     private Collection<Task> tasksResponse = Collections.emptyList();
@@ -662,6 +723,8 @@ public class OEClientReadWriteTest {
     protected String makeRequest(String url, String payload, RequestType requestType) {
       this.lastUrl = url;
       this.lastPayload = payload;
+      this.lastQueryParameters = null;
+      this.lastRequestType = requestType;
       this.makeRequestCallCount++;
       return nextMakeRequestResponse;
     }
@@ -670,6 +733,8 @@ public class OEClientReadWriteTest {
     protected String makeRequest(String url, Map<String, String> queryParameters, String payload, RequestType requestType) {
       this.lastUrl = url;
       this.lastPayload = payload;
+      this.lastQueryParameters = queryParameters;
+      this.lastRequestType = requestType;
       this.makeRequestCallCount++;
       return nextMakeRequestResponse;
     }

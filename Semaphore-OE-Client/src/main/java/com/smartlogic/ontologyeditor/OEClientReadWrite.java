@@ -157,6 +157,23 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	/**
+	 * deleteTask - delete a task (and its associated graph) from the current model
+	 * @param task - the task to be deleted
+	 * @throws OEClientException  - an error has occurred contacting the server
+	 */
+	public void deleteTask(Task task) throws OEClientException {
+		logger.info("deleteTask entry: {}", task);
+
+		String url = getTaskSysURL(task);
+		logger.info("deleteTask URL: {}", url);
+
+		logger.info("deleteTask - about to call");
+		makeRequest(url, null, RequestType.DELETE);
+		logger.info("deleteTask - call returned");
+
+	}
+
+	/**
 	 * createTask - create a task within the current model
 	 * @param task 
 	 *          - the task to be created
@@ -220,16 +237,43 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		String comment = "No comment supplied";
 		commitTask(task, label, comment);
 	}
-	
+
+	/**
+	 * commitTask - commit all of the task's uncommitted changes to master.
+	 * @param task - the task whose changes are to be committed
+	 * @param label - the label (title) for the resulting commit
+	 * @param comment - the comment (description) for the resulting commit
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
 	public void commitTask(Task task, Label label, String comment) throws OEClientException {
-		logger.info("commitTask entry: {}", task);
+		commitTask(task, label, comment, null);
+	}
+
+	/**
+	 * commitTask - commit the task's uncommitted changes to master, optionally limited to only
+	 * those changes made on or before a cut-off date. Changes made after the cut-off date are left
+	 * uncommitted on the task.
+	 * @param task - the task whose changes are to be committed
+	 * @param label - the label (title) for the resulting commit
+	 * @param comment - the comment (description) for the resulting commit
+	 * @param upToDate - if non-null, only commit changes created on or before this date; if null,
+	 *          all uncommitted changes are committed
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void commitTask(Task task, Label label, String comment, Date upToDate) throws OEClientException {
+		logger.info("commitTask entry: {} upToDate: {}", task, upToDate);
 
 		String url = getTaskSysURL(task) + "/teamwork:Change/rdf:instance";
 		logger.info("commitTask URL: {}", url);
 		
 		Map<String, String> queryParameters = new HashMap<String, String>();
 		queryParameters.put("action", "commit");
-		queryParameters.put("filter", "subject(teamwork:status = teamwork:Uncommitted)");
+		queryParameters.put("checkConstraints", "true");
+		queryParameters.put(PARAM_FILTERS, buildCommitFilters(upToDate));
+		queryParameters.put("sparqlFilter", "not exists { ?subject sem:accepted false }");
+		if (label.getLanguageCode() != null) {
+			queryParameters.put("language", label.getLanguageCode());
+		}
 		
 		JsonObject taskObject = new JsonObject();
 		JsonObject commitObject = new JsonObject();
@@ -246,7 +290,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		commitObject.put("rdfs:label", labelArray);
 		JsonArray commentArray = new JsonArray();
 		JsonObject commentObject = new JsonObject();
-		commentObject.put("@language", "");
+		if (label.getLanguageCode() != null) {
+			commentObject.put("@language", label.getLanguageCode());
+		} else {
+			commentObject.put("@language", "");
+		}
 		commentObject.put("@value", comment);
 		commentArray.add(commentObject);
 		commitObject.put("rdfs:comment", commentArray);
@@ -258,6 +306,26 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		logger.info("commitTask making call  : {} {}", taskPayload, startDate.getTime());
 		makeRequest(url, queryParameters, taskPayload, RequestType.POST);
 
+	}
+
+	/**
+	 * Builds the "filters" query parameter value used to select which of a task's uncommitted
+	 * changes should be committed. Always restricts to changes with status
+	 * {@code teamwork:Uncommitted}; when {@code upToDate} is supplied an additional filter is
+	 * added so that only changes created on or before that date are included, leaving later
+	 * changes uncommitted on the task.
+	 *
+	 * @param upToDate - the (inclusive) cut-off date, or null to commit all uncommitted changes
+	 * @return the comma-separated filters expression to send to the KMM API
+	 */
+	private String buildCommitFilters(Date upToDate) {
+		String statusFilter = "subject(teamwork:status = teamwork:Uncommitted)";
+		if (upToDate == null) {
+			return statusFilter;
+		}
+		String cutoffFilter = String.format("subject(dcterms:created <= \"%s\"^^xsd:dateTime)",
+				upToDate.toInstant().toString());
+		return cutoffFilter + "," + statusFilter;
 	}
 
 	/**
