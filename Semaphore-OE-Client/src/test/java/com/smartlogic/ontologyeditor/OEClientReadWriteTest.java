@@ -448,6 +448,78 @@ public class OEClientReadWriteTest {
   }
 
   @Test
+  public void assignModelRolePayloadAddsPrincipalByReference() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    client.assignModelRole(model, "manager", "user:jsmith");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    com.google.gson.JsonObject addOp = patch.get(0).getAsJsonObject();
+    assertEquals("add", addOp.get("op").getAsString());
+    assertEquals("@graph/0/sempermissions:manager/-", addOp.get("path").getAsString());
+    assertEquals("user:jsmith", addOp.getAsJsonObject("value").get("@id").getAsString());
+  }
+
+  @Test
+  public void assignModelRoleNormalizesRoleCase() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    client.assignModelRole(model, "Editor", "role:SemaphoreUsers");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    assertEquals("@graph/0/sempermissions:editor/-",
+        patch.get(0).getAsJsonObject().get("path").getAsString());
+  }
+
+  @Test
+  public void assignModelRoleRejectsUnknownRole() {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    try {
+      client.assignModelRole(model, "owner", "user:jsmith");
+      fail("Expected OEClientException for unknown role");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("owner"));
+    }
+    assertEquals(0, client.makeRequestCallCount);
+  }
+
+  @Test
+  public void unassignModelRolePayloadTestsAndRemovesPrincipal() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    client.unassignModelRole(model, "viewer", "user:jsmith");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    com.google.gson.JsonObject testOp = patch.get(0).getAsJsonObject();
+    assertEquals("test", testOp.get("op").getAsString());
+    assertEquals("@graph/0/sempermissions:viewer/0", testOp.get("path").getAsString());
+    assertEquals("user:jsmith", testOp.getAsJsonObject("value").get("@id").getAsString());
+
+    com.google.gson.JsonObject removeOp = patch.get(1).getAsJsonObject();
+    assertEquals("remove", removeOp.get("op").getAsString());
+    assertEquals("@graph/0/sempermissions:viewer/0", removeOp.get("path").getAsString());
+  }
+
+  @Test
+  public void unassignModelRoleRejectsUnknownRole() {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    try {
+      client.unassignModelRole(model, "bogus", "user:jsmith");
+      fail("Expected OEClientException for unknown role");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("bogus"));
+    }
+    assertEquals(0, client.makeRequestCallCount);
+  }
+
+  @Test
   public void createSymmetricRelationshipTypeIncludesSymmetricPropertyType() throws OEClientException {
     CapturingReadWriteClient client = newClient();
     Label label = new Label("en", "Related To");

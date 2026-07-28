@@ -2598,12 +2598,277 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	}
 
 	/**
+	 * Update the comment (description) of a model.
+	 *
+	 * @param model the model to update
+	 * @param oldComment the existing comment to replace, or {@code null} if the model does not currently have a comment
+	 * @param newComment the new comment value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateModelComment(Model model, String oldComment, String newComment) throws OEClientException {
+		logger.info("updateModelComment entry: {} {} {}", model.getUri(), oldComment, newComment);
+
+		JsonArray operationList = new JsonArray();
+
+		if (oldComment != null) {
+			JsonObject testOperation = new JsonObject();
+			testOperation.put("op", "test");
+			testOperation.put("path", "@graph/0/rdfs:comment/0");
+			JsonObject testValue = new JsonObject();
+			testValue.put("@value", oldComment);
+			testOperation.put("value", testValue);
+			operationList.add(testOperation);
+
+			JsonObject removeOperation = new JsonObject();
+			removeOperation.put("op", "remove");
+			removeOperation.put("path", "@graph/0/rdfs:comment/0");
+			operationList.add(removeOperation);
+		}
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/rdfs:comment/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newComment);
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("updateModelComment payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	/**
+	 * Update the default namespace of a model.
+	 *
+	 * @param model the model to update
+	 * @param oldDefaultNamespace the current default namespace to replace
+	 * @param newDefaultNamespace the new default namespace value
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateModelDefaultNamespace(Model model, String oldDefaultNamespace, String newDefaultNamespace) throws OEClientException {
+		logger.info("updateModelDefaultNamespace entry: {} {} {}", model.getUri(), oldDefaultNamespace, newDefaultNamespace);
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0/swa:defaultNamespace/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@value", oldDefaultNamespace);
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/swa:defaultNamespace/0");
+		operationList.add(removeOperation);
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/swa:defaultNamespace/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", newDefaultNamespace);
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("updateModelDefaultNamespace payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	/**
+	 * Update the color of a model.
+	 *
+	 * @param model the model to update
+	 * @param oldColorHex the current color, as a hex string (e.g. {@code "00c851"}), or {@code null} if the model does not currently have a color
+	 * @param newColorHex the new color, as a hex string (e.g. {@code "7fa38e"})
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void updateModelColor(Model model, String oldColorHex, String newColorHex) throws OEClientException {
+		logger.info("updateModelColor entry: {} {} {}", model.getUri(), oldColorHex, newColorHex);
+
+		JsonArray operationList = new JsonArray();
+
+		if (oldColorHex != null) {
+			JsonObject testOperation = new JsonObject();
+			testOperation.put("op", "test");
+			testOperation.put("path", "@graph/0/sem:color/0");
+			JsonObject testValue = new JsonObject();
+			testValue.put("@type", "xsd:hexBinary");
+			testValue.put("@value", oldColorHex);
+			testOperation.put("value", testValue);
+			operationList.add(testOperation);
+
+			JsonObject removeOperation = new JsonObject();
+			removeOperation.put("op", "remove");
+			removeOperation.put("path", "@graph/0/sem:color/0");
+			operationList.add(removeOperation);
+		}
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/sem:color/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@type", "xsd:hexBinary");
+		newValueObject.put("@value", newColorHex);
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("updateModelColor payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	/**
+	 * Add a tag to a model.
+	 *
+	 * @param model the model to update
+	 * @param tag the tag to add
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void addModelTag(Model model, String tag) throws OEClientException {
+		logger.info("addModelTag entry: {} {}", model.getUri(), tag);
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/sem:tag/-");
+		JsonObject newValueObject = new JsonObject();
+		newValueObject.put("@value", tag);
+		addOperation.put("value", newValueObject);
+		operationList.add(addOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("addModelTag payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	/**
+	 * Remove a tag from a model.
+	 *
+	 * @param model the model to update
+	 * @param tag the tag to remove
+	 * @throws OEClientException - an error has occurred contacting the server
+	 */
+	public void removeModelTag(Model model, String tag) throws OEClientException {
+		logger.info("removeModelTag entry: {} {}", model.getUri(), tag);
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0/sem:tag/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@value", tag);
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/sem:tag/0");
+		operationList.add(removeOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("removeModelTag payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	private static final Set<String> MODEL_ROLES = Set.of("manager", "editor", "viewer");
+
+	/**
+	 * Assign a user (or Semaphore role, e.g. {@code role:SemaphoreUsers}) to a model permission
+	 * role. Corresponds to the {@code sempermissions:manager}, {@code sempermissions:editor}, and
+	 * {@code sempermissions:viewer} predicates.
+	 *
+	 * @param model the model to update
+	 * @param role the permission role to assign the principal to; one of {@code manager},
+	 *        {@code editor}, or {@code viewer}
+	 * @param principalUri the URI of the user (e.g. {@code user:jsmith}) or role (e.g.
+	 *        {@code role:SemaphoreAdministrators}) to assign
+	 * @throws OEClientException - an error has occurred contacting the server, or {@code role} is
+	 *         not a recognized model permission role
+	 */
+	public void assignModelRole(Model model, String role, String principalUri) throws OEClientException {
+		logger.info("assignModelRole entry: {} {} {}", model.getUri(), role, principalUri);
+
+		String normalizedRole = validateModelRole(role);
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject addOperation = new JsonObject();
+		addOperation.put("op", "add");
+		addOperation.put("path", "@graph/0/sempermissions:" + normalizedRole + "/-");
+		JsonObject valueObject = new JsonObject();
+		valueObject.put("@id", principalUri);
+		addOperation.put("value", valueObject);
+		operationList.add(addOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("assignModelRole payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	/**
+	 * Remove a user (or Semaphore role) from a model permission role.
+	 *
+	 * @param model the model to update
+	 * @param role the permission role to remove the principal from; one of {@code manager},
+	 *        {@code editor}, or {@code viewer}
+	 * @param principalUri the URI of the user or role to remove (e.g. {@code user:jsmith})
+	 * @throws OEClientException - an error has occurred contacting the server, or {@code role} is
+	 *         not a recognized model permission role
+	 */
+	public void unassignModelRole(Model model, String role, String principalUri) throws OEClientException {
+		logger.info("unassignModelRole entry: {} {} {}", model.getUri(), role, principalUri);
+
+		String normalizedRole = validateModelRole(role);
+
+		JsonArray operationList = new JsonArray();
+
+		JsonObject testOperation = new JsonObject();
+		testOperation.put("op", "test");
+		testOperation.put("path", "@graph/0/sempermissions:" + normalizedRole + "/0");
+		JsonObject testValue = new JsonObject();
+		testValue.put("@id", principalUri);
+		testOperation.put("value", testValue);
+		operationList.add(testOperation);
+
+		JsonObject removeOperation = new JsonObject();
+		removeOperation.put("op", "remove");
+		removeOperation.put("path", "@graph/0/sempermissions:" + normalizedRole + "/0");
+		operationList.add(removeOperation);
+
+		String url = getApiURL() + "sys/" + model.getUri();
+		String payload = operationList.toString();
+		logger.info("unassignModelRole payload: {}", payload);
+		makeRequest(url, payload, RequestType.PATCH);
+	}
+
+	private String validateModelRole(String role) throws OEClientException {
+		String normalizedRole = role == null ? "" : role.trim().toLowerCase();
+		if (!MODEL_ROLES.contains(normalizedRole)) {
+			throw new OEClientException(
+					"Invalid model role: " + role + ". Must be one of: manager, editor, viewer");
+		}
+		return normalizedRole;
+	}
+
+	/**
 	 * Checks if the client is in KRT mode, and if so, add the concept to the Modified KRT concept scheme.
 	 * @param operationList the JSON PATCH operation list object
 	 * @param conceptIndex the JSON PATCH index of the concept.
 	 * @throws OEClientException exception
 	 */
 	protected void checkKRTModified(JsonArray operationList, String conceptIndex) throws OEClientException {
+
 
 		if (conceptIndex != null && !isDigits(conceptIndex)) throw new OEClientException("Invalid concept index: " + conceptIndex);
 
