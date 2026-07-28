@@ -520,6 +520,99 @@ public class OEClientReadWriteTest {
   }
 
   @Test
+  public void updateTaskLabelPatchTestOperationUsesValueKey() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Old Task Name"), "task:1", "task:fp1:task1");
+
+    client.updateTaskLabel(task, "Old Task Name", "New Task Name");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    com.google.gson.JsonObject testOp = patch.get(0).getAsJsonObject();
+    assertEquals("test", testOp.get("op").getAsString());
+    assertEquals("Old Task Name", testOp.getAsJsonObject("value").get("@value").getAsString());
+    com.google.gson.JsonObject addOp = patch.get(2).getAsJsonObject();
+    assertEquals("New Task Name", addOp.getAsJsonObject("value").get("@value").getAsString());
+    assertTrue(client.lastUrl.endsWith("sys/task:fp1:task1"));
+  }
+
+  @Test
+  public void updateTaskCommentAddsWhenNoOldComment() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task One"), "task:1", "task:fp1:task1");
+
+    client.updateTaskComment(task, null, "New description");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    assertEquals(1, patch.size());
+    com.google.gson.JsonObject addOp = patch.get(0).getAsJsonObject();
+    assertEquals("add", addOp.get("op").getAsString());
+    assertEquals("@graph/0/rdfs:comment/-", addOp.get("path").getAsString());
+    assertEquals("New description", addOp.getAsJsonObject("value").get("@value").getAsString());
+  }
+
+  @Test
+  public void addAndRemoveTaskTagUseSharedTagPaths() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task One"), "task:1", "task:fp1:task1");
+
+    client.addTaskTag(task, "urgent");
+    com.google.gson.JsonArray addPatch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    assertEquals("@graph/0/sem:tag/-", addPatch.get(0).getAsJsonObject().get("path").getAsString());
+
+    client.removeTaskTag(task, "urgent");
+    com.google.gson.JsonArray removePatch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    assertEquals("test", removePatch.get(0).getAsJsonObject().get("op").getAsString());
+    assertEquals("@graph/0/sem:tag/0", removePatch.get(1).getAsJsonObject().get("path").getAsString());
+  }
+
+  @Test
+  public void assignTaskRolePayloadAddsPrincipalByReference() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task One"), "task:1", "task:fp1:task1");
+
+    client.assignTaskRole(task, "manager", "user:jsmith");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    com.google.gson.JsonObject addOp = patch.get(0).getAsJsonObject();
+    assertEquals("add", addOp.get("op").getAsString());
+    assertEquals("@graph/0/sempermissions:manager/-", addOp.get("path").getAsString());
+    assertEquals("user:jsmith", addOp.getAsJsonObject("value").get("@id").getAsString());
+    assertTrue(client.lastUrl.endsWith("sys/task:fp1:task1"));
+  }
+
+  @Test
+  public void assignTaskRoleRejectsUnknownRole() {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task One"), "task:1", "task:fp1:task1");
+
+    try {
+      client.assignTaskRole(task, "owner", "user:jsmith");
+      fail("Expected OEClientException for unknown role");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("owner"));
+    }
+    assertEquals(0, client.makeRequestCallCount);
+  }
+
+  @Test
+  public void unassignTaskRolePayloadTestsAndRemovesPrincipal() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Task task = new Task(new Label("en", "Task One"), "task:1", "task:fp1:task1");
+
+    client.unassignTaskRole(task, "viewer", "user:jsmith");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    com.google.gson.JsonObject testOp = patch.get(0).getAsJsonObject();
+    assertEquals("test", testOp.get("op").getAsString());
+    assertEquals("@graph/0/sempermissions:viewer/0", testOp.get("path").getAsString());
+    assertEquals("user:jsmith", testOp.getAsJsonObject("value").get("@id").getAsString());
+
+    com.google.gson.JsonObject removeOp = patch.get(1).getAsJsonObject();
+    assertEquals("remove", removeOp.get("op").getAsString());
+    assertEquals("@graph/0/sempermissions:viewer/0", removeOp.get("path").getAsString());
+  }
+
+  @Test
   public void createSymmetricRelationshipTypeIncludesSymmetricPropertyType() throws OEClientException {
     CapturingReadWriteClient client = newClient();
     Label label = new Label("en", "Related To");
@@ -560,12 +653,14 @@ public class OEClientReadWriteTest {
 
   private static class CapturingReadWriteClient extends OEClientReadWrite {
     private String lastPayload;
+    private String lastUrl;
     private int makeRequestCallCount;
     private String nextMakeRequestResponse;
     private Collection<Task> tasksResponse = Collections.emptyList();
 
     @Override
     protected String makeRequest(String url, String payload, RequestType requestType) {
+      this.lastUrl = url;
       this.lastPayload = payload;
       this.makeRequestCallCount++;
       return nextMakeRequestResponse;
@@ -573,6 +668,7 @@ public class OEClientReadWriteTest {
 
     @Override
     protected String makeRequest(String url, Map<String, String> queryParameters, String payload, RequestType requestType) {
+      this.lastUrl = url;
       this.lastPayload = payload;
       this.makeRequestCallCount++;
       return nextMakeRequestResponse;
