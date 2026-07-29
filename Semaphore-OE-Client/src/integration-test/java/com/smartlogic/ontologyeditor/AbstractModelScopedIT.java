@@ -37,9 +37,13 @@ public abstract class AbstractModelScopedIT extends AbstractOEIntegrationTest {
         }
         String modelLabel = "OE_CLIENT_EXAMPLE_" + getClass().getCanonicalName() + "_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         String modelUri = "model:" + modelLabel;
-        testModel = new Model(modelUri, new Label("", modelLabel), null);
-        oeClient.createModel(testModel);
-        oeClient.setModelUri(testModel.getUri());
+        Model modelToCreate = new Model(modelUri, new Label("", modelLabel), null,
+                "http://example.test/" + modelLabel + "#");
+        oeClient.createModel(modelToCreate);
+        oeClient.setModelUri(modelUri);
+        // Re-fetch from the server so testModel.getDefaultNamespace() (and getComment())
+        // reflect the real, server-assigned values instead of the value we supplied at creation.
+        testModel = oeClient.getModel(modelUri);
     }
 
     /**

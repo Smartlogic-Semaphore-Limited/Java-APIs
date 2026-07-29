@@ -18,13 +18,15 @@ public class LinkModels extends ModelManipulation {
 		Label modelLabel1 = new Label("", "Linking model");
 		String comment1 = "Model created for testing the Java OE Client API";
 		oeClient.setModelUri("model:LinkingModel");
-		Model model1 = new Model(oeClient.getModelUri(), modelLabel1, comment1);
+		Model model1 = new Model(oeClient.getModelUri(), modelLabel1, comment1,
+				"http://example.com/LinkingModel#");
 		oeClient.createModel(model1);
 
 		Label modelLabel2 = new Label("", "Linked model");
 		String comment2 = "Model created for testing the Java OE Client API";
 		oeClient.setModelUri("model:LinkedModel");
-		Model model2 = new Model(oeClient.getModelUri(), modelLabel2, comment2);
+		Model model2 = new Model(oeClient.getModelUri(), modelLabel2, comment2,
+				"http://example.com/LinkedModel#");
 		oeClient.createModel(model2);
 
 		oeClient.setModelUri(model1.getUri());

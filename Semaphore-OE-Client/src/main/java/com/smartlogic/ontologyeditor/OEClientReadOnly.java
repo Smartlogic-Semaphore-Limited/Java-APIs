@@ -405,7 +405,8 @@ public class OEClientReadOnly {
     String url = getApiURL() + "sys/" + modelUri;
     logger.info("getModel URL: {}", url);
     Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put(PARAM_PROPERTIES, "meta:displayName,meta:graphUri,dcterms:language/[]");
+    queryParameters.put(PARAM_PROPERTIES,
+        "meta:displayName,meta:graphUri,dcterms:language/[],rdfs:comment,swa:defaultNamespace");
 
     String response = getResponse(url, queryParameters);
     JsonObject jsonResponse = JSON.parse(response);

@@ -21,8 +21,8 @@ public class AddModel extends ModelManipulation {
 		/* Be careful with this one. If you have built APITest model manually, this test will create another with the same name
 		but different URI. If you are pointing to a task in properties file, it'll create a weird model name.
 		 */
-		Model model = new Model(oeClient.getModelUri(), modelLabel, comment);
-		model.setDefaultNamespace("http://example.com/APITest#");
+		Model model = new Model(oeClient.getModelUri(), modelLabel, comment,
+				"http://example.com/APITest#");
 		oeClient.createModel(model);
 	}
 }

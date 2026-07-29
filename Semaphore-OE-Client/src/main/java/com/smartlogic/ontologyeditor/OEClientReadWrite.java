@@ -75,6 +75,11 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	public String createModel(Model model) throws OEClientException {
 		logger.info("createModel entry: {}", model.getLabel());
 
+		if (model.getDefaultNamespace() == null || model.getDefaultNamespace().isBlank()) {
+			throw new OEClientException(
+					"A default namespace is required to create a model; call model.setDefaultNamespace(...) before createModel()");
+		}
+
 		String url = getApiURL() + "sys/sys:Model/rdf:instance";
 		logger.info("createModel URL: {}", url);
 

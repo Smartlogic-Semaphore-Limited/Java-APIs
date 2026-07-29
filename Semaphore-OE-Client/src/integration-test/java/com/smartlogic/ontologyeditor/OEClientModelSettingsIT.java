@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -30,6 +31,19 @@ public class OEClientModelSettingsIT extends AbstractModelScopedIT {
     List<String> comments = getModelPropertyValues("rdfs:comment");
     assertTrue(comments.contains("Updated description"));
     assertFalse(comments.contains("Initial description"));
+  }
+
+  @Test
+  public void getModelReturnsCurrentCommentAndDefaultNamespace() throws OEClientException {
+    oeClient.updateModelComment(testModel, null, "Description for getModel");
+    String newNamespace = "http://example.test/" + UUID.randomUUID() + "#";
+    oeClient.updateModelDefaultNamespace(testModel, testModel.getDefaultNamespace(),
+        newNamespace);
+
+    com.smartlogic.ontologyeditor.beans.Model refetched = oeClient.getModel(testModel.getUri());
+
+    assertEquals("Description for getModel", refetched.getComment());
+    assertEquals(newNamespace, refetched.getDefaultNamespace());
   }
 
   @Test

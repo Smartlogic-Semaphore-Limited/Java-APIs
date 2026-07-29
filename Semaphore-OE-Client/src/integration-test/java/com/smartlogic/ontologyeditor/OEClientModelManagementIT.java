@@ -27,7 +27,8 @@ public class OEClientModelManagementIT extends AbstractModelScopedIT {
     oeClient.createConceptScheme(new ConceptScheme(oeClient, "http://example.test/schemeForLinking", List.of(new Label("en", "Scheme for Linking"))));
     String modelLabel = "OE_CLIENT_EXAMPLE_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
     String modelUri = "model:" + modelLabel;
-    Model linkedModel = new Model(modelUri, new Label("", modelLabel), null);
+    Model linkedModel = new Model(modelUri, new Label("", modelLabel), null,
+        "http://example.test/" + modelLabel + "#");
     oeClient.createModel(linkedModel);
 
     try {
