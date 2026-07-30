@@ -421,6 +421,48 @@ public class OEClientReadOnly {
   }
 
   /**
+   * Get a single task's details by its graph URI.
+   *
+   * @param taskGraphUri the graph URI of the task to retrieve, e.g. {@code "task:fp1:myTask"}
+   * @return the task details
+   * @throws OEClientException - an error has occurred contacting the server
+   */
+  public Task getTask(String taskGraphUri) throws OEClientException {
+    logger.info("getTask entry: {}", taskGraphUri);
+
+    String url = getApiURL() + "sys/" + taskGraphUri;
+    logger.info("getTask URL: {}", url);
+    Map<String, String> queryParameters = new HashMap<>();
+    queryParameters.put(PARAM_PROPERTIES, "meta:displayName,meta:graphUri");
+
+    String response = getResponse(url, queryParameters);
+    JsonObject jsonResponse = JSON.parse(response);
+    JsonArray jsonArray = jsonResponse.get(JSON_LD_GRAPH).getAsArray();
+
+    if (jsonArray.size() == 0) {
+      throw new OEClientException("Task not found: " + taskGraphUri);
+    }
+
+    JsonObject taskObject = jsonArray.get(0).getAsObject();
+
+    JsonValue displayNameValue = taskObject.get("meta:displayName");
+    String labelValue =
+        (displayNameValue != null && displayNameValue.getAsObject().get("@value") != null)
+            ? displayNameValue.getAsObject().get("@value").getAsString().value()
+            : "";
+
+    JsonValue graphUriValue = taskObject.get("meta:graphUri");
+    String graphUri = (graphUriValue != null && graphUriValue.getAsObject().get("@id") != null)
+        ? graphUriValue.getAsObject().get("@id").getAsString().value()
+        : taskGraphUri;
+
+    JsonValue idValue = taskObject.get("@id");
+    String id = idValue != null ? idValue.getAsString().value() : null;
+
+    return new Task(new Label("", labelValue), id, graphUri);
+  }
+
+  /**
    * getAllTasks
    *
    * @return all the tasks present for this model

@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Integration tests for updating task settings: label, comment, tags and permission roles.
@@ -40,6 +41,14 @@ public class OEClientTaskSettingsIT extends AbstractModelScopedIT {
     String newLabel = "IT task renamed " + UUID.randomUUID();
     oeClient.updateTaskLabel(testTask, testTask.getLabel().getValue(), newLabel);
     assertTrue(getTaskPropertyValues("rdfs:label").contains(newLabel));
+  }
+
+  @Test
+  public void getTaskReturnsCurrentDisplayName() throws OEClientException {
+    Task refetched = oeClient.getTask(testTask.getGraphUri());
+
+    assertEquals(testTask.getGraphUri(), refetched.getGraphUri());
+    assertEquals(testTask.getLabel().getValue(), refetched.getLabel().getValue());
   }
 
   @Test
