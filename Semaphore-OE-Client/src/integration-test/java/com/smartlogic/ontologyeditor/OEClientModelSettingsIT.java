@@ -1,16 +1,9 @@
 // Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
 package com.smartlogic.ontologyeditor;
 
-import org.apache.jena.atlas.json.JSON;
-import org.apache.jena.atlas.json.JsonArray;
-import org.apache.jena.atlas.json.JsonObject;
-import org.apache.jena.atlas.json.JsonValue;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -97,44 +90,6 @@ public class OEClientModelSettingsIT extends AbstractModelScopedIT {
    * a fixed subset of properties).
    */
   private List<String> getModelPropertyValues(String propertyUri) throws OEClientException {
-    Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put(OEClientReadOnly.PARAM_PROPERTIES, propertyUri);
-
-    String url = oeClient.getApiURL() + "sys/" + testModel.getUri();
-    String response = oeClient.getResponse(url, queryParameters);
-
-    JsonObject jsonResponse = JSON.parse(response);
-    JsonArray graph = jsonResponse.get(OEClientReadOnly.JSON_LD_GRAPH).getAsArray();
-
-    List<String> values = new ArrayList<>();
-    if (graph.size() == 0) {
-      return values;
-    }
-
-    JsonObject modelObject = graph.get(0).getAsObject();
-    JsonValue propertyValue = modelObject.get(propertyUri);
-    if (propertyValue == null) {
-      return values;
-    }
-
-    if (propertyValue.isArray()) {
-      propertyValue.getAsArray().forEach(value -> values.add(extractValue(value)));
-    } else {
-      values.add(extractValue(propertyValue));
-    }
-    return values;
-  }
-
-  private String extractValue(JsonValue value) {
-    if (value.isObject() && value.getAsObject().get("@value") != null) {
-      return value.getAsObject().get("@value").getAsString().value();
-    }
-    if (value.isObject() && value.getAsObject().get("@id") != null) {
-      return value.getAsObject().get("@id").getAsString().value();
-    }
-    if (value.isString()) {
-      return value.getAsString().value();
-    }
-    return value.toString();
+    return getPropertyValues(testModel.getUri(), propertyUri);
   }
 }

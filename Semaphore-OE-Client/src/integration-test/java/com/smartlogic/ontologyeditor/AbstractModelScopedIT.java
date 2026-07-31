@@ -3,9 +3,17 @@ package com.smartlogic.ontologyeditor;
 
 import com.smartlogic.ontologyeditor.beans.Label;
 import com.smartlogic.ontologyeditor.beans.Model;
+import org.apache.jena.atlas.json.JSON;
+import org.apache.jena.atlas.json.JsonArray;
+import org.apache.jena.atlas.json.JsonObject;
+import org.apache.jena.atlas.json.JsonValue;
 import org.junit.After;
 import org.junit.Before;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -63,6 +71,61 @@ public abstract class AbstractModelScopedIT extends AbstractOEIntegrationTest {
                 testModel = null;
             }
         }
+    }
+
+    /**
+     * Fetches the current values of a single property of the resource (model or task) at
+     * {@code sysGraphUri} directly from the API, bypassing any bean mapping. Shared by IT tests
+     * that need to assert on the raw server state of a model or task setting (e.g. {@code
+     * rdfs:comment}, {@code swa:defaultNamespace}, {@code sem:color}, {@code sem:tag},
+     * {@code sempermissions:*}) after a mutation, since {@link Model}/{@code Task} only expose a
+     * subset of these as typed fields.
+     *
+     * @param sysGraphUri the model URI or task graph URI to query, e.g. {@code testModel.getUri()}
+     *        or {@code testTask.getGraphUri()}
+     * @param propertyUri the JSON-LD property to fetch, e.g. {@code "rdfs:comment"}
+     * @return the property's current values (empty if the resource or property is absent)
+     */
+    protected List<String> getPropertyValues(String sysGraphUri, String propertyUri) throws OEClientException {
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put(OEClientReadOnly.PARAM_PROPERTIES, propertyUri);
+
+        String url = oeClient.getApiURL() + "sys/" + sysGraphUri;
+        String response = oeClient.getResponse(url, queryParameters);
+
+        JsonObject jsonResponse = JSON.parse(response);
+        JsonArray graph = jsonResponse.get(OEClientReadOnly.JSON_LD_GRAPH).getAsArray();
+
+        List<String> values = new ArrayList<>();
+        if (graph.size() == 0) {
+            return values;
+        }
+
+        JsonObject resourceObject = graph.get(0).getAsObject();
+        JsonValue propertyValue = resourceObject.get(propertyUri);
+        if (propertyValue == null) {
+            return values;
+        }
+
+        if (propertyValue.isArray()) {
+            propertyValue.getAsArray().forEach(value -> values.add(extractValue(value)));
+        } else {
+            values.add(extractValue(propertyValue));
+        }
+        return values;
+    }
+
+    private String extractValue(JsonValue value) {
+        if (value.isObject() && value.getAsObject().get("@value") != null) {
+            return value.getAsObject().get("@value").getAsString().value();
+        }
+        if (value.isObject() && value.getAsObject().get("@id") != null) {
+            return value.getAsObject().get("@id").getAsString().value();
+        }
+        if (value.isString()) {
+            return value.getAsString().value();
+        }
+        return value.toString();
     }
 }
 

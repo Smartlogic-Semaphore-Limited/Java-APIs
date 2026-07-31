@@ -3,17 +3,10 @@ package com.smartlogic.ontologyeditor;
 
 import com.smartlogic.ontologyeditor.beans.Label;
 import com.smartlogic.ontologyeditor.beans.Task;
-import org.apache.jena.atlas.json.JSON;
-import org.apache.jena.atlas.json.JsonArray;
-import org.apache.jena.atlas.json.JsonObject;
-import org.apache.jena.atlas.json.JsonValue;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
@@ -88,44 +81,6 @@ public class OEClientTaskSettingsIT extends AbstractModelScopedIT {
    * Fetch the current values of a single property of the test task directly from the API.
    */
   private List<String> getTaskPropertyValues(String propertyUri) throws OEClientException {
-    Map<String, String> queryParameters = new HashMap<>();
-    queryParameters.put(OEClientReadOnly.PARAM_PROPERTIES, propertyUri);
-
-    String url = oeClient.getApiURL() + "sys/" + testTask.getGraphUri();
-    String response = oeClient.getResponse(url, queryParameters);
-
-    JsonObject jsonResponse = JSON.parse(response);
-    JsonArray graph = jsonResponse.get(OEClientReadOnly.JSON_LD_GRAPH).getAsArray();
-
-    List<String> values = new ArrayList<>();
-    if (graph.size() == 0) {
-      return values;
-    }
-
-    JsonObject taskObject = graph.get(0).getAsObject();
-    JsonValue propertyValue = taskObject.get(propertyUri);
-    if (propertyValue == null) {
-      return values;
-    }
-
-    if (propertyValue.isArray()) {
-      propertyValue.getAsArray().forEach(value -> values.add(extractValue(value)));
-    } else {
-      values.add(extractValue(propertyValue));
-    }
-    return values;
-  }
-
-  private String extractValue(JsonValue value) {
-    if (value.isObject() && value.getAsObject().get("@value") != null) {
-      return value.getAsObject().get("@value").getAsString().value();
-    }
-    if (value.isObject() && value.getAsObject().get("@id") != null) {
-      return value.getAsObject().get("@id").getAsString().value();
-    }
-    if (value.isString()) {
-      return value.getAsString().value();
-    }
-    return value.toString();
+    return getPropertyValues(testTask.getGraphUri(), propertyUri);
   }
 }
