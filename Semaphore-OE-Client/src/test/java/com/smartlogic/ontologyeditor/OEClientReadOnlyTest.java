@@ -2,6 +2,7 @@
 package com.smartlogic.ontologyeditor;
 
 import com.smartlogic.ontologyeditor.beans.Model;
+import com.smartlogic.ontologyeditor.beans.Task;
 import org.junit.Test;
 
 import java.net.URI;
@@ -72,6 +73,31 @@ public class OEClientReadOnlyTest {
       fail("Expected OEClientException for missing model");
     } catch (OEClientException ex) {
       assertTrue(ex.getMessage().contains("Model not found: missing:model"));
+    }
+  }
+
+  @Test
+  public void getTaskReturnsMappedTaskWhenPresent() throws OEClientException {
+    StubReadOnlyClient client = newClient();
+    client.enqueueResponse("{\"@graph\":[{\"@id\":\"task:1\",\"meta:displayName\":{\"@value\":\"My Task\"},\"meta:graphUri\":{\"@id\":\"task:fp1:myTask\"}}]}");
+
+    Task task = client.getTask("task:fp1:myTask");
+
+    assertEquals("task:fp1:myTask", task.getGraphUri());
+    assertEquals("My Task", task.getLabel().getValue());
+    assertEquals("task:1", task.getId());
+  }
+
+  @Test
+  public void getTaskThrowsWhenGraphEmpty() throws OEClientException {
+    StubReadOnlyClient client = newClient();
+    client.enqueueResponse("{\"@graph\":[]}");
+
+    try {
+      client.getTask("missing:task");
+      fail("Expected OEClientException for missing task");
+    } catch (OEClientException ex) {
+      assertTrue(ex.getMessage().contains("Task not found: missing:task"));
     }
   }
 

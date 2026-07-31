@@ -22,8 +22,7 @@ public class AddMultipleModelsAndTasks extends ModelManipulation {
             String comment = "Model created for testing the Java OE Client API";
 
             String modelUri = "model:MultipleModel" + i;
-            Model model = new Model(modelUri, modelLabel, comment);
-            model.setDefaultNamespace("http://example.com/APITest#");
+            Model model = new Model(modelUri, modelLabel, comment, "http://example.com/APITest#");
             oeClient.createModel(model);
 
             oeClient.setModelUri(modelUri);

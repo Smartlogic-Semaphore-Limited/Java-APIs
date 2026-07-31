@@ -42,7 +42,7 @@ public abstract class AbstractOEIntegrationTest {
             token = System.getenv("OE_TOKEN");
         }
         if (token != null && !token.isBlank()) {
-            oeClient.setToken(token);
+            oeClient.setHeaderToken(token);
         }
 
         String tokenUrl = System.getProperty("OE_TOKEN_URL");

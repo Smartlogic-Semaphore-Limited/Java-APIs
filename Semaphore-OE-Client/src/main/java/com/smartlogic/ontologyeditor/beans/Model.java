@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Model {
 
-	String defaultNamespace = "http://example.org/api-test#";
+	String defaultNamespace;
 	public Model(JsonObject jsonObject) {
 		JsonValue displayNameValue = jsonObject.get("meta:displayName");
 		if (displayNameValue != null) {
@@ -23,7 +23,11 @@ public class Model {
 			label = new Label("", "No display name found");
 		}
 		uri = jsonObject.get("meta:graphUri").getAsObject().get("@id").getAsString().value();
-		comment = null;
+		comment = extractFirstStringValue(jsonObject, "rdfs:comment");
+		String parsedDefaultNamespace = extractFirstStringValue(jsonObject, "swa:defaultNamespace");
+		if (parsedDefaultNamespace != null) {
+			defaultNamespace = parsedDefaultNamespace;
+		}
 		languages = new ArrayList<>();
 		JsonValue languagesValue = jsonObject.get("dcterms:language");
 		if (languagesValue != null) {
@@ -31,10 +35,56 @@ public class Model {
 		}
 	}
 
+	/**
+	 * Extracts the first plain string value of a (possibly single- or multi-valued) JSON-LD
+	 * property, e.g. {@code {"@value": "..."}} or {@code {"@id": "..."}}, or an array of such
+	 * objects. Returns {@code null} if the property is absent, empty, or has neither an
+	 * {@code @value} nor an {@code @id}.
+	 */
+	private static String extractFirstStringValue(JsonObject jsonObject, String propertyUri) {
+		JsonValue propertyValue = jsonObject.get(propertyUri);
+		if (propertyValue == null) {
+			return null;
+		}
+		JsonValue firstValue = propertyValue;
+		if (propertyValue.isArray()) {
+			if (propertyValue.getAsArray().size() == 0) {
+				return null;
+			}
+			firstValue = propertyValue.getAsArray().get(0);
+		}
+		if (firstValue.isObject() && firstValue.getAsObject().get("@value") != null) {
+			return firstValue.getAsObject().get("@value").getAsString().value();
+		}
+		if (firstValue.isObject() && firstValue.getAsObject().get("@id") != null) {
+			return firstValue.getAsObject().get("@id").getAsString().value();
+		}
+		if (firstValue.isString()) {
+			return firstValue.getAsString().value();
+		}
+		return null;
+	}
+
 	public Model(String uri, Label label, String comment) {
 		this(uri, label, comment, new ArrayList<>());
 	}
-	
+
+	/**
+	 * Create a model with explicit URI, label, comment, and default namespace. Use this
+	 * constructor (rather than {@link #Model(String, Label, String)}) when the model is going
+	 * to be passed to {@link com.smartlogic.ontologyeditor.OEClientReadWrite#createModel(Model)},
+	 * which requires a non-blank default namespace.
+	 *
+	 * @param uri the model URI
+	 * @param label the model display label
+	 * @param comment the model comment
+	 * @param defaultNamespace the model's default namespace, e.g. {@code "http://example.com/my-model#"}
+	 */
+	public Model(String uri, Label label, String comment, String defaultNamespace) {
+		this(uri, label, comment, new ArrayList<>());
+		this.defaultNamespace = defaultNamespace;
+	}
+
 	/**
 	 * Create a model with explicit URI, label, comment, and languages.
 	 *
