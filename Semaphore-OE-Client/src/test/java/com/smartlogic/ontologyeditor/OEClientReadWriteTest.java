@@ -579,6 +579,62 @@ public class OEClientReadWriteTest {
   }
 
   @Test
+  public void assignModelRoleRejectsBlankPrincipalUri() {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    try {
+      client.assignModelRole(model, "manager", " ");
+      fail("Expected OEClientException for blank principalUri");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("principalUri"));
+    }
+    assertEquals(0, client.makeRequestCallCount);
+  }
+
+  @Test
+  public void unassignModelRoleRejectsNullPrincipalUri() {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    try {
+      client.unassignModelRole(model, "manager", null);
+      fail("Expected OEClientException for null principalUri");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("principalUri"));
+    }
+    assertEquals(0, client.makeRequestCallCount);
+  }
+
+  @Test
+  public void addModelTagRejectsBlankTag() {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    try {
+      client.addModelTag(model, " ");
+      fail("Expected OEClientException for blank tag");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("tag"));
+    }
+    assertEquals(0, client.makeRequestCallCount);
+  }
+
+  @Test
+  public void removeModelTagRejectsNullTag() {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    try {
+      client.removeModelTag(model, null);
+      fail("Expected OEClientException for null tag");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("tag"));
+    }
+    assertEquals(0, client.makeRequestCallCount);
+  }
+
+  @Test
   public void updateTaskLabelPatchTestOperationUsesValueKey() throws OEClientException {
     CapturingReadWriteClient client = newClient();
     Task task = new Task(new Label("en", "Old Task Name"), "task:1", "task:fp1:task1");
@@ -607,6 +663,41 @@ public class OEClientReadWriteTest {
     assertEquals("add", addOp.get("op").getAsString());
     assertEquals("@graph/0/rdfs:comment/-", addOp.get("path").getAsString());
     assertEquals("New description", addOp.getAsJsonObject("value").get("@value").getAsString());
+  }
+
+  @Test
+  public void updateModelDefaultNamespaceAddsWhenNoOldNamespace() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    client.updateModelDefaultNamespace(model, null, "http://example.com/model-one#");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    assertEquals(1, patch.size());
+    com.google.gson.JsonObject addOp = patch.get(0).getAsJsonObject();
+    assertEquals("add", addOp.get("op").getAsString());
+    assertEquals("@graph/0/swa:defaultNamespace/-", addOp.get("path").getAsString());
+    assertEquals("http://example.com/model-one#",
+        addOp.getAsJsonObject("value").get("@value").getAsString());
+  }
+
+  @Test
+  public void updateModelDefaultNamespaceTestsAndRemovesWhenOldNamespacePresent()
+      throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    client.updateModelDefaultNamespace(model, "http://example.com/old#",
+        "http://example.com/new#");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    assertEquals(3, patch.size());
+    com.google.gson.JsonObject testOp = patch.get(0).getAsJsonObject();
+    assertEquals("test", testOp.get("op").getAsString());
+    assertEquals("http://example.com/old#",
+        testOp.getAsJsonObject("value").get("@value").getAsString());
+    com.google.gson.JsonObject removeOp = patch.get(1).getAsJsonObject();
+    assertEquals("remove", removeOp.get("op").getAsString());
   }
 
   @Test

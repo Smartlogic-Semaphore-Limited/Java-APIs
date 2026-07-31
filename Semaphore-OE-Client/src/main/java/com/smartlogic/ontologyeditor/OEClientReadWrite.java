@@ -77,7 +77,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		if (model.getDefaultNamespace() == null || model.getDefaultNamespace().isBlank()) {
 			throw new OEClientException(
-					"A default namespace is required to create a model; call model.setDefaultNamespace(...) before createModel()");
+					"A default namespace is required to create a model; call model.setDefaultNamespace(...) "
+							+ "or use the Model(uri, label, comment, defaultNamespace) constructor before createModel()");
 		}
 
 		String url = getApiURL() + "sys/sys:Model/rdf:instance";
@@ -2771,18 +2772,20 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		JsonArray operationList = new JsonArray();
 
-		JsonObject testOperation = new JsonObject();
-		testOperation.put("op", "test");
-		testOperation.put("path", "@graph/0/swa:defaultNamespace/0");
-		JsonObject testValue = new JsonObject();
-		testValue.put("@value", oldDefaultNamespace);
-		testOperation.put("value", testValue);
-		operationList.add(testOperation);
+		if (oldDefaultNamespace != null) {
+			JsonObject testOperation = new JsonObject();
+			testOperation.put("op", "test");
+			testOperation.put("path", "@graph/0/swa:defaultNamespace/0");
+			JsonObject testValue = new JsonObject();
+			testValue.put("@value", oldDefaultNamespace);
+			testOperation.put("value", testValue);
+			operationList.add(testOperation);
 
-		JsonObject removeOperation = new JsonObject();
-		removeOperation.put("op", "remove");
-		removeOperation.put("path", "@graph/0/swa:defaultNamespace/0");
-		operationList.add(removeOperation);
+			JsonObject removeOperation = new JsonObject();
+			removeOperation.put("op", "remove");
+			removeOperation.put("path", "@graph/0/swa:defaultNamespace/0");
+			operationList.add(removeOperation);
+		}
 
 		JsonObject addOperation = new JsonObject();
 		addOperation.put("op", "add");
@@ -2871,9 +2874,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *
 	 * @param sysUrl the {@code sys/} resource URL of the model or task to update
 	 * @param tag the tag to add
-	 * @throws OEClientException - an error has occurred contacting the server
+	 * @throws OEClientException - an error has occurred contacting the server, or {@code tag} is
+	 *         null or blank
 	 */
 	private void addTag(String sysUrl, String tag) throws OEClientException {
+		if (tag == null || tag.isBlank()) {
+			throw new OEClientException("tag must not be null or blank");
+		}
+
 		JsonArray operationList = new JsonArray();
 
 		JsonObject addOperation = new JsonObject();
@@ -2918,9 +2926,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *
 	 * @param sysUrl the {@code sys/} resource URL of the model or task to update
 	 * @param tag the tag to remove
-	 * @throws OEClientException - an error has occurred contacting the server
+	 * @throws OEClientException - an error has occurred contacting the server, or {@code tag} is
+	 *         null or blank
 	 */
 	private void removeTag(String sysUrl, String tag) throws OEClientException {
+		if (tag == null || tag.isBlank()) {
+			throw new OEClientException("tag must not be null or blank");
+		}
+
 		JsonArray operationList = new JsonArray();
 
 		JsonObject testOperation = new JsonObject();
@@ -2986,11 +2999,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param role the permission role to assign the principal to; one of {@code manager},
 	 *        {@code editor}, or {@code viewer}
 	 * @param principalUri the URI of the user or role to assign
-	 * @throws OEClientException - an error has occurred contacting the server, or {@code role} is
-	 *         not a recognized permission role
+	 * @throws OEClientException - an error has occurred contacting the server, {@code role} is
+	 *         not a recognized permission role, or {@code principalUri} is null or blank
 	 */
 	private void assignRole(String sysUrl, String role, String principalUri) throws OEClientException {
 		String normalizedRole = validatePermissionRole(role);
+		if (principalUri == null || principalUri.isBlank()) {
+			throw new OEClientException("principalUri must not be null or blank");
+		}
 
 		JsonArray operationList = new JsonArray();
 
@@ -3045,11 +3061,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * @param role the permission role to remove the principal from; one of {@code manager},
 	 *        {@code editor}, or {@code viewer}
 	 * @param principalUri the URI of the user or role to remove
-	 * @throws OEClientException - an error has occurred contacting the server, or {@code role} is
-	 *         not a recognized permission role
+	 * @throws OEClientException - an error has occurred contacting the server, {@code role} is
+	 *         not a recognized permission role, or {@code principalUri} is null or blank
 	 */
 	private void unassignRole(String sysUrl, String role, String principalUri) throws OEClientException {
 		String normalizedRole = validatePermissionRole(role);
+		if (principalUri == null || principalUri.isBlank()) {
+			throw new OEClientException("principalUri must not be null or blank");
+		}
 
 		JsonArray operationList = new JsonArray();
 
