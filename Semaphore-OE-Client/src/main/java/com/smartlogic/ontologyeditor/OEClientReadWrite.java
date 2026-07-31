@@ -2954,16 +2954,19 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		makeRequest(sysUrl, payload, RequestType.PATCH);
 	}
 
-	private static final Set<String> PERMISSION_ROLES = Set.of("manager", "editor", "viewer");
+	private static final Set<String> PERMISSION_ROLES =
+			Set.of("manager", "editor", "contributor", "viewer");
 
 	/**
 	 * Assign a user (or Semaphore role, e.g. {@code role:SemaphoreUsers}) to a model permission
-	 * role. Corresponds to the {@code sempermissions:manager}, {@code sempermissions:editor}, and
-	 * {@code sempermissions:viewer} predicates.
+	 * role. Corresponds to the {@code sempermissions:manager}, {@code sempermissions:editor},
+	 * {@code sempermissions:contributor}, and {@code sempermissions:viewer} predicates. Roles are
+	 * hierarchical, from most to least privileged: manager, editor, contributor, viewer (labelled
+	 * "Reviewer" in the KMM UI).
 	 *
 	 * @param model the model to update
 	 * @param role the permission role to assign the principal to; one of {@code manager},
-	 *        {@code editor}, or {@code viewer}
+	 *        {@code editor}, {@code contributor}, or {@code viewer}
 	 * @param principalUri the URI of the user (e.g. {@code user:jsmith}) or role (e.g.
 	 *        {@code role:SemaphoreAdministrators}) to assign
 	 * @throws OEClientException - an error has occurred contacting the server, or {@code role} is
@@ -2976,11 +2979,12 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	/**
 	 * Assign a user (or Semaphore role) to a task permission role. Corresponds to the same
-	 * {@code sempermissions:manager}/{@code editor}/{@code viewer} predicates used for models.
+	 * {@code sempermissions:manager}/{@code editor}/{@code contributor}/{@code viewer} predicates
+	 * used for models.
 	 *
 	 * @param task the task to update
 	 * @param role the permission role to assign the principal to; one of {@code manager},
-	 *        {@code editor}, or {@code viewer}
+	 *        {@code editor}, {@code contributor}, or {@code viewer}
 	 * @param principalUri the URI of the user (e.g. {@code user:jsmith}) or role (e.g.
 	 *        {@code role:SemaphoreAdministrators}) to assign
 	 * @throws OEClientException - an error has occurred contacting the server, or {@code role} is
@@ -2997,7 +3001,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *
 	 * @param sysUrl the {@code sys/} resource URL of the model or task to update
 	 * @param role the permission role to assign the principal to; one of {@code manager},
-	 *        {@code editor}, or {@code viewer}
+	 *        {@code editor}, {@code contributor}, or {@code viewer}
 	 * @param principalUri the URI of the user or role to assign
 	 * @throws OEClientException - an error has occurred contacting the server, {@code role} is
 	 *         not a recognized permission role, or {@code principalUri} is null or blank
@@ -3028,7 +3032,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *
 	 * @param model the model to update
 	 * @param role the permission role to remove the principal from; one of {@code manager},
-	 *        {@code editor}, or {@code viewer}
+	 *        {@code editor}, {@code contributor}, or {@code viewer}
 	 * @param principalUri the URI of the user or role to remove (e.g. {@code user:jsmith})
 	 * @throws OEClientException - an error has occurred contacting the server, or {@code role} is
 	 *         not a recognized permission role
@@ -3043,7 +3047,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *
 	 * @param task the task to update
 	 * @param role the permission role to remove the principal from; one of {@code manager},
-	 *        {@code editor}, or {@code viewer}
+	 *        {@code editor}, {@code contributor}, or {@code viewer}
 	 * @param principalUri the URI of the user or role to remove (e.g. {@code user:jsmith})
 	 * @throws OEClientException - an error has occurred contacting the server, or {@code role} is
 	 *         not a recognized permission role
@@ -3059,7 +3063,7 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 *
 	 * @param sysUrl the {@code sys/} resource URL of the model or task to update
 	 * @param role the permission role to remove the principal from; one of {@code manager},
-	 *        {@code editor}, or {@code viewer}
+	 *        {@code editor}, {@code contributor}, or {@code viewer}
 	 * @param principalUri the URI of the user or role to remove
 	 * @throws OEClientException - an error has occurred contacting the server, {@code role} is
 	 *         not a recognized permission role, or {@code principalUri} is null or blank
@@ -3093,8 +3097,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	private String validatePermissionRole(String role) throws OEClientException {
 		String normalizedRole = role == null ? "" : role.trim().toLowerCase();
 		if (!PERMISSION_ROLES.contains(normalizedRole)) {
-			throw new OEClientException(
-					"Invalid permission role: " + role + ". Must be one of: manager, editor, viewer");
+			throw new OEClientException("Invalid permission role: " + role +
+					". Must be one of: manager, editor, contributor, viewer");
 		}
 		return normalizedRole;
 	}

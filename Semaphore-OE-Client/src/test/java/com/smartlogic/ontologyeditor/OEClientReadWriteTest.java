@@ -533,6 +533,18 @@ public class OEClientReadWriteTest {
   }
 
   @Test
+  public void assignModelRoleAcceptsContributorRole() throws OEClientException {
+    CapturingReadWriteClient client = newClient();
+    Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
+
+    client.assignModelRole(model, "contributor", "user:jsmith");
+
+    com.google.gson.JsonArray patch = JsonParser.parseString(client.lastPayload).getAsJsonArray();
+    assertEquals("@graph/0/sempermissions:contributor/-",
+        patch.get(0).getAsJsonObject().get("path").getAsString());
+  }
+
+  @Test
   public void assignModelRoleRejectsUnknownRole() {
     CapturingReadWriteClient client = newClient();
     Model model = new Model("urn:model:1", new Label("en", "Model One"), null);
