@@ -11,6 +11,7 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -2311,6 +2312,148 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		}
 
 		checkResponseStatus(response);
+	}
+
+	/**
+	 * Import Turtle statements into a model or task graph, running constraint validation
+	 * atomically as part of the same import transaction. The import is additive, preserves
+	 * existing values, and records the change in history. If constraint validation fails, the
+	 * server rolls back the import transaction and no data is committed; the violation details
+	 * are surfaced via {@link OEClientException}.
+	 *
+	 * @param targetUri model or task graph URI to import into
+	 * @param turtleContent Turtle document content
+	 * @throws OEClientException if the request is invalid, constraint validation fails (import
+	 *         not committed), or the server otherwise rejects the import
+	 */
+	public void importTurtle(String targetUri, String turtleContent) throws OEClientException {
+		importTurtle(targetUri, turtleContent, true);
+	}
+
+	/**
+	 * Import Turtle statements into a model or task graph.
+	 *
+	 * @param targetUri model or task graph URI to import into
+	 * @param turtleContent Turtle document content
+	 * @param checkConstraints when {@code true}, constraint validation runs atomically inside the
+	 *        import transaction and violations roll back the import (nothing is committed); when
+	 *        {@code false}, constraints are not checked and the import may commit invalid data.
+	 *        Prefer {@code true} unless the caller has its own validation strategy.
+	 * @throws OEClientException if the request is invalid or the server rejects the import
+	 */
+	public void importTurtle(String targetUri, String turtleContent, boolean checkConstraints)
+			throws OEClientException {
+		if (StringUtils.isBlank(targetUri)) {
+			throw new OEClientException("targetUri must not be blank");
+		}
+		if (turtleContent == null) {
+			throw new OEClientException("turtleContent must not be null");
+		}
+
+		logger.info("importTurtle entry: {} (checkConstraints={})", targetUri, checkConstraints);
+
+		String boundary = "----SemaphoreOEClient" + UUID.randomUUID().toString().replace("-", "");
+		Map<String, String> queryParameters = new LinkedHashMap<>();
+		queryParameters.put("path", "backup/" + targetUri + "/import");
+		if (checkConstraints) {
+			queryParameters.put("checkConstraints", "true");
+		}
+		String urlToUse = getURLwithParameters(getApiURL(), queryParameters);
+
+		HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+				.uri(URI.create(urlToUse))
+				.header("Accept", "application/ld+json,application/json")
+				.header("Content-Type", "multipart/form-data; boundary=" + boundary)
+				.POST(createTurtleImportBody(turtleContent, boundary));
+		addHeaders(requestBuilder);
+		applyTransactionMessageHeaders(requestBuilder);
+
+		try {
+			HttpResponse<String> response = getHttpClient().send(
+					requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+			checkResponseStatus(response);
+		} catch (IOException | InterruptedException e) {
+			throw new OEClientException(e.getClass().getSimpleName() + ": " + urlToUse + " - " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Validate SPIN constraints against a model or task graph without changing its data. This is
+	 * a diagnostic/standalone check; {@link #importTurtle(String, String)} already runs
+	 * constraint validation atomically as part of its import transaction, so callers do not need
+	 * to invoke this separately after a successful import.
+	 *
+	 * @param targetUri model or task graph URI to validate
+	 * @return warning details returned by KMM; an empty list indicates a healthy graph
+	 * @throws OEClientException if validation fails or its response cannot be parsed
+	 */
+	public List<String> validateSpinConstraints(String targetUri) throws OEClientException {
+		if (StringUtils.isBlank(targetUri)) {
+			throw new OEClientException("targetUri must not be blank");
+		}
+
+		logger.info("validateSpinConstraints entry: {}", targetUri);
+		Map<String, String> queryParameters = new LinkedHashMap<>();
+		queryParameters.put("path", "special/validateSpinConstraints");
+		queryParameters.put("graphUri", targetUri);
+		String response = getResponse(getApiURL(), queryParameters);
+
+		try {
+			JsonElement warnings = JsonParser.parseString(response).getAsJsonObject().get("warnings");
+			if (warnings == null || warnings.isJsonNull()) {
+				throw new OEClientException(
+						"Invalid SPIN constraint validation response: warnings array is missing or null");
+			}
+			if (!warnings.isJsonArray()) {
+				throw new OEClientException("Invalid SPIN constraint validation response: warnings is not an array");
+			}
+
+			List<String> warningDetails = new ArrayList<>();
+			warnings.getAsJsonArray().forEach(warning -> warningDetails.add(
+					warning.isJsonPrimitive() && warning.getAsJsonPrimitive().isString()
+							? warning.getAsString()
+							: warning.toString()));
+			return warningDetails;
+		} catch (IllegalStateException | com.google.gson.JsonParseException e) {
+			throw new OEClientException("Failed to parse SPIN constraint validation response: " + e.getMessage());
+		}
+	}
+
+	private HttpRequest.BodyPublisher createTurtleImportBody(String turtleContent, String boundary)
+			throws OEClientException {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+		try {
+			writeMultipartFile(output, boundary, turtleContent);
+			writeMultipartField(output, boundary, "format", "text/turtle");
+			writeMultipartField(output, boundary, "overwrite", "false");
+			writeMultipartField(output, boundary, "record", "true");
+			output.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+		} catch (IOException e) {
+			throw new OEClientException("Failed to build Turtle import request: " + e.getMessage());
+		}
+
+		return HttpRequest.BodyPublishers.ofByteArray(output.toByteArray());
+	}
+
+	private void writeMultipartFile(ByteArrayOutputStream output, String boundary, String turtleContent)
+			throws IOException {
+		output.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+		output.write(
+				"Content-Disposition: form-data; name=\"file\"; filename=\"import.ttl\"\r\n"
+						.getBytes(StandardCharsets.UTF_8));
+		output.write("Content-Type: text/turtle\r\n\r\n".getBytes(StandardCharsets.UTF_8));
+		output.write(turtleContent.getBytes(StandardCharsets.UTF_8));
+		output.write("\r\n".getBytes(StandardCharsets.UTF_8));
+	}
+
+	private void writeMultipartField(ByteArrayOutputStream output, String boundary, String name, String value)
+			throws IOException {
+		output.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+		output.write(("Content-Disposition: form-data; name=\"" + name + "\"\r\n\r\n")
+				.getBytes(StandardCharsets.UTF_8));
+		output.write(value.getBytes(StandardCharsets.UTF_8));
+		output.write("\r\n".getBytes(StandardCharsets.UTF_8));
 	}
 
 	private HttpRequest.BodyPublisher ofMimeMultipartData(byte[] data, String boundary) throws OEClientException {
