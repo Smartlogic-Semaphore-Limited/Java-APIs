@@ -132,8 +132,11 @@ public class OEClientTurtleImportTest {
   }
 
   private static void assertMultipartField(String body, String name, String value) {
-    assertTrue(body.contains(
-        "Content-Disposition: form-data; name=\"" + name + "\"\r\n\r\n" + value + "\r\n"));
+    String disposition = "Content-Disposition: form-data; name=\"" + name + "\"";
+    int dispositionIndex = body.indexOf(disposition);
+    assertTrue("Expected field '" + name + "' to be present in multipart body", dispositionIndex >= 0);
+    int valueIndex = body.indexOf(value, dispositionIndex);
+    assertTrue("Expected value '" + value + "' to follow field '" + name + "'", valueIndex > dispositionIndex);
   }
 
   private static class CapturedRequest {

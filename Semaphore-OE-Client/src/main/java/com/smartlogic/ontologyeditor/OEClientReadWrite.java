@@ -18,6 +18,9 @@ import java.util.*;
 
 import com.smartlogic.ontologyeditor.beans.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
@@ -2350,7 +2353,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 		logger.info("importTurtle entry: {} (checkConstraints={})", targetUri, checkConstraints);
 
-		String boundary = "----SemaphoreOEClient" + UUID.randomUUID().toString().replace("-", "");
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.addBinaryBody("file", turtleContent.getBytes(StandardCharsets.UTF_8),
+						ContentType.create("text/turtle", StandardCharsets.UTF_8), "import.ttl")
+				.addTextBody("format", "text/turtle")
+				.addTextBody("overwrite", "false")
+				.addTextBody("record", "true")
+				.build();
+
 		Map<String, String> queryParameters = new LinkedHashMap<>();
 		queryParameters.put("path", "backup/" + targetUri + "/import");
 		if (checkConstraints) {
@@ -2361,8 +2371,8 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
 				.uri(URI.create(urlToUse))
 				.header("Accept", "application/ld+json,application/json")
-				.header("Content-Type", "multipart/form-data; boundary=" + boundary)
-				.POST(createTurtleImportBody(turtleContent, boundary));
+				.header("Content-Type", entity.getContentType().getValue())
+				.POST(toBodyPublisher(entity));
 		addHeaders(requestBuilder);
 		applyTransactionMessageHeaders(requestBuilder);
 
@@ -2375,41 +2385,14 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		}
 	}
 
-	private HttpRequest.BodyPublisher createTurtleImportBody(String turtleContent, String boundary)
-			throws OEClientException {
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-
+	private HttpRequest.BodyPublisher toBodyPublisher(HttpEntity entity) throws OEClientException {
 		try {
-			writeMultipartFile(output, boundary, turtleContent);
-			writeMultipartField(output, boundary, "format", "text/turtle");
-			writeMultipartField(output, boundary, "overwrite", "false");
-			writeMultipartField(output, boundary, "record", "true");
-			output.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			entity.writeTo(output);
+			return HttpRequest.BodyPublishers.ofByteArray(output.toByteArray());
 		} catch (IOException e) {
 			throw new OEClientException("Failed to build Turtle import request: " + e.getMessage());
 		}
-
-		return HttpRequest.BodyPublishers.ofByteArray(output.toByteArray());
-	}
-
-	private void writeMultipartFile(ByteArrayOutputStream output, String boundary, String turtleContent)
-			throws IOException {
-		output.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
-		output.write(
-				"Content-Disposition: form-data; name=\"file\"; filename=\"import.ttl\"\r\n"
-						.getBytes(StandardCharsets.UTF_8));
-		output.write("Content-Type: text/turtle\r\n\r\n".getBytes(StandardCharsets.UTF_8));
-		output.write(turtleContent.getBytes(StandardCharsets.UTF_8));
-		output.write("\r\n".getBytes(StandardCharsets.UTF_8));
-	}
-
-	private void writeMultipartField(ByteArrayOutputStream output, String boundary, String name, String value)
-			throws IOException {
-		output.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
-		output.write(("Content-Disposition: form-data; name=\"" + name + "\"\r\n\r\n")
-				.getBytes(StandardCharsets.UTF_8));
-		output.write(value.getBytes(StandardCharsets.UTF_8));
-		output.write("\r\n".getBytes(StandardCharsets.UTF_8));
 	}
 
 	private HttpRequest.BodyPublisher ofMimeMultipartData(byte[] data, String boundary) throws OEClientException {
