@@ -10,7 +10,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
@@ -113,81 +112,6 @@ public class OEClientTurtleImportTest {
     } catch (OEClientException e) {
       assertTrue(e.getMessage().contains("400"));
       assertTrue(e.getMessage().contains("Invalid Turtle"));
-    }
-  }
-
-  @Test
-  public void validateSpinConstraintsGetsEncodedModelTargetAndWarningDetails() throws Exception {
-    responseStatus = 200;
-    responseBody =
-        "{\"warnings\":[{\"constraintId\":\"N001\",\"message\":\"Missing label\"},\"Plain warning\"]}";
-
-    List<String> warnings = client.validateSpinConstraints("model:project:123");
-
-    assertEquals(2, warnings.size());
-    assertTrue(warnings.get(0).contains("\"constraintId\":\"N001\""));
-    assertTrue(warnings.get(0).contains("\"message\":\"Missing label\""));
-    assertEquals("Plain warning", warnings.get(1));
-    CapturedRequest request = capturedRequest.get();
-    assertEquals("GET", request.method);
-    assertEquals(
-        "path=special%2FvalidateSpinConstraints&graphUri=model%3Aproject%3A123",
-        request.rawQuery);
-    assertEquals("test-api-key", request.apiKey);
-    assertEquals("test-value", request.testHeader);
-    assertEquals("application/ld+json,application/json", request.accept);
-  }
-
-  @Test
-  public void validateSpinConstraintsEncodesTaskTargetUriAndReturnsEmptyHealthyResult() throws Exception {
-    responseStatus = 200;
-    responseBody = "{\"warnings\":[]}";
-
-    List<String> warnings = client.validateSpinConstraints("task:project:456");
-
-    assertTrue(warnings.isEmpty());
-    assertEquals(
-        "path=special%2FvalidateSpinConstraints&graphUri=task%3Aproject%3A456",
-        capturedRequest.get().rawQuery);
-  }
-
-  @Test
-  public void validateSpinConstraintsTurnsErrorsIntoOEClientException() {
-    responseStatus = 500;
-    responseBody = "Constraint service unavailable";
-
-    try {
-      client.validateSpinConstraints("model:project:123");
-      fail("Expected OEClientException");
-    } catch (OEClientException e) {
-      assertTrue(e.getMessage().contains("500"));
-      assertTrue(e.getMessage().contains("Constraint service unavailable"));
-    }
-  }
-
-  @Test
-  public void validateSpinConstraintsRejectsMissingWarnings() {
-    responseStatus = 200;
-    responseBody = "{}";
-
-    try {
-      client.validateSpinConstraints("model:project:123");
-      fail("Expected OEClientException");
-    } catch (OEClientException e) {
-      assertTrue(e.getMessage().contains("warnings array is missing or null"));
-    }
-  }
-
-  @Test
-  public void validateSpinConstraintsRejectsNullWarnings() {
-    responseStatus = 200;
-    responseBody = "{\"warnings\":null}";
-
-    try {
-      client.validateSpinConstraints("model:project:123");
-      fail("Expected OEClientException");
-    } catch (OEClientException e) {
-      assertTrue(e.getMessage().contains("warnings array is missing or null"));
     }
   }
 

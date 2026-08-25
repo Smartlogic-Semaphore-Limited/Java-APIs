@@ -16,8 +16,6 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.smartlogic.ontologyeditor.beans.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.atlas.json.JSON;
@@ -2374,48 +2372,6 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			checkResponseStatus(response);
 		} catch (IOException | InterruptedException e) {
 			throw new OEClientException(e.getClass().getSimpleName() + ": " + urlToUse + " - " + e.getMessage());
-		}
-	}
-
-	/**
-	 * Validate SPIN constraints against a model or task graph without changing its data. This is
-	 * a diagnostic/standalone check; {@link #importTurtle(String, String)} already runs
-	 * constraint validation atomically as part of its import transaction, so callers do not need
-	 * to invoke this separately after a successful import.
-	 *
-	 * @param targetUri model or task graph URI to validate
-	 * @return warning details returned by KMM; an empty list indicates a healthy graph
-	 * @throws OEClientException if validation fails or its response cannot be parsed
-	 */
-	public List<String> validateSpinConstraints(String targetUri) throws OEClientException {
-		if (StringUtils.isBlank(targetUri)) {
-			throw new OEClientException("targetUri must not be blank");
-		}
-
-		logger.info("validateSpinConstraints entry: {}", targetUri);
-		Map<String, String> queryParameters = new LinkedHashMap<>();
-		queryParameters.put("path", "special/validateSpinConstraints");
-		queryParameters.put("graphUri", targetUri);
-		String response = getResponse(getApiURL(), queryParameters);
-
-		try {
-			JsonElement warnings = JsonParser.parseString(response).getAsJsonObject().get("warnings");
-			if (warnings == null || warnings.isJsonNull()) {
-				throw new OEClientException(
-						"Invalid SPIN constraint validation response: warnings array is missing or null");
-			}
-			if (!warnings.isJsonArray()) {
-				throw new OEClientException("Invalid SPIN constraint validation response: warnings is not an array");
-			}
-
-			List<String> warningDetails = new ArrayList<>();
-			warnings.getAsJsonArray().forEach(warning -> warningDetails.add(
-					warning.isJsonPrimitive() && warning.getAsJsonPrimitive().isString()
-							? warning.getAsString()
-							: warning.toString()));
-			return warningDetails;
-		} catch (IllegalStateException | com.google.gson.JsonParseException e) {
-			throw new OEClientException("Failed to parse SPIN constraint validation response: " + e.getMessage());
 		}
 	}
 
