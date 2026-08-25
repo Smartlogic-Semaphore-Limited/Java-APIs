@@ -11,13 +11,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-/**
- * Integration tests for {@link OEClientReadWrite#importTurtle(String, String)} and its
- * {@code checkConstraints} overload, exercised against a real Workbench instance (see
- * {@link AbstractOEIntegrationTest} for the required environment variables).
- *
- * <p>Each test runs against a freshly created, isolated model (see {@link AbstractModelScopedIT}).
- */
 public class OEClientTurtleImportIT extends AbstractModelScopedIT {
 
   @Test
@@ -109,17 +102,6 @@ public class OEClientTurtleImportIT extends AbstractModelScopedIT {
     assertEquals("Malformed Turtle must not commit any data", countBefore, oeClient.getConceptCount());
   }
 
-  /**
-   * A concept declared as its own broader concept is a self-referencing hierarchical cycle,
-   * which violates Semaphore's built-in taxonomy integrity constraints. This exercises the
-   * atomic, in-transaction constraint validation added for {@code checkConstraints}: the
-   * violation must roll back the entire import so nothing is committed.
-   *
-   * <p>If a future Workbench version stops treating this particular case as a violation,
-   * replace it with another constraint known to be enforced in the target environment; the
-   * intent of this test is to prove that violations roll back the import, not to pin down one
-   * specific rule.
-   */
   @Test
   public void importTurtleWithCheckConstraintsTrueRollsBackOnCycleViolation() throws OEClientException {
     String namespace = testModel.getDefaultNamespace();

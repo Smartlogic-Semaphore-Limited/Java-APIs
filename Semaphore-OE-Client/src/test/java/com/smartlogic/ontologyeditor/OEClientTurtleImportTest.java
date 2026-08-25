@@ -51,22 +51,22 @@ public class OEClientTurtleImportTest {
     client.importTurtle("model:project:123", turtle);
 
     CapturedRequest request = capturedRequest.get();
-    assertEquals("POST", request.method);
+    assertEquals("POST", request.method());
     assertEquals(
         "path=backup%2Fmodel%3Aproject%3A123%2Fimport&checkConstraints=true",
-        request.rawQuery);
-    assertEquals("test-api-key", request.apiKey);
-    assertEquals("test-value", request.testHeader);
-    assertEquals("Import Turtle", request.transactionMessage);
-    assertEquals("application/ld+json,application/json", request.accept);
-    assertTrue(request.contentType.startsWith("multipart/form-data; boundary="));
+        request.rawQuery());
+    assertEquals("test-api-key", request.apiKey());
+    assertEquals("test-value", request.testHeader());
+    assertEquals("Import Turtle", request.transactionMessage());
+    assertEquals("application/ld+json,application/json", request.accept());
+    assertTrue(request.contentType().startsWith("multipart/form-data; boundary="));
 
-    assertTrue(request.body.contains("name=\"file\"; filename=\"import.ttl\""));
-    assertTrue(request.body.contains("Content-Type: text/turtle"));
-    assertTrue(request.body.contains(turtle));
-    assertMultipartField(request.body, "format", "text/turtle");
-    assertMultipartField(request.body, "overwrite", "false");
-    assertMultipartField(request.body, "record", "true");
+    assertTrue(request.body().contains("name=\"file\"; filename=\"import.ttl\""));
+    assertTrue(request.body().contains("Content-Type: text/turtle"));
+    assertTrue(request.body().contains(turtle));
+    assertMultipartField(request.body(), "format", "text/turtle");
+    assertMultipartField(request.body(), "overwrite", "false");
+    assertMultipartField(request.body(), "record", "true");
   }
 
   @Test
@@ -75,7 +75,7 @@ public class OEClientTurtleImportTest {
 
     assertEquals(
         "path=backup%2Ftask%3Aproject%3A456%2Fimport&checkConstraints=true",
-        capturedRequest.get().rawQuery);
+        capturedRequest.get().rawQuery());
   }
 
   @Test
@@ -84,7 +84,7 @@ public class OEClientTurtleImportTest {
 
     assertEquals(
         "path=backup%2Fmodel%3Aproject%3A123%2Fimport",
-        capturedRequest.get().rawQuery);
+        capturedRequest.get().rawQuery());
   }
 
   @Test
@@ -139,33 +139,14 @@ public class OEClientTurtleImportTest {
     assertTrue("Expected value '" + value + "' to follow field '" + name + "'", valueIndex > dispositionIndex);
   }
 
-  private static class CapturedRequest {
-    private final String method;
-    private final String rawQuery;
-    private final String contentType;
-    private final String accept;
-    private final String apiKey;
-    private final String testHeader;
-    private final String transactionMessage;
-    private final String body;
-
-    private CapturedRequest(
-        String method,
-        String rawQuery,
-        String contentType,
-        String accept,
-        String apiKey,
-        String testHeader,
-        String transactionMessage,
-        String body) {
-      this.method = method;
-      this.rawQuery = rawQuery;
-      this.contentType = contentType;
-      this.accept = accept;
-      this.apiKey = apiKey;
-      this.testHeader = testHeader;
-      this.transactionMessage = transactionMessage;
-      this.body = body;
-    }
+  private record CapturedRequest(
+      String method,
+      String rawQuery,
+      String contentType,
+      String accept,
+      String apiKey,
+      String testHeader,
+      String transactionMessage,
+      String body) {
   }
 }
