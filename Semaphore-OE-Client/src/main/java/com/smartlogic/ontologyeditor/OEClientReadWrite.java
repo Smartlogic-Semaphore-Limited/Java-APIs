@@ -2322,6 +2322,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 	 * server rolls back the import transaction and no data is committed; the violation details
 	 * are surfaced via {@link OEClientException}.
 	 *
+	 * <p>Note: the {@code checkConstraints} query parameter honored by this import is only
+	 * supported by Workbench 5.13.0 and later. Against older servers it is silently ignored and
+	 * constraints are not checked.
+	 *
 	 * @param targetUri model or task graph URI to import into
 	 * @param turtleContent Turtle document content
 	 * @throws OEClientException if the request is invalid, constraint validation fails (import
@@ -2333,6 +2337,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 
 	/**
 	 * Import Turtle statements into a model or task graph.
+	 *
+	 * <p>Note: the {@code checkConstraints} query parameter honored by this import is only
+	 * supported by Workbench 5.13.0 and later. Against older servers it is silently ignored and
+	 * constraints are not checked regardless of the value passed here.
 	 *
 	 * @param targetUri model or task graph URI to import into
 	 * @param turtleContent Turtle document content
