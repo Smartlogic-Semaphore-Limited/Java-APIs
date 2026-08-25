@@ -2380,8 +2380,17 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			HttpResponse<String> response = getHttpClient().send(
 					requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
 			checkResponseStatus(response);
-		} catch (IOException | InterruptedException e) {
-			throw new OEClientException(e.getClass().getSimpleName() + ": " + urlToUse + " - " + e.getMessage());
+		} catch (IOException e) {
+			OEClientException oeClientException = new OEClientException(
+					e.getClass().getSimpleName() + ": " + urlToUse + " - " + e.getMessage());
+			oeClientException.initCause(e);
+			throw oeClientException;
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			OEClientException oeClientException = new OEClientException(
+					e.getClass().getSimpleName() + ": " + urlToUse + " - " + e.getMessage());
+			oeClientException.initCause(e);
+			throw oeClientException;
 		}
 	}
 
@@ -2391,7 +2400,10 @@ public class OEClientReadWrite extends OEClientReadOnly {
 			entity.writeTo(output);
 			return HttpRequest.BodyPublishers.ofByteArray(output.toByteArray());
 		} catch (IOException e) {
-			throw new OEClientException("Failed to build Turtle import request: " + e.getMessage());
+			OEClientException oeClientException = new OEClientException(
+					"Failed to build Turtle import request: " + e.getMessage());
+			oeClientException.initCause(e);
+			throw oeClientException;
 		}
 	}
 

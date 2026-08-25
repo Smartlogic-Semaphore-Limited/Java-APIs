@@ -9,8 +9,12 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -52,9 +56,8 @@ public class OEClientTurtleImportTest {
 
     CapturedRequest request = capturedRequest.get();
     assertEquals("POST", request.method());
-    assertEquals(
-        "path=backup%2Fmodel%3Aproject%3A123%2Fimport&checkConstraints=true",
-        request.rawQuery());
+    assertQueryParams(request.rawQuery(),
+        Map.of("path", "backup/model:project:123/import", "checkConstraints", "true"));
     assertEquals("test-api-key", request.apiKey());
     assertEquals("test-value", request.testHeader());
     assertEquals("Import Turtle", request.transactionMessage());
@@ -73,18 +76,16 @@ public class OEClientTurtleImportTest {
   public void importTurtleEncodesTaskTargetUri() throws Exception {
     client.importTurtle("task:project:456", "<urn:s> <urn:p> <urn:o> .");
 
-    assertEquals(
-        "path=backup%2Ftask%3Aproject%3A456%2Fimport&checkConstraints=true",
-        capturedRequest.get().rawQuery());
+    assertQueryParams(capturedRequest.get().rawQuery(),
+        Map.of("path", "backup/task:project:456/import", "checkConstraints", "true"));
   }
 
   @Test
   public void importTurtleWithCheckConstraintsFalseOmitsQueryParameter() throws Exception {
     client.importTurtle("model:project:123", "<urn:s> <urn:p> <urn:o> .", false);
 
-    assertEquals(
-        "path=backup%2Fmodel%3Aproject%3A123%2Fimport",
-        capturedRequest.get().rawQuery());
+    assertQueryParams(capturedRequest.get().rawQuery(),
+        Map.of("path", "backup/model:project:123/import"));
   }
 
   @Test
@@ -129,6 +130,19 @@ public class OEClientTurtleImportTest {
     exchange.sendResponseHeaders(responseStatus, body.length);
     exchange.getResponseBody().write(body);
     exchange.close();
+  }
+
+  private static void assertQueryParams(String rawQuery, Map<String, String> expected) {
+    Map<String, String> actual = Arrays.stream(rawQuery.split("&"))
+        .map(pair -> pair.split("=", 2))
+        .collect(Collectors.toMap(
+            pair -> urlDecode(pair[0]),
+            pair -> urlDecode(pair[1])));
+    assertEquals(expected, actual);
+  }
+
+  private static String urlDecode(String value) {
+    return URLDecoder.decode(value, StandardCharsets.UTF_8);
   }
 
   private static void assertMultipartField(String body, String name, String value) {
