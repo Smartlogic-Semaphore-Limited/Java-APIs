@@ -26,11 +26,13 @@ public class OEClientTurtleImportIT extends AbstractModelScopedIT {
     String schemeUri = namespace + "scheme1";
     String conceptUri = namespace + "concept1";
     String turtle = "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n" +
+        "@prefix skosxl: <http://www.w3.org/2008/05/skos-xl#> .\n" +
+        "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n" +
         "@prefix ex: <" + namespace + "> .\n" +
         "ex:scheme1 a skos:ConceptScheme ;\n" +
-        "    skos:prefLabel \"Imported Scheme\"@en .\n" +
+        "    rdfs:label \"Imported Scheme\"@en .\n" +
         "ex:concept1 a skos:Concept ;\n" +
-        "    skos:prefLabel \"Imported Concept\"@en ;\n" +
+        "    skosxl:prefLabel [ a skosxl:Label ; skosxl:literalForm \"Imported Concept\"@en ] ;\n" +
         "    skos:inScheme ex:scheme1 ;\n" +
         "    skos:topConceptOf ex:scheme1 .\n" +
         "ex:scheme1 skos:hasTopConcept ex:concept1 .\n";
@@ -51,9 +53,10 @@ public class OEClientTurtleImportIT extends AbstractModelScopedIT {
     String namespace = testModel.getDefaultNamespace();
     String conceptUri = namespace + "concept-no-check";
     String turtle = "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n" +
+        "@prefix skosxl: <http://www.w3.org/2008/05/skos-xl#> .\n" +
         "@prefix ex: <" + namespace + "> .\n" +
         "ex:concept-no-check a skos:Concept ;\n" +
-        "    skos:prefLabel \"No Constraint Check\"@en .\n";
+        "    skosxl:prefLabel [ a skosxl:Label ; skosxl:literalForm \"No Constraint Check\"@en ] .\n";
 
     oeClient.importTurtle(testModel.getUri(), turtle, false);
 
@@ -69,9 +72,10 @@ public class OEClientTurtleImportIT extends AbstractModelScopedIT {
     String namespace = testModel.getDefaultNamespace();
     String schemeUri = namespace + "taskScheme";
     String turtle = "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n" +
+        "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n" +
         "@prefix ex: <" + namespace + "> .\n" +
         "ex:taskScheme a skos:ConceptScheme ;\n" +
-        "    skos:prefLabel \"Task Scheme\"@en .\n";
+        "    rdfs:label \"Task Scheme\"@en .\n";
 
     oeClient.importTurtle(task.getGraphUri(), turtle);
 
@@ -120,9 +124,10 @@ public class OEClientTurtleImportIT extends AbstractModelScopedIT {
   public void importTurtleWithCheckConstraintsTrueRollsBackOnCycleViolation() throws OEClientException {
     String namespace = testModel.getDefaultNamespace();
     String turtle = "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .\n" +
+        "@prefix skosxl: <http://www.w3.org/2008/05/skos-xl#> .\n" +
         "@prefix ex: <" + namespace + "> .\n" +
         "ex:cyclicConcept a skos:Concept ;\n" +
-        "    skos:prefLabel \"Cyclic Concept\"@en ;\n" +
+        "    skosxl:prefLabel [ a skosxl:Label ; skosxl:literalForm \"Cyclic Concept\"@en ] ;\n" +
         "    skos:broader ex:cyclicConcept .\n";
     long countBefore = oeClient.getConceptCount();
 
