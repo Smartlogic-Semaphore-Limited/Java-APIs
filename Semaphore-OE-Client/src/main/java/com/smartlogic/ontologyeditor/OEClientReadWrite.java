@@ -11,14 +11,16 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.smartlogic.ontologyeditor.beans.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
@@ -2311,6 +2313,106 @@ public class OEClientReadWrite extends OEClientReadOnly {
 		}
 
 		checkResponseStatus(response);
+	}
+
+	/**
+	 * Import Turtle statements into a model or task graph, running constraint validation
+	 * atomically as part of the same import transaction. The import is additive, preserves
+	 * existing values, and records the change in history. If constraint validation fails, the
+	 * server rolls back the import transaction and no data is committed; the violation details
+	 * are surfaced via {@link OEClientException}.
+	 *
+	 * <p>Note: the {@code checkConstraints} query parameter honored by this import is only
+	 * supported by Workbench 5.13.0 and later. Against older servers it is silently ignored and
+	 * constraints are not checked.
+	 *
+	 * @param targetUri model or task graph URI to import into
+	 * @param turtleContent Turtle document content
+	 * @throws OEClientException if the request is invalid, constraint validation fails (import
+	 *         not committed), or the server otherwise rejects the import
+	 */
+	public void importTurtle(String targetUri, String turtleContent) throws OEClientException {
+		importTurtle(targetUri, turtleContent, true);
+	}
+
+	/**
+	 * Import Turtle statements into a model or task graph.
+	 *
+	 * <p>Note: the {@code checkConstraints} query parameter honored by this import is only
+	 * supported by Workbench 5.13.0 and later. Against older servers it is silently ignored and
+	 * constraints are not checked regardless of the value passed here.
+	 *
+	 * @param targetUri model or task graph URI to import into
+	 * @param turtleContent Turtle document content
+	 * @param checkConstraints when {@code true}, constraint validation runs atomically inside the
+	 *        import transaction and violations roll back the import (nothing is committed); when
+	 *        {@code false}, constraints are not checked and the import may commit invalid data.
+	 *        Prefer {@code true} unless the caller has its own validation strategy.
+	 * @throws OEClientException if the request is invalid or the server rejects the import
+	 */
+	public void importTurtle(String targetUri, String turtleContent, boolean checkConstraints)
+			throws OEClientException {
+		if (StringUtils.isBlank(targetUri)) {
+			throw new OEClientException("targetUri must not be blank");
+		}
+		if (turtleContent == null) {
+			throw new OEClientException("turtleContent must not be null");
+		}
+
+		logger.info("importTurtle entry: {} (checkConstraints={})", targetUri, checkConstraints);
+
+		HttpEntity entity = MultipartEntityBuilder.create()
+				.addBinaryBody("file", turtleContent.getBytes(StandardCharsets.UTF_8),
+						ContentType.create("text/turtle", StandardCharsets.UTF_8), "import.ttl")
+				.addTextBody("format", "text/turtle")
+				.addTextBody("overwrite", "false")
+				.addTextBody("record", "true")
+				.build();
+
+		Map<String, String> queryParameters = new LinkedHashMap<>();
+		queryParameters.put("path", "backup/" + targetUri + "/import");
+		if (checkConstraints) {
+			queryParameters.put("checkConstraints", "true");
+		}
+		String urlToUse = getURLwithParameters(getApiURL(), queryParameters);
+
+		HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+				.uri(URI.create(urlToUse))
+				.header("Accept", "application/ld+json,application/json")
+				.header("Content-Type", entity.getContentType().getValue())
+				.POST(toBodyPublisher(entity));
+		addHeaders(requestBuilder);
+		applyTransactionMessageHeaders(requestBuilder);
+
+		try {
+			HttpResponse<String> response = getHttpClient().send(
+					requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+			checkResponseStatus(response);
+		} catch (IOException e) {
+			OEClientException oeClientException = new OEClientException(
+					e.getClass().getSimpleName() + ": " + urlToUse + " - " + e.getMessage());
+			oeClientException.initCause(e);
+			throw oeClientException;
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			OEClientException oeClientException = new OEClientException(
+					e.getClass().getSimpleName() + ": " + urlToUse + " - " + e.getMessage());
+			oeClientException.initCause(e);
+			throw oeClientException;
+		}
+	}
+
+	private HttpRequest.BodyPublisher toBodyPublisher(HttpEntity entity) throws OEClientException {
+		try {
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			entity.writeTo(output);
+			return HttpRequest.BodyPublishers.ofByteArray(output.toByteArray());
+		} catch (IOException e) {
+			OEClientException oeClientException = new OEClientException(
+					"Failed to build Turtle import request: " + e.getMessage());
+			oeClientException.initCause(e);
+			throw oeClientException;
+		}
 	}
 
 	private HttpRequest.BodyPublisher ofMimeMultipartData(byte[] data, String boundary) throws OEClientException {

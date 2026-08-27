@@ -1,0 +1,166 @@
+// Copyright (c) 2026 Progress Software Corporation and/or its subsidiaries or affiliates. All rights reserved.
+package com.smartlogic.ontologyeditor;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+public class OEClientTurtleImportTest {
+
+  private HttpServer server;
+  private OEClientReadWrite client;
+  private final AtomicReference<CapturedRequest> capturedRequest = new AtomicReference<>();
+  private volatile int responseStatus;
+  private volatile String responseBody;
+
+  @Before
+  public void setUp() throws IOException {
+    responseStatus = 204;
+    responseBody = "";
+    server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+    server.createContext("/api", this::handleRequest);
+    server.start();
+
+    client = new OEClientReadWrite();
+    client.setBaseURL("http://localhost:" + server.getAddress().getPort());
+    client.setHeaderToken("test-api-key");
+    client.setHeader("X-Test-Header", "test-value");
+  }
+
+  @After
+  public void tearDown() {
+    server.stop(0);
+  }
+
+  @Test
+  public void importTurtlePostsEncodedModelTargetAndMultipartContent() throws Exception {
+    String turtle = "@prefix ex: <https://example.test/> .\nex:subject ex:label \"Café\" .";
+    client.setTransactionMessage("Import Turtle");
+
+    client.importTurtle("model:project:123", turtle);
+
+    CapturedRequest request = capturedRequest.get();
+    assertEquals("POST", request.method());
+    assertQueryParams(request.rawQuery(),
+        Map.of("path", "backup/model:project:123/import", "checkConstraints", "true"));
+    assertEquals("test-api-key", request.apiKey());
+    assertEquals("test-value", request.testHeader());
+    assertEquals("Import Turtle", request.transactionMessage());
+    assertEquals("application/ld+json,application/json", request.accept());
+    assertTrue(request.contentType().startsWith("multipart/form-data; boundary="));
+
+    assertTrue(request.body().contains("name=\"file\"; filename=\"import.ttl\""));
+    assertTrue(request.body().contains("Content-Type: text/turtle"));
+    assertTrue(request.body().contains(turtle));
+    assertMultipartField(request.body(), "format", "text/turtle");
+    assertMultipartField(request.body(), "overwrite", "false");
+    assertMultipartField(request.body(), "record", "true");
+  }
+
+  @Test
+  public void importTurtleEncodesTaskTargetUri() throws Exception {
+    client.importTurtle("task:project:456", "<urn:s> <urn:p> <urn:o> .");
+
+    assertQueryParams(capturedRequest.get().rawQuery(),
+        Map.of("path", "backup/task:project:456/import", "checkConstraints", "true"));
+  }
+
+  @Test
+  public void importTurtleWithCheckConstraintsFalseOmitsQueryParameter() throws Exception {
+    client.importTurtle("model:project:123", "<urn:s> <urn:p> <urn:o> .", false);
+
+    assertQueryParams(capturedRequest.get().rawQuery(),
+        Map.of("path", "backup/model:project:123/import"));
+  }
+
+  @Test
+  public void importTurtleSurfacesConstraintViolationAsOEClientException() {
+    responseStatus = 409;
+    responseBody = "{\"errors\":[{\"message\":\"Missing required property\"}]}";
+
+    try {
+      client.importTurtle("model:project:123", "<urn:s> <urn:p> <urn:o> .");
+      fail("Expected OEClientException");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("409"));
+      assertTrue(e.getMessage().contains("Missing required property"));
+    }
+  }
+
+  @Test
+  public void importTurtleTurnsErrorResponseIntoOEClientException() {
+    responseStatus = 400;
+    responseBody = "Invalid Turtle";
+
+    try {
+      client.importTurtle("model:project:123", "not turtle");
+      fail("Expected OEClientException");
+    } catch (OEClientException e) {
+      assertTrue(e.getMessage().contains("400"));
+      assertTrue(e.getMessage().contains("Invalid Turtle"));
+    }
+  }
+
+  private void handleRequest(HttpExchange exchange) throws IOException {
+    capturedRequest.set(new CapturedRequest(
+        exchange.getRequestMethod(),
+        exchange.getRequestURI().getRawQuery(),
+        exchange.getRequestHeaders().getFirst("Content-Type"),
+        exchange.getRequestHeaders().getFirst("Accept"),
+        exchange.getRequestHeaders().getFirst("X-Api-Key"),
+        exchange.getRequestHeaders().getFirst("X-Test-Header"),
+        exchange.getRequestHeaders().getFirst("X-Transaction-Message"),
+        new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)));
+    byte[] body = responseBody.getBytes(StandardCharsets.UTF_8);
+    exchange.sendResponseHeaders(responseStatus, body.length);
+    exchange.getResponseBody().write(body);
+    exchange.close();
+  }
+
+  private static void assertQueryParams(String rawQuery, Map<String, String> expected) {
+    Map<String, String> actual = Arrays.stream(rawQuery.split("&"))
+        .map(pair -> pair.split("=", 2))
+        .collect(Collectors.toMap(
+            pair -> urlDecode(pair[0]),
+            pair -> urlDecode(pair[1])));
+    assertEquals(expected, actual);
+  }
+
+  private static String urlDecode(String value) {
+    return URLDecoder.decode(value, StandardCharsets.UTF_8);
+  }
+
+  private static void assertMultipartField(String body, String name, String value) {
+    String disposition = "Content-Disposition: form-data; name=\"" + name + "\"";
+    int dispositionIndex = body.indexOf(disposition);
+    assertTrue("Expected field '" + name + "' to be present in multipart body", dispositionIndex >= 0);
+    int valueIndex = body.indexOf(value, dispositionIndex);
+    assertTrue("Expected value '" + value + "' to follow field '" + name + "'", valueIndex > dispositionIndex);
+  }
+
+  private record CapturedRequest(
+      String method,
+      String rawQuery,
+      String contentType,
+      String accept,
+      String apiKey,
+      String testHeader,
+      String transactionMessage,
+      String body) {
+  }
+}
