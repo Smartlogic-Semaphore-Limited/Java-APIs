@@ -31,7 +31,7 @@ smartlogic([
     string(name: 'KMM_IMAGE_TAG', defaultValue: "master", description: 'The tag of the KMM image to use'),
   ],
   settings: [
-    blackduck: [scan: [:]],
+    blackduck: [scan: [:], runAfterBuild: true],
     polaris: [scan: [buildTool: "mvn"]],
     includeSemaphoreLicense: 'valid_licence_unlimited',
   ]
