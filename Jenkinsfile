@@ -1,4 +1,4 @@
-@Library('smartlogic-common@v2') _
+@Library('smartlogic-common@ta39232-blackduck-snapshot-settings') _
 
 this.dockerUtils = smartlogic.api('Docker')
 this.workbenchContainer = null
@@ -31,12 +31,7 @@ smartlogic([
     string(name: 'KMM_IMAGE_TAG', defaultValue: "master", description: 'The tag of the KMM image to use'),
   ],
   settings: [
-    blackduck: [
-      scan: [
-        containerArgs: "-e MAVEN_OPTS='-Dblackduck.snapshot.repository.url=http://sl-cart01:8081/repository/maven-public/'"
-      ],
-      runAfterBuild: true
-    ],
+    blackduck: [scan: [enableMavenSnapshots: true]],
     polaris: [scan: [buildTool: "mvn"]],
     includeSemaphoreLicense: 'valid_licence_unlimited',
   ]
