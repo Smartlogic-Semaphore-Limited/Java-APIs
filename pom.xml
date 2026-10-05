@@ -79,6 +79,28 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<profiles>
+		<profile>
+			<id>blackduck-snapshot-resolution</id>
+			<activation>
+				<property>
+					<name>blackduck.snapshot.repository.url</name>
+				</property>
+			</activation>
+			<repositories>
+				<repository>
+					<id>central</id>
+					<url>${blackduck.snapshot.repository.url}</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>
 	<build>
 		<plugins>
 			<plugin>
