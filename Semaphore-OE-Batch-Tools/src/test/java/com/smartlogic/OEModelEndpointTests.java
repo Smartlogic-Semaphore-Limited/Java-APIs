@@ -75,6 +75,30 @@ public class OEModelEndpointTests {
 
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testBuildApiUrlRejectsUnsupportedScheme() {
+    OEModelEndpoint ep = new OEModelEndpoint();
+    ep.setBaseUrl("file:///tmp");
+
+    ep.buildApiUrl();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetJobStatusRejectsCallbackFromDifferentOrigin() {
+    OEModelEndpoint ep = new OEModelEndpoint();
+    ep.setBaseUrl("http://localhost:5080");
+
+    ep.getJobStatus("http://127.0.0.1:5080/kmm/api/async/jobs/job-1");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetJobStatusRejectsCallbackOutsideJobEndpoint() {
+    OEModelEndpoint ep = new OEModelEndpoint();
+    ep.setBaseUrl("http://localhost:5080");
+
+    ep.getJobStatus("http://localhost:5080/kmm/api/admin");
+  }
+
   @Test
   public void testBadSparql() {
     String sparql = "SELECT { AA";
