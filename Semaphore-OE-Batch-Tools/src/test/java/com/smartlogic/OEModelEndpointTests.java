@@ -107,6 +107,14 @@ public class OEModelEndpointTests {
     ep.getJobStatus("http://localhost:5080/kmm/api/admin");
   }
 
+  /**
+   * Evidence for proposed false-positive triage of Polaris SSRF issues:
+   * 9525EE0978929E10274EA552BEAB6E54 (initiateExportAsyncDownload),
+   * 90EB68617051B52F051D3A54110E9C54 (getJobStatus),
+   * 94AB9EF7931401D074619B9014ABBEFF (fetchData),
+   * 727567720093618173B2E9BF17DC18CF (getJobResult).
+   * Their traces taint the request builder via Authorization, not the URI.
+   */
   @Test
   public void testCloudAuthorizationCannotChangeAsyncRequestDestination() throws Exception {
     HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -164,6 +172,10 @@ public class OEModelEndpointTests {
     }
   }
 
+  /**
+   * Covers the same four Polaris IDs above: CRLF in Authorization is rejected
+   * before any request reaches the server.
+   */
   @Test
   public void testCloudAuthorizationRejectsHeaderInjectionBeforeSending() throws Exception {
     HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
