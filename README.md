@@ -17,7 +17,3 @@ The repository URL and snapshot profile exist only in temporary scan settings,
 not in the published POM. Normal builds are unchanged. Scanning neither installs
 reactor artifacts nor publishes them, and retains the shared pipeline's Maven
 mirror and Black Duck accuracy requirement.
-
-The task branch temporarily loads `smartlogic-common@ta39232-blackduck-snapshot-settings`
-to demonstrate the shared-library change. Restore `smartlogic-common@v2` once
-that change is available through the production library reference.

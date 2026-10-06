@@ -1,4 +1,4 @@
-@Library('smartlogic-common@ta39232-blackduck-snapshot-settings') _
+@Library('smartlogic-common@v2') _
 
 this.dockerUtils = smartlogic.api('Docker')
 this.workbenchContainer = null
