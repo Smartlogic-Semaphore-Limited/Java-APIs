@@ -107,6 +107,10 @@ public class OEModelEndpoint {
     if (Strings.isNullOrEmpty(baseUrl)) {
       throw new RuntimeException("The Studio/KMM baseUrl is not set");
     }
+    URI baseUri = toHttpUri(baseUrl);
+    if (baseUri.getRawQuery() != null) {
+      throw new IllegalArgumentException("The Studio/KMM baseUrl must not contain a query string");
+    }
     StringBuilder stringBuilder = new StringBuilder();
     if (!baseUrl.endsWith("/")) {
       baseUrl = baseUrl + "/";
@@ -120,6 +124,54 @@ public class OEModelEndpoint {
       logger.debug("apiUrl: {}", stringBuilder);
     }
     return stringBuilder.toString();
+  }
+
+  private URI toHttpUri(String url) {
+    URI uri = URI.create(url);
+    String scheme = uri.getScheme();
+    if ((!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme))
+        || uri.getHost() == null
+        || uri.getRawUserInfo() != null
+        || uri.getRawFragment() != null) {
+      throw new IllegalArgumentException("Only absolute HTTP(S) URLs with a host are allowed");
+    }
+    return uri;
+  }
+
+  private URI toJobCallbackUri(String callbackUrl) {
+    URI callbackUri = toHttpUri(callbackUrl);
+    URI apiUri = toHttpUri(buildApiUrl());
+    String apiPath = apiUri.getPath();
+    String callbackPath = callbackUri.getPath();
+    String jobPrefix = (apiPath.endsWith("/") ? apiPath : apiPath + "/") + "async/jobs/";
+
+    if (callbackUri.getRawQuery() != null
+        || !sameOrigin(callbackUri, apiUri)
+        || !callbackPath.startsWith(jobPrefix)) {
+      throw new IllegalArgumentException("Job callback URL must target this KMM server's async job endpoint");
+    }
+
+    String jobPath = callbackPath.substring(jobPrefix.length());
+    if (jobPath.endsWith("/result")) {
+      jobPath = jobPath.substring(0, jobPath.length() - "/result".length());
+    }
+    if (jobPath.isEmpty() || jobPath.contains("/") || ".".equals(jobPath) || "..".equals(jobPath)) {
+      throw new IllegalArgumentException("Job callback URL must contain a single job ID path segment");
+    }
+    return callbackUri;
+  }
+
+  private boolean sameOrigin(URI first, URI second) {
+    return first.getScheme().equalsIgnoreCase(second.getScheme())
+        && first.getHost().equalsIgnoreCase(second.getHost())
+        && effectivePort(first) == effectivePort(second);
+  }
+
+  private int effectivePort(URI uri) {
+    if (uri.getPort() != -1) {
+      return uri.getPort();
+    }
+    return "https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80;
   }
 
   /**
@@ -562,7 +614,7 @@ public class OEModelEndpoint {
       HttpRequest.Builder builder = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(formData));
       setHeaders(builder);
       builder.setHeader(HttpHeaders.CONTENT_TYPE, WebContent.contentTypeHTMLForm);
-      HttpRequest request = builder.uri(URI.create(sparqlUpdateUrl)).build();
+      HttpRequest request = builder.uri(toHttpUri(sparqlUpdateUrl)).build();
 
       HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
@@ -612,7 +664,7 @@ public class OEModelEndpoint {
       initHttpClient();
       HttpRequest.Builder builder = HttpRequest.newBuilder().header(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples);
       setHeaders(builder);
-      HttpRequest request = builder.uri(URI.create(initiateExportUrl)).build();
+      HttpRequest request = builder.uri(toHttpUri(initiateExportUrl)).build();
 
       HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
@@ -700,7 +752,7 @@ public class OEModelEndpoint {
       HttpRequest.Builder builder = HttpRequest.newBuilder();
       setHeaders(builder);
 
-      HttpRequest request = builder.uri(URI.create(jobResultUrl))
+      HttpRequest request = builder.uri(toJobCallbackUri(jobResultUrl))
           .setHeader(HttpHeaders.ACCEPT, WebContent.contentTypeNTriples)
           .build();
 
@@ -750,6 +802,7 @@ public class OEModelEndpoint {
    */
   public String getJobStatus(String callbackUrl)  {
     checkNotNull(callbackUrl);
+    URI callbackUri = toJobCallbackUri(callbackUrl);
     logger.debug("Running getJobStatus, callback url: {}", callbackUrl);
 
     try {
@@ -759,7 +812,7 @@ public class OEModelEndpoint {
         initHttpClient();
         HttpRequest.Builder builder = HttpRequest.newBuilder();
         setHeaders(builder);
-        HttpRequest request = builder.uri(URI.create(callbackUrl)).build();
+        HttpRequest request = builder.uri(callbackUri).build();
 
         HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
@@ -801,7 +854,7 @@ public class OEModelEndpoint {
       initHttpClient();
       HttpRequest.Builder builder = HttpRequest.newBuilder();
       setHeaders(builder);
-      HttpRequest request = builder.uri(URI.create(callbackUrl)).build();
+      HttpRequest request = builder.uri(toJobCallbackUri(callbackUrl)).build();
 
       HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
       httpStatusCode = response.statusCode();

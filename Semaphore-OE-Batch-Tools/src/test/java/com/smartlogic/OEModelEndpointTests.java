@@ -1,5 +1,7 @@
 package com.smartlogic;
 
+import com.smartlogic.cloud.Token;
+import com.sun.net.httpserver.HttpServer;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.update.UpdateAction;
@@ -11,9 +13,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.URI;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class OEModelEndpointTests {
 
@@ -73,6 +81,141 @@ public class OEModelEndpointTests {
     ep.setRequestTimeout(Duration.ofMinutes(7));
     assertEquals(ep.getRequestTimeout(), Duration.ofMinutes(7));
 
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBuildApiUrlRejectsUnsupportedScheme() {
+    OEModelEndpoint ep = new OEModelEndpoint();
+    ep.setBaseUrl("file:///tmp");
+
+    ep.buildApiUrl();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetJobStatusRejectsCallbackFromDifferentOrigin() {
+    OEModelEndpoint ep = new OEModelEndpoint();
+    ep.setBaseUrl("http://localhost:5080");
+
+    ep.getJobStatus("http://127.0.0.1:5080/kmm/api/async/jobs/job-1");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetJobStatusRejectsCallbackOutsideJobEndpoint() {
+    OEModelEndpoint ep = new OEModelEndpoint();
+    ep.setBaseUrl("http://localhost:5080");
+
+    ep.getJobStatus("http://localhost:5080/kmm/api/admin");
+  }
+
+  /**
+   * Evidence for proposed false-positive triage of Polaris SSRF issues:
+   * 9525EE0978929E10274EA552BEAB6E54 (initiateExportAsyncDownload),
+   * 90EB68617051B52F051D3A54110E9C54 (getJobStatus),
+   * 94AB9EF7931401D074619B9014ABBEFF (fetchData),
+   * 727567720093618173B2E9BF17DC18CF (getJobResult).
+   * Their traces taint the request builder via Authorization, not the URI.
+   */
+  @Test
+  public void testCloudAuthorizationCannotChangeAsyncRequestDestination() throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    List<String> paths = new CopyOnWriteArrayList<>();
+    List<String> authorizationHeaders = new CopyOnWriteArrayList<>();
+    server.createContext("/", exchange -> {
+      String path = exchange.getRequestURI().getPath();
+      paths.add(path);
+      authorizationHeaders.add(exchange.getRequestHeaders().getFirst("Authorization"));
+      String body;
+      int status;
+      if ("/kmm/api/".equals(path)) {
+        status = 202;
+        body = "{\"status\":\"ACCEPTED\",\"jobId\":\"job-1\"}";
+      } else if ("/kmm/api/async/jobs/job-1".equals(path)) {
+        status = 200;
+        body = "{\"status\":\"FINISHED\"}";
+      } else {
+        status = 200;
+        body = "<urn:subject> <urn:predicate> <urn:object> .";
+      }
+      byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+      try {
+        exchange.sendResponseHeaders(status, bytes.length);
+        exchange.getResponseBody().write(bytes);
+      } finally {
+        exchange.close();
+      }
+    });
+    server.start();
+    try {
+      String baseUrl = "http://127.0.0.1:" + server.getAddress().getPort();
+      // A URL-looking token is still header data, not a request destination.
+      String tokenValue = "http://127.0.0.1:1/unintended";
+      OEModelEndpoint ep = cloudEndpoint(baseUrl, tokenValue);
+      assertEquals("job-1", ep.initiateExportAsyncDownload());
+      assertEquals("FINISHED", ep.getJobStatus(ep.getJobCallbackUrl("job-1")));
+      org.apache.jena.rdf.model.Model model = ep.fetchData(null);
+      try {
+        assertEquals(1, model.size());
+      } finally {
+        model.close();
+      }
+      assertEquals(Integer.valueOf(200), ep.getJobResult("job-1").httpStatusCode());
+
+      assertEquals(List.of("/kmm/api/", "/kmm/api/async/jobs/job-1",
+          "/kmm/api/", "/kmm/api/async/jobs/job-1",
+          "/kmm/api/async/jobs/job-1/result", "/kmm/api/async/jobs/job-1/result"), paths);
+      assertEquals(6, authorizationHeaders.size());
+      for (String header : authorizationHeaders) {
+        assertEquals("bearer " + tokenValue, header);
+      }
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  /**
+   * Covers the same four Polaris IDs above: CRLF in Authorization is rejected
+   * before any request reaches the server.
+   */
+  @Test
+  public void testCloudAuthorizationRejectsHeaderInjectionBeforeSending() throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    List<URI> requests = new CopyOnWriteArrayList<>();
+    server.createContext("/", exchange -> {
+      requests.add(exchange.getRequestURI());
+      exchange.sendResponseHeaders(500, -1);
+      exchange.close();
+    });
+    server.start();
+    try {
+      String baseUrl = "http://127.0.0.1:" + server.getAddress().getPort();
+      OEModelEndpoint ep = cloudEndpoint(baseUrl, "token\r\nHost: unintended.example");
+      assertThrows(IllegalArgumentException.class, ep::initiateExportAsyncDownload);
+      RuntimeException statusError = assertThrows(RuntimeException.class,
+          () -> ep.getJobStatus(ep.getJobCallbackUrl("job-1")));
+      assertTrue(statusError.getCause() instanceof IllegalArgumentException);
+      assertThrows(IllegalArgumentException.class, () -> ep.fetchData(null));
+      RuntimeException resultError = assertThrows(RuntimeException.class, () -> ep.getJobResult("job-1"));
+      assertTrue(resultError.getCause() instanceof IllegalArgumentException);
+      assertTrue(requests.isEmpty());
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  private OEModelEndpoint cloudEndpoint(String baseUrl, String tokenValue) {
+    Token token = new Token();
+    token.setAccess_token(tokenValue);
+    token.setExpires_in(7200);
+    OEModelEndpoint ep = new OEModelEndpoint() {
+      @Override
+      public Token getCloudToken() {
+        return token;
+      }
+    };
+    ep.setBaseUrl(baseUrl);
+    ep.setModelIRI("model:TestModel");
+    ep.setCloudAPIKey("test-api-key");
+    return ep;
   }
 
   @Test
