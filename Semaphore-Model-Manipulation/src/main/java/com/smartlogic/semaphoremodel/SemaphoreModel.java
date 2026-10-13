@@ -31,8 +31,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.tdb.TDBFactory;
-import org.apache.jena.tdb.TDBLoader;
 import org.apache.jena.tdb1.TDB1Factory;
 import org.apache.jena.tdb1.TDB1Loader;
 import org.apache.jena.vocabulary.OWL;

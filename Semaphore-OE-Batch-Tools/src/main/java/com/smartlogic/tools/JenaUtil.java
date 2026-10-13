@@ -17,9 +17,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 
-import static com.google.gson.internal.$Gson$Preconditions.checkArgument;
-
-
 /**
  *
  */
@@ -38,7 +35,9 @@ public class JenaUtil {
    * @param m
    */
   public static void setStandardNsPrefixes(Model m) {
-    checkArgument(m != null);
+    if (m == null) {
+      throw new IllegalArgumentException();
+    }
     m.setNsPrefix("skos", "http://www.w3.org/2004/02/skos/core#");
     m.setNsPrefix("skosxl", "http://www.w3.org/2008/05/skos-xl#");
     m.setNsPrefix("sem", "http://www.smartlogic.com/2014/08/semaphore-core#");

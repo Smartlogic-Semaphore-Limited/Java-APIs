@@ -5,7 +5,7 @@ this.workbenchContainer = null
 this.workbenchPort = null
 
 smartlogic([
-  docker: "maven@sha256:7f46feaf907771cd14e38d0b901d6372e50e68bf4e2197b0f181eb16f051081b", //   maven:3.6.3-openjdk-17
+  docker: "maven@sha256:be898b0cf3929205778d61b2841aa36733513a79b0404f9cac67837863c8641f", // maven:3.9.12-eclipse-temurin-21
   builder: smartlogic.mavenBuilder(args: { getMvnArgs() }, credentialIds: ["MavenCentral"]),
   beforeBuild: {
     dockerUtils.withRegistry() {
