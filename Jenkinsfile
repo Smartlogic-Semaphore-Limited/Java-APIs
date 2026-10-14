@@ -33,7 +33,8 @@ smartlogic([
   settings: [
     blackduck: [
       scan: [
-        enableMavenSnapshots: true
+        enableMavenSnapshots: true,
+        enableMavenInstall: true
       ]
     ],
     polaris: [scan: [buildTool: "mvn"]],
