@@ -55,6 +55,16 @@ public abstract class AbstractModelScopedIT extends AbstractOEIntegrationTest {
     }
 
     /**
+     * Adds the given language codes to the test model. Labels in a language that is not
+     * configured for the model are rejected by the N049 consistency constraint.
+     */
+    protected void addModelLanguages(String... languageCodes) throws OEClientException {
+        for (String languageCode : languageCodes) {
+            oeClient.addLanguage(languageCode, languageCode);
+        }
+    }
+
+    /**
      * Deletes the unique model and all its contents after each test method.
      * JUnit 4 runs {@code @After} in subclass-first order, so this runs
      * after any {@code @After} cleanup in the concrete test class.
