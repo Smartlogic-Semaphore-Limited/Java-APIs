@@ -34,8 +34,7 @@ smartlogic([
     blackduck: [
       scan: [
         enableMavenSnapshots: true,
-        mavenBuildCommand: 'install -Dmaven.test.skip=true -Dmaven.install.skip=false',
-        image: 'smartlogic/custom/centos9/blackduck-scan.json-java-open-21:latest'
+        mavenBuildCommand: 'install -Dmaven.test.skip=true -Dmaven.install.skip=false'
       ]
     ],
     polaris: [scan: [buildTool: "mvn"]],
