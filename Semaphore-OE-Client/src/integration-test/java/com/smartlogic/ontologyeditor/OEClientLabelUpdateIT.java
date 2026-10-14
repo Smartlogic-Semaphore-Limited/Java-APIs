@@ -19,6 +19,7 @@ public class OEClientLabelUpdateIT extends AbstractModelScopedIT {
 
   @Test
   public void updatePrefLabelOnConcept() throws OEClientException {
+    addModelLanguages("fr");
     ConceptScheme scheme = createTestScheme();
     Concept concept = new Concept(oeClient, generateConceptUri(), List.of(new Label("en", "Original")));
     oeClient.createConcept(scheme.getUri(), concept);

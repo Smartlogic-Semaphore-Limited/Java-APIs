@@ -21,6 +21,7 @@ public class OEClientLabelIT extends AbstractModelScopedIT {
 
   @Test
   public void addPrefLabelToExistingConcept() throws OEClientException {
+    addModelLanguages("fr");
     Concept concept = createTestConcept(createTestScheme());
 
     oeClient.createLabel(concept, "http://www.w3.org/2008/05/skos-xl#prefLabel", new Label("fr", "Nouvelle Etiquette"));
@@ -39,6 +40,7 @@ public class OEClientLabelIT extends AbstractModelScopedIT {
 
   @Test
   public void addNonExistingCustomLabelTypeToExistingConcept() throws OEClientException {
+    addModelLanguages("es");
     Concept concept = createTestConcept(createTestScheme());
 
     try {
@@ -53,6 +55,7 @@ public class OEClientLabelIT extends AbstractModelScopedIT {
 
   @Test
   public void addMultipleLabelsToMultipleConcepts() throws OEClientException {
+    addModelLanguages("fr", "de");
     ConceptScheme scheme = createTestScheme();
     Concept concept1 = createTestConcept(scheme, "Concept 1");
     Concept concept2 = createTestConcept(scheme, "Concept 2");
@@ -68,6 +71,7 @@ public class OEClientLabelIT extends AbstractModelScopedIT {
 
   @Test
   public void addLabelWithoutUriToExistingConcept() throws OEClientException {
+    addModelLanguages("de");
     Concept concept = createTestConcept(createTestScheme());
 
     oeClient.createLabel(concept, "http://www.w3.org/2008/05/skos-xl#altLabel",
@@ -78,6 +82,7 @@ public class OEClientLabelIT extends AbstractModelScopedIT {
 
   @Test
   public void a2ddLabelWithoutUriToExistingConcept() throws OEClientException {
+    addModelLanguages("de");
     Concept concept = createTestConcept(createTestScheme());
 
     String altLabelTypeUri = oeClient.createLabel(concept, "http://www.w3.org/2008/05/skos-xl#altLabel",
@@ -93,6 +98,7 @@ public class OEClientLabelIT extends AbstractModelScopedIT {
 
   @Test
   public void addMultiplePrefLabelsInDifferentLanguages() throws OEClientException {
+    addModelLanguages("de", "es", "it");
     Concept concept = createTestConcept(createTestScheme());
 
     oeClient.createLabel(concept, "http://www.w3.org/2008/05/skos-xl#prefLabel", new Label("de", "Deutsch"));
