@@ -75,6 +75,7 @@ public class OEClientConceptMetadataIT extends AbstractModelScopedIT {
 
   @Test
   public void createConceptWithAltLabels() throws OEClientException {
+    addModelLanguages("fr");
     ConceptScheme scheme = createTestScheme();
     Concept concept = new Concept(oeClient, generateConceptUri(), List.of(new Label("en", "Primary")));
     concept.addAltLabel("http://www.w3.org/2008/05/skos-xl#altLabel", new Label("en", "Alternative Name"));

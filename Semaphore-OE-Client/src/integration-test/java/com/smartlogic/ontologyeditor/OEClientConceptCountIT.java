@@ -62,6 +62,7 @@ public class OEClientConceptCountIT extends AbstractModelScopedIT {
 
   @Test
   public void getConceptCountWithMultipleLanguageLabels() throws OEClientException {
+    addModelLanguages("fr");
     ConceptScheme scheme = createTestScheme();
     Concept concept = new Concept(oeClient, generateConceptUri(),
         Arrays.asList(new Label("en", "English"), new Label("fr", "Français")));
