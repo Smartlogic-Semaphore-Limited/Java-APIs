@@ -19,6 +19,7 @@ public class OEClientConceptSchemeManagementIT extends AbstractModelScopedIT {
 
   @Test
   public void updateConceptSchemeLabel() throws OEClientException {
+    addModelLanguages("fr");
     ConceptScheme scheme = createTestScheme();
     Label oldLabel = scheme.getPrefLabels().iterator().next();
 
