@@ -33,6 +33,7 @@ smartlogic([
   settings: [
     blackduck: [
       scan: [
+        image: 'smartlogic/custom/centos9/blackduck-scan.json-java-open-21:latest',
         enableMavenSnapshots: true,
         enableMavenInstall: true
       ]
