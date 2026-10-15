@@ -31,7 +31,13 @@ smartlogic([
     string(name: 'KMM_IMAGE_TAG', defaultValue: "master", description: 'The tag of the KMM image to use'),
   ],
   settings: [
-    blackduck: [scan: [enableMavenSnapshots: true]],
+    blackduck: [
+      scan: [
+        image: 'smartlogic/custom/centos9/blackduck-scan.json-java-open-21@sha256:877eb0d12c0df3fcb8ef8d3736183027340a473126a03e8a4c46d03234941f73',
+        enableMavenSnapshots: false,
+        enableMavenInstall: true
+      ]
+    ],
     polaris: [scan: [buildTool: "mvn"]],
     includeSemaphoreLicense: 'valid_licence_unlimited',
   ]
