@@ -1,4 +1,4 @@
-@Library('smartlogic-common@v2') _
+@Library('smartlogic-common@ta39770-bd-maven-install') _
 
 this.dockerUtils = smartlogic.api('Docker')
 this.workbenchContainer = null
