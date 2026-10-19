@@ -38,9 +38,9 @@
 	</scm>
 	<developers>
 		<developer>
-			<id>keith.atkins@smartlogic.com</id>
-			<name>Keith Atkins</name>
-			<email>keith.atkins@smartlogic.com</email>
+			<id>Steve.Biondi@progress.com</id>
+			<name>Steve Biondi</name>
+			<email>Steve.Biondi@progress.com</email>
 			<url>http://www.smartlogic.com</url>
 			<organization>Smartlogic Semaphore PLC</organization>
 			<organizationUrl>http://www.smartlogic.com</organizationUrl>
@@ -48,7 +48,6 @@
 				<role>architect</role>
 				<role>developer</role>
 			</roles>
-			<timezone>United Kingdom/London</timezone>
 		</developer>
 	</developers>
 	<modules>
