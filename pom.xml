@@ -21,7 +21,7 @@
 		<release.spdx23.url>${release.files.url-prefix}-spdx-2.3.zip</release.spdx23.url>
 		<release.spdx30.url>${release.files.url-prefix}-spdx-3.0.zip</release.spdx30.url>
 	</properties>
-	<version>5.13.0-SNAPSHOT</version>
+	<version>5.13.0</version>
 	<groupId>com.smartlogic</groupId>
 	<artifactId>Semaphore-Java-APIs</artifactId>
 	<description>Java connectors to the Smartlogic Semaphore Services</description>
