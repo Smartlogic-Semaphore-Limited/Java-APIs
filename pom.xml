@@ -38,17 +38,16 @@
 	</scm>
 	<developers>
 		<developer>
-			<id>keith.atkins@smartlogic.com</id>
-			<name>Keith Atkins</name>
-			<email>keith.atkins@smartlogic.com</email>
-			<url>http://www.smartlogic.com</url>
-			<organization>Smartlogic Semaphore PLC</organization>
-			<organizationUrl>http://www.smartlogic.com</organizationUrl>
+			<id>Steve.Biondi@progress.com</id>
+			<name>Steve Biondi</name>
+			<email>Steve.Biondi@progress.com</email>
+			<url>https://www.progress.com</url>
+			<organization>Progress Software Corporation</organization>
+			<organizationUrl>https://www.progress.com</organizationUrl>
 			<roles>
 				<role>architect</role>
 				<role>developer</role>
 			</roles>
-			<timezone>United Kingdom/London</timezone>
 		</developer>
 	</developers>
 	<modules>
